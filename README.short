@@ -1,0 +1,37 @@
+This is the README file for pyral, the package implementing the 
+Rally REST Toolkit for Python.
+
+Description
+-----------
+
+The Rally REST Tookit for Python consists of 
+
+Requirements
+------------
+
+The pryal package requires the use of Kenneth Reitz's requests package.
+The pyral package was developed and tested using requests-0.8.2.
+The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
+
+
+Installation
+------------
+
+Once requests has been installed, run the setup.py program supplied with this distribution.
+
+Validation
+----------
+
+Copy the template.cfg file to a file named my.cfg.
+Edit my.cfg.  Uncomment and replace the values for SERVER, USER, PASSWORD.
+Leave the WORKSPACE and PROJECT entries commented out for now.
+
+Run the rallyfire.py program as:
+
+$ python rallyfire.py --config=my.cfg
+
+Documentation
+-------------
+
+Obtain the zip file containing the HTML and CSS files comprising the document set for pyral.
+Unzip in a suitable location and point your web browser to the doc/build/html/index.html file
