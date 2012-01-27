@@ -1,0 +1,593 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Primary pyral classes and functions &mdash; pyral v0.8.8 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.8.8',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyral v0.8.8 documentation" href="index.html" />
+    <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="overview.html" title="Python toolkit for the Rally REST API"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyral v0.8.8 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="primary-pyral-classes-and-functions">
+<h1>Primary <em>pyral</em> classes and functions<a class="headerlink" href="#primary-pyral-classes-and-functions" title="Permalink to this headline">¶</a></h1>
+<p>For the most part, you&#8217;ll only be utilizing two main entry points to the <strong>pyral</strong> package.</p>
+<p>The first is the <strong>rallySettings</strong> convenience function that you&#8217;ll use to obtain target
+and credential values.
+The second is the <strong>Rally</strong> class, from which you&#8217;ll obtain an instance and then treat that
+as a direct link to the Rally SaaS.  An instance of the Rally class has the basic four CRUD
+operations as well as several convenience methods to obtain information about workspaces,
+projects, users and Rally type/value metadata.</p>
+<p>You&#8217;ll also be using the results of queries issued to Rally that are returned as instances
+of the <strong>RallyRESTResponse</strong> class.  Instances of this class allow easy dot (&#8216;.&#8217;) notation
+access to attributes of the representation of the Rally entity, whether the attribute is a
+simple value or a reference to another Rally entity.</p>
+</div>
+<div class="section" id="rallysettings">
+<h1>rallySettings<a class="headerlink" href="#rallysettings" title="Permalink to this headline">¶</a></h1>
+<p>This function takes into account your environment and arguments provided to this function
+to arrive at and return information necessary to establish a useful <em>connection</em> to the
+Rally server.</p>
+<p>The process consists of a priority chain where some reasonable default information is
+established first and then overridden with subsequent steps in the chain (if they exist).
+At then end of the priority chain values for server, user, password, workspace, project are
+returned to the caller.</p>
+<dl class="docutils">
+<dt>The priority chain consists of these steps:</dt>
+<dd><ul class="first last">
+<li><p class="first">establish baseline values from values defined in the module containing the rallySettings</p>
+</li>
+<li><dl class="first docutils">
+<dt>override with any environment variables present from this list:</dt>
+<dd><ul class="first last simple">
+<li>RALLY_SERVER</li>
+<li>RALLY_VERSION</li>
+<li>RALLY_USER</li>
+<li>RALLY_PASSWORD</li>
+<li>RALLY_WORKSPACE</li>
+<li>RALLY_PROJECT</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">if present, use information from a rally-&lt;version&gt;.cfg file in the current directory,
+where &lt;version&gt; matches the Rally WSAPI version defined in the pyral.config module.
+Currently, that version is defined as 1.29.</p>
+</li>
+<li><p class="first">if present, use the contents of a file named in the RALLY_CONFIG environment variable.</p>
+</li>
+<li><p class="first">if present, use the contents of a config named on the command line via the &#8211;config-&lt;filename&gt;
+option</p>
+</li>
+<li><p class="first">if present, use the values of individual credential/target settings provided as command line
+options via the &#8211;&lt;option&gt;=&lt;value&gt;.</p>
+</li>
+</ul>
+</dd>
+</dl>
+<p>The specific syntax available for these levels is detailed below.</p>
+<blockquote>
+<div><p><strong>Files</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>The general syntax is:</dt>
+<dd><ul class="first last simple">
+<li>CAP_NAME  = value</li>
+</ul>
+</dd>
+<dt>Valid entries are:</dt>
+<dd><ul class="first last simple">
+<li>SERVER    = &lt;RallyServer&gt;</li>
+<li>VERSION   = &lt;RallyWebServicesVersion&gt;</li>
+<li>USER      = &lt;validUserName&gt;</li>
+<li>PASSWORD  = &lt;validPassword&gt;</li>
+<li>WORKSPACE = &lt;validWorkspaceName&gt;</li>
+<li>PROJECT   = &lt;validProjectName&gt;</li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Command line options</strong></p>
+<blockquote>
+<div><blockquote>
+<div>&#8211;rallyConfig=&lt;configFileName&gt;</div></blockquote>
+<p>or &#8211;config=&lt;configFileName&gt;</p>
+<p>or &#8211;conf=&lt;configFileName&gt;</p>
+<p>or &#8211;cfg=&lt;configFileName&gt;</p>
+<p class="attribution">&mdash;rallyServer=&lt;serverName&gt;</p>
+</div></blockquote>
+<blockquote>
+<div><p>&#8211;rallyVersion=&lt;ws_version&gt;</p>
+<p class="attribution">&mdash;rallyUser=&lt;validRallyUserName&gt;</p>
+</div></blockquote>
+<blockquote>
+<div><p>&#8211;rallyPassword=&lt;validRallyPassword&gt;</p>
+<p class="attribution">&mdash;workspace=&lt;validWorkspaceName&gt;</p>
+</div></blockquote>
+<blockquote>
+<div>&#8211;project=&lt;validProjectName&gt;</div></blockquote>
+</div></blockquote>
+<p>This mechanism provides the ability to centrally locate a configuration file that can
+be used by many members of a team where server, workspace, project are common to all members
+and each individual can have their own appropriately secured config file with their credentials.
+Using this mechanism can save tedious and error-prone entry of target information and credentials
+on the command line or having credential information in clear text in unsecured files.</p>
+<p>Example use:</p>
+<div class="highlight-python"><pre>% export RALLY_SERVER="rally1.rallydev.com"
+% export RALLY_USER="crazedwiley@acmeproducts.com"
+
+% ls -l current.cfg
+
+  -rw-------  1 wiley  eng  173 Oct 14 07:02 current.cfg
+
+% cat current.cfg
+
+  USER = wiley@acme.com
+  WORKSPACE = General Products Umbrella
+  PROJECT = Dairy Farm Automation
+
+% cat basic.py
+
+import sys
+from rally import rallySettings
+
+options = [opt for opt in sys.argv[1:] if opt.startswith('--')]
+server, user, password, workspace, project = rallySettings(options)
+print " ".join(['|%|' % opt for opt in [server, user, password, workspace, project]]
+
+
+% python basic.py --config=current --rallyPassword='*****' --rallyProject="Livestock Mgmt"
+
+|rally1.rallydev.com| |wiley@acme.com| |*****| |General Products Umbrella| |Livestock Mgmt|</pre>
+</div>
+<p>Note that for convenience purposes a configuration file name may be fully specified
+or you may elect to not specify the &#8216;.cfg&#8217; suffix.</p>
+</div>
+<div class="section" id="rally">
+<h1>Rally<a class="headerlink" href="#rally" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><p>The Rally class is the central focus of the <strong>pyral</strong> package.  Instantation of this class
+with appropriate and valid target/credential information then provides a means of
+interacting with the Rally server.</p>
+<dl class="docutils">
+<dt>To instantiate a Rally object, you&#8217;ll need to provide these arguments:</dt>
+<dd><ul class="first last simple">
+<li>server</li>
+<li>user</li>
+<li>password</li>
+</ul>
+</dd>
+</dl>
+<p>either in this specific order or as keyword arguments.</p>
+<dl class="docutils">
+<dt>You can optionally specify the following as keyword arguments.</dt>
+<dd><ul class="first last">
+<li><p class="first">version</p>
+</li>
+<li><p class="first">workspace</p>
+</li>
+<li><p class="first">project</p>
+</li>
+<li><p class="first">version  (specify the Rally WSAPI version, default is 1.29)</p>
+</li>
+<li><dl class="first docutils">
+<dt>warn     (True or False, default is True)</dt>
+<dd><p class="first last">Controls whether a warning is issued if no project is specified
+and the default project for the user is not in the workspace specified.
+Under those conditions, the project is changed to the first project
+(alphabetic ordering) in the list of projects for specified workspace.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="class">
+<dt id="Rally">
+<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user</em>, <em>password</em>, <em>version=1.29</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s">&#39;bAbYF@cerZ&#39;</span><span class="p">)</span>
+
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;mchunko&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&#39;mySEk^et&#39;</span><span class="p">)</span>
+
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;Division #1 Products&#39;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s">&#39;ABC&#39;</span><span class="p">)</span>
+
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;Brontoville&#39;</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="core-rest-methods-and-crud-aliases">
+<h2>Core REST methods and CRUD aliases<a class="headerlink" href="#core-rest-methods-and-crud-aliases" title="Permalink to this headline">¶</a></h2>
+<dl class="method">
+<dt id="put">
+<tt class="descname">put</tt><big>(</big><em>entityName</em>, <em>itemData</em>, <em>workspace=None</em>, <em>project=None</em><big>)</big><a class="headerlink" href="#put" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method allows for the creation of a single Rally entity for the given entityName.
+The data is supplied in a dict and must include settings for all required fields.
+An attempt to create an entity record for which the operational credentials do not
+include the privileges to create Rally entity entries will result in a RallyRESTException
+being generated.</p>
+<p>Returns a representation of the item as an instance of a class named for the entity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="create">
+<tt class="descname">create</tt><big>(</big><big>)</big><a class="headerlink" href="#create" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias for put</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="get">
+<tt class="descname">get</tt><big>(</big><em>entityName</em>, <em>fetch=False | True | comma_separated_list_of_fields</em>, <em>query=None</em>, <em>order=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#get" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method allows for the retrieval of records for the given entityName.
+A fetch value of False results in a &#8220;shell&#8221; record returned with only basic
+ref attributes having values.  If the fetch value is True, a fully hydrated
+record for each qualifying entity is returned. If the fetch value is a string
+with a list of comma separated attribute names, those name attributes will be
+members of each returned entity record.</p>
+<dl class="docutils">
+<dt>keyword arguments:</dt>
+<dd><ul class="first last simple">
+<li>fetch = True/False or &#8220;List,Of,Attributes,We,Are,Interested,In&#8221;</li>
+<li>query = &#8216;FieldName = &#8220;some value&#8221;&#8217; or [&#8216;fld1 = 10&#8217;, &#8216;fld2 != &#8220;Shamu&#8221;&#8217;, etc.]</li>
+<li>instance = True/False (defalts to False)</li>
+<li>pagesize = n  (defaults to 200)</li>
+<li>start = n  (defaults to 1)</li>
+<li>limit = n  (defaults to no limit)</li>
+<li>workspace = workspace_name (defaults to current workspace selected)</li>
+<li>project = project_name (defaults to current project selected)</li>
+<li>projectScopeUp = True/False (defaults to False)</li>
+<li>projectScopeDown True/False (defaults to False)</li>
+</ul>
+</dd>
+</dl>
+<p>Returns a RallyRESTResponse object that has errors and warnings attributes that
+should be checked before any further operations on the object are attempted.
+The Response object supports the iteration protocol so that the results of the
+get can be iterated over via either <tt class="docutils literal"><span class="pre">for</span> <span class="pre">rec</span> <span class="pre">in</span> <span class="pre">response:</span></tt> or <tt class="docutils literal"><span class="pre">response.next()</span></tt>.</p>
+<p>If the instance keyword value is True, then an instance of a Rally entity
+will be returned instead of a RallyRESTResponse.  This can be useful when
+retrieving an item you know exists and is uniquely identified by your query argument.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you use a simple query, eg., &#8216;SomeField = &#8220;Abc&#8221;&#8217; then _you_ don&#8217;t need
+to use parens (although the Rally REST API does...).  If you specify the conditions
+as in the list variation (see the second example in the query keyword explanation above),
+then the conditions are AND&#8217;ed together in a form suitable for consumption by the
+Rally REST API.</p>
+<p><strong>Caution</strong>: If there are any paren characters in a query string, then the
+toolkit takes a hands-off policy and lets you take the responsibility for specifying
+the query in a form suitable for the Rally REST WSAPI. (See the Help page for
+for the Rally REST WSAPI in the Rally web-based product).</p>
+<p class="last">Use the instance keyword with <strong>caution</strong>, as an exception will be generated
+if the query produces no qualifying results.
+If the query produces more than one qualifying result, you&#8217;ll only get
+get the first result with no means to obtain any further qualifying items.</p>
+</div>
+<dl class="method">
+<dt id="find">
+<tt class="descname">find</tt><big>(</big><big>)</big><a class="headerlink" href="#find" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias for get</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="post">
+<tt class="descname">post</tt><big>(</big><em>entityName</em>, <em>itemData</em>, <em>workspace=None</em>, <em>project=None</em><big>)</big><a class="headerlink" href="#post" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method allows for updating a single Rally entity record with the data
+contained in the itemData dict.  The itemData dict may <em>not</em> attempt to change
+the ObjectID value of the entity as the value for the ObjectID is used to identify
+the Rally entity to update.  An attempt to update an entity record for
+which the operational credentials do not include the privileges to update will
+result in a RallyRESTException being generated.</p>
+<p>Returns a representation of the item as an instance of a class named for the entity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="update">
+<tt class="descname">update</tt><big>(</big><big>)</big><a class="headerlink" href="#update" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias for post</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="delete">
+<tt class="descname">delete</tt><big>(</big><em>entityName</em>, <em>itemIdent</em>, <em>workspace=None</em>, <em>project=None</em><big>)</big><a class="headerlink" href="#delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method allows for deleting a single Rally entity record whose ObjectID
+(or FormattedID) must be present in the itemIdent parameter.
+An attempt to delete an entity record for which the operational credentials
+do not include the privileges to delete will result in the generation
+of a RallyRESTException.</p>
+<p>Returns a boolean indication of the disposition of the attempt to delete the item.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="pyral-rally-instance-convenience-methods">
+<h2>pyral.Rally instance convenience methods<a class="headerlink" href="#pyral-rally-instance-convenience-methods" title="Permalink to this headline">¶</a></h2>
+<dl class="method">
+<dt id="enableLogging">
+<tt class="descname">enableLogging</tt><big>(</big><em>dest=sys.stdout</em>, <em>attrget=False</em>, <em>append=False</em><big>)</big><a class="headerlink" href="#enableLogging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this to enable logging. <em>dest</em> can set to the name of a file or an open file/stream (writable).
+If <em>attrget</em> is set to True, all Rally REST requests that are executed to obtain attribute
+information will also be logged. Be careful with that as the volume can get quite large.
+The <em>append</em> parameter controls whether any existing file will be appended to or overwritten.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="disableLogging">
+<tt class="descname">disableLogging</tt><big>(</big><big>)</big><a class="headerlink" href="#disableLogging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disables logging to whatever destination has been previously set up.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="subscriptionName">
+<tt class="descname">subscriptionName</tt><big>(</big><big>)</big><a class="headerlink" href="#subscriptionName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the subscription for the credentials used to establish
+the connection with Rally.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="setWorkspace">
+<tt class="descname">setWorkspace</tt><big>(</big><em>workspaceName</em><big>)</big><a class="headerlink" href="#setWorkspace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a workspaceName, set that as the current workspace and use the ref for that
+workspace in subsequent interactions with Rally.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getWorkspace">
+<tt class="descname">getWorkspace</tt><big>(</big><big>)</big><a class="headerlink" href="#getWorkspace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an instance of a Workspace entity with information about the workspace
+in the currently active context.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getWorkspaces">
+<tt class="descname">getWorkspaces</tt><big>(</big><big>)</big><a class="headerlink" href="#getWorkspaces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of Workspace instances that are available for
+the credentials used to establish the connection with Rally.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="setProject">
+<tt class="descname">setProject</tt><big>(</big><em>projectName</em><big>)</big><a class="headerlink" href="#setProject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a projectName, set that as the current project and use the ref for
+that project in subsequent interractions with Rally.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getProject">
+<tt class="descname">getProject</tt><big>(</big><em>projectName</em><big>)</big><a class="headerlink" href="#getProject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an instance of a Project entity with information about the project
+in the currently active context.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getProjects">
+<tt class="descname">getProjects</tt><big>(</big><em>workspace='default'</em><big>)</big><a class="headerlink" href="#getProjects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of Project instances that are available for the workspace context
+identified by the workspace keyword argument.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getUserInfo">
+<tt class="descname">getUserInfo</tt><big>(</big><em>oid=None</em>, <em>username=None</em>, <em>name=None</em><big>)</big><a class="headerlink" href="#getUserInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>A convenience method to collect specific user related information.</p>
+<p>Caller must provide at least one keyword arg and non-None / non-empty value
+to identify the user target on which to obtain information.
+The <em>name</em>     keyword arg is associated with the User.DisplayName attribute.
+The <em>username</em> keyword arg is associated with the User.UserName attribute.
+If provided, the <em>oid</em> keyword argument is used, even if other keyword args are
+provided. Similarly, if the <em>username</em> keyword arg is provided it is used
+even if the <em>name</em> keyword argument is provided.</p>
+<p>Returns either a single instance of a User entity when the oid keyword argument
+matches a User in the system, or a list of User entity items when the username
+or name keywords are given and are matched by at least one User in the system.
+Returns None if no match for keyword argument is found in the system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getAllUsers">
+<tt class="descname">getAllUsers</tt><big>(</big><big>)</big><a class="headerlink" href="#getAllUsers" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method offers a convenient one-stop means of obtaining usable information
+about all users in the named workspace.
+If no workspace is specified, then the current context&#8217;s workspace is used.</p>
+<p>Return a list of User instances (fully hydrated for scalar attributes)
+whose ref and collection attributes will be lazy eval&#8217;ed upon access.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getAllowedValues">
+<tt class="descname">getAllowedValues</tt><big>(</big><em>entityName</em>, <em>attributeName</em><span class="optional">[</span>, <em>workspace=None</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#getAllowedValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an entityName and and attributeName (assumed to be valid for the entityName)
+issue a request to obtain a list of allowed values for the attribute.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="rallyrestresponse">
+<h1>RallyRESTResponse<a class="headerlink" href="#rallyrestresponse" title="Permalink to this headline">¶</a></h1>
+<p>A RallyRESTResponse instance is returned from a call to get (find) and several of the
+convenience methods.  A instance has the following useful state attributes:</p>
+<blockquote>
+<div><ul class="simple">
+<li>resource    = partial URL identifying the resource for the HTTP Request</li>
+<li>status_code = numeric code for the HTTP Response</li>
+<li>headers     = HTTP headers returned</li>
+<li>content     = a dict produced by JSON&#8217;ifying the HTTP response body</li>
+<li>errors      = a list of strings with any Error information</li>
+<li>warnings    = a list of strings with any Warning information</li>
+<li>startIndex  = natural number index (ie., 1 to _X_)</li>
+<li>pageSize    = chunk size returned</li>
+<li>resultCount = total number of items in the set meeting the selection criteria</li>
+</ul>
+</div></blockquote>
+<p>In addition and usually more importantly, a RallyRESTResponse instance can be used as
+an iterator over the results.</p>
+<p>There are two common means of exercising the iterative nature of the reponse.
+Use a for loop to obtain each item (you can use this in a list comprehension also)
+or use the <em>next</em> method to obtain the next item in the qualifying result set.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># regular for loop</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Defect&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=...</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span> <span class="k">print</span> <span class="n">item</span>
+
+<span class="c"># in a list comprehension</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;UserStory&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=...</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">story_titles</span> <span class="o">=</span> <span class="p">[</span><span class="n">story</span><span class="o">.</span><span class="n">Name</span> <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">response</span><span class="p">]</span>
+
+<span class="c"># using the next method</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Task&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=...</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">task1</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="RallyRESTResponse">
+<em class="property">class </em><tt class="descname">RallyRESTResponse</tt><a class="headerlink" href="#RallyRESTResponse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="next">
+<tt class="descname">next</tt><big>(</big><big>)</big><a class="headerlink" href="#next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the next item from the set of qualifying items.
+This method handles any further requests to the server if the next qualifying item
+is not in the current page of results returned from Rally.
+If all qualifying items have been returned via this method, this method
+generates a StopIteration exception.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="item-attributes">
+<h1>Item Attributes<a class="headerlink" href="#item-attributes" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div>Item instances returned from iterating on a RallyRESTResponse object are
+representations of Rally items.  The attributes of each item are accessible via
+the standard dot (.) notation.  The names are identical to those documented in the
+<a class="reference external" href="https://rally.rallydev.com/slm/doc/webservice">Rally WS API</a>.</div></blockquote>
+<blockquote>
+<div><p>Generally, every concrete instance in the Rally system will have a Name attribute.
+You can use the <strong>attributes()</strong> method on an instance to obtain the names of all of the
+attributes available on your specific instance.</p>
+<p>So, to obtain the name of a TestCase if you have a TestCase instance, you
+use testcase.Name, to obtain the formatted ID of a story, use story.FormattedID.</p>
+<p>There are two special attributes, <em>oid</em> and <em>ref</em> that are convenient meta-attributes
+provided with every instance. The <em>oid</em> attribute is an alias for ObjectID and the <em>ref</em>
+attribute is the portion of the _ref attribute containing the entity name and ObjectID value.
+The ref attribute is suitable for use whenever you want/need to specify the value of
+a reference field.</p>
+<p>Attributes that are classified as references (as opposed to a simple string or integer value)
+can be accessed and attributes on the referenced item can be obtained.
+A UserStory (alias for HierarchicalRequirement) can have a parent story.  To obtain
+the parent&#8217;s FormattedID attribute value, you&#8217;d specify thusly: story.Parent.FormattedID.</p>
+<p>An attribute can also be a collection. For example, Tasks associated with a UserStory.
+To access these tasks, you&#8217;d iterate over them as in:</p>
+</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">response</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;UserStory&#39;</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s">&#39;State != &quot;Closed&quot;&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">story</span><span class="o">.</span><span class="n">Tasks</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">task</span><span class="o">.</span><span class="n">oid</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">ActualHours</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Primary <em>pyral</em> classes and functions</a></li>
+<li><a class="reference internal" href="#rallysettings">rallySettings</a></li>
+<li><a class="reference internal" href="#rally">Rally</a><ul>
+<li><a class="reference internal" href="#core-rest-methods-and-crud-aliases">Core REST methods and CRUD aliases</a></li>
+<li><a class="reference internal" href="#pyral-rally-instance-convenience-methods">pyral.Rally instance convenience methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rallyrestresponse">RallyRESTResponse</a></li>
+<li><a class="reference internal" href="#item-attributes">Item Attributes</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter">Python toolkit for the Rally REST API</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/interface.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="overview.html" title="Python toolkit for the Rally REST API"
+             >previous</a> |</li>
+        <li><a href="index.html">pyral v0.8.8 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright Rally Software Development 2010-2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

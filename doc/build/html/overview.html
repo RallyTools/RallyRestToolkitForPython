@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Python toolkit for the Rally REST API &mdash; pyral v0.8.8 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.8.8',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyral v0.8.8 documentation" href="index.html" />
+    <link rel="next" title="Primary pyral classes and functions" href="interface.html" />
+    <link rel="prev" title="pyral documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="interface.html" title="Primary pyral classes and functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pyral documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyral v0.8.8 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="python-toolkit-for-the-rally-rest-api">
+<h1>Python toolkit for the Rally REST API<a class="headerlink" href="#python-toolkit-for-the-rally-rest-api" title="Permalink to this headline">¶</a></h1>
+<p>Rally supports a REST API that enables you to retrieve representations of
+entities in Rally, create entities in Rally, update existing entities in Rally and
+with proper permissions, delete entities in Rally.</p>
+<p>Once you have the <em>pyral</em> package installed, all you need is a valid subscription
+to Rally, working credentials and the name of
+the workspace and project you want to interact with and you&#8217;re on your way!</p>
+<p>For more information on obtaining a Rally subscription, visit the <a class="reference external" href="http://www.rallydev.com">Rally</a> website.</p>
+<p>For more information on how workspaces and projects in Rally are set up and configured, consult
+the Rally documentation available via the &#8216;Help&#8217; link from the Rally landing page
+displayed after your initial login.</p>
+</div>
+<div class="section" id="simple-use">
+<h1>Simple Use<a class="headerlink" href="#simple-use" title="Permalink to this headline">¶</a></h1>
+<p>Here&#8217;s a prototype of simple use of the <strong>pyral</strong> package.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">pyral</span> <span class="kn">import</span> <span class="n">Rally</span><span class="p">,</span> <span class="n">rallySettings</span>
+
+<span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="n">opt</span> <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">opt</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;--&#39;</span><span class="p">)]</span>
+
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="o">*</span><span class="n">rallySettings</span><span class="p">(</span><span class="n">options</span><span class="p">))</span>
+<span class="n">rally</span><span class="o">.</span><span class="n">enableLogging</span><span class="p">(</span><span class="s">&#39;rally.simple-use.log&#39;</span><span class="p">)</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Release&#39;</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="s">&quot;Project,Name,ReleaseStartDate,ReleaseDate&quot;</span><span class="p">,</span>
+                     <span class="n">order</span><span class="o">=</span><span class="s">&quot;ReleaseDate&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">release</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+    <span class="n">rlsStart</span> <span class="o">=</span> <span class="n">rls</span><span class="o">.</span><span class="n">ReleaseStartDate</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c"># just need the date part</span>
+    <span class="n">rlsDate</span>  <span class="o">=</span> <span class="n">rls</span><span class="o">.</span><span class="n">ReleaseDate</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>       <span class="c"># ditto</span>
+    <span class="k">print</span> <span class="s">&quot;</span><span class="si">%-6.6s</span><span class="s">  </span><span class="si">%-16.16s</span><span class="s">   </span><span class="si">%s</span><span class="s">  --&gt;  </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> \
+          <span class="p">(</span><span class="n">rls</span><span class="o">.</span><span class="n">Project</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">rls</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">rlsStart</span><span class="p">,</span> <span class="n">rlsDate</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="rally-data-model">
+<h1>Rally Data Model<a class="headerlink" href="#rally-data-model" title="Permalink to this headline">¶</a></h1>
+<p>All Rally entities belong to a hierarchical data model and every Rally entity ultimately
+is a descendent of the PersistableObject class.  There are several branches in the data
+model, and each branch has its own set of attributes differentiated according to the
+functional capabilities and information tracking needs that characterize the branch.
+For more information on the Rally data model, consult the Rally documentation available
+via the &#8216;Help&#8217; link from the Rally page displayed after the initial login.</p>
+</div>
+<div class="section" id="rally-entities-and-artifacts">
+<h1>Rally Entities and Artifacts<a class="headerlink" href="#rally-entities-and-artifacts" title="Permalink to this headline">¶</a></h1>
+<p>In the Rally vernacular, a logical entity is  called a <em>type</em>.  Some examples of Rally
+<em>types</em> are UserStory, Defect, Release, UserProfile.  There is a subset of
+<em>types</em> that are usually what a user of pyral will be interested in called <em>artifacts</em>.
+An <em>artifact</em> is either a UserStory, Defect, Task, DefectSuite, TestSet or TestCaseResult.
+The Python toolkig for the Rally REST API (pyral) is primarily oriented towards operations with artifacts.
+But, it is not limited to those as it is very possible view/operate on other Rally
+entities such as Workspace, Project, UserProfile, Release, Iteration, TestFolder, Tag and
+others.</p>
+</div>
+<div class="section" id="full-crud-capability">
+<h1>Full CRUD capability<a class="headerlink" href="#full-crud-capability" title="Permalink to this headline">¶</a></h1>
+<p>The Python toolkit for the Rally REST API offers the full spectrum of CRUD capabilities that the
+credentials supplied for your subscription/workspace/project permit.  While the Rally
+REST API itself doesn&#8217;t support bulk operations, there are example usages of
+<strong>pyral</strong> that you can adapt to offer the end-user or scriptwriter the
+capability of specifying ranges of identifiers of artifacts for querying/updating/deleting.</p>
+</div>
+<div class="section" id="rally-introspection">
+<h1>Rally Introspection<a class="headerlink" href="#rally-introspection" title="Permalink to this headline">¶</a></h1>
+<p>The Python toolkit for the Rally REST API makes it easy to obtain the names of Rally types (entities)
+and the attributes associated with each type.  You can also use pyral capabilities
+to obtain the list of allowed values for Rally type attributes that have a pre-allocated
+list of values.</p>
+</div>
+<div class="section" id="queries-and-results">
+<h1>Queries and Results<a class="headerlink" href="#queries-and-results" title="Permalink to this headline">¶</a></h1>
+<p>The Rally REST API has two interesting characteristics that the Python toolkit for the Rally REST API insulates the scriptwriter from having to deal with.  The first is that the Rally REST API
+has a maximum &#8220;pagesize&#8221; of 200 records to limit volume and prevent unwarranted hijacking of the
+Rally SaaS servers.  But, having script writers deal with this directly to obtain further
+&#8220;pages&#8221; would be burdensome and out of character with the mainstream of Python interfaces
+to SaaS services.  The Python toolkit for the Rally REST API (<strong>pyral</strong>) takes care
+of the paging transparently, allowing the scriptwriter to treat a result set as an iterator,
+merely looping through the results without any indication of any sequence of further
+requests on the Rally server.</p>
+<p>The second characteristic is that the Rally REST API for some queries and results returns
+not a scalar value but a reference to yet another entity in the Rally system.  A Project or
+a Release are good examples of these.  Say your query specified the retrieval of some UserStories,
+and you listed the Project as a field to return with these results.  From an end-user perspective,
+seeing the project name as opposed to to an URL with an ObjectID value would be far more intuitive.</p>
+<p>The Python toolkit for the Rally REST API offers this sort of intuitive behavior by &#8220;chasing&#8221; the URL
+to obtain the more human friendly and intuitive information for display.  This sort of behavior is
+also present in so-called &#8220;lazy-evaluation&#8221; of entity attributes that may be containers as well
+as references.  The scriptwriter merely has to refer to the attribute with the dot (&#8216;.&#8217;) notation
+and <strong>pyral</strong> takes care of the communication with the Rally server
+to obtain the value.  There are two significant advantages to this, one being lightening
+the load on the server with the reduction of data returned and the other being easy and
+intuitive attribute access syntax.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python toolkit for the Rally REST API</a></li>
+<li><a class="reference internal" href="#simple-use">Simple Use</a></li>
+<li><a class="reference internal" href="#rally-data-model">Rally Data Model</a></li>
+<li><a class="reference internal" href="#rally-entities-and-artifacts">Rally Entities and Artifacts</a></li>
+<li><a class="reference internal" href="#full-crud-capability">Full CRUD capability</a></li>
+<li><a class="reference internal" href="#rally-introspection">Rally Introspection</a></li>
+<li><a class="reference internal" href="#queries-and-results">Queries and Results</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">pyral documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="interface.html"
+                        title="next chapter">Primary <em>pyral</em> classes and functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/overview.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="interface.html" title="Primary pyral classes and functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pyral documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">pyral v0.8.8 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright Rally Software Development 2010-2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
