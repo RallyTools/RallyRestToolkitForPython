@@ -1,10 +1,18 @@
-This is the README file for pyral, the package implementing the 
-Rally REST Toolkit for Python.
+This is the README file for pyral, a package implementing a 
+Pythonic interface to the Rally REST API
 
 Description
 -----------
 
-The Rally REST Tookit for Python consists of 
+The Rally REST Tookit for Python consists of a package that provides a means
+to interact with entities and artifacts in your Rally subscription.  The full
+spectrum of CRUD operations is available in your Rally Workspaces and Projects,
+providing of course that your Rally subscription credentials enable to perform those 
+operations.  The toolkit insulates the package user from having to make multiple
+requests to obtain the full set of qualifying items by performing any subsequent 
+"page" requests automatically.  
+An additional key feature is the ability to obtain entity sub fields
+that may be references or collections via the familiar dot '.' notation.
 
 Requirements
 ------------
@@ -17,7 +25,10 @@ The requests package can be found via the Python Package Index site (http://pypi
 Installation
 ------------
 
-Once requests has been installed, run the setup.py program supplied with this distribution.
+Once requests has been installed, run the setup.py program supplied with 
+this distribution as::
+
+    python setup.py install.
 
 Validation
 ----------
@@ -35,3 +46,6 @@ Documentation
 
 Obtain the zip file containing the HTML and CSS files comprising the document set for pyral.
 Unzip in a suitable location and point your web browser to the doc/build/html/index.html file
+
+The rendered documentation is also available at http://readthedocs.org/docs/pyral .
+

@@ -9,9 +9,9 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 8)
+__version__ = (0, 8, 9)
 
-import sys
+import sys, os
 import re
 import types
 import time
@@ -154,8 +154,13 @@ class Rally(object):
         if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
             config['verbose'] = sys.stdout
 
-        self.session = requests.session(auth=(self.user, self.password), headers=RALLY_REST_HEADERS,
-                                        config=config, timeout=10.0)
+        proxy_dict = {} 
+        if 'HTTP_PROXY' in os.environ:
+            proxy_dict['http_proxy'] = os.environ['HTTP_PROXY']
+        if 'HTTPS_PROXY' in os.environ:
+            proxy_dict['https_proxy'] = os.environ['HTTPS_PROXY']
+        self.session = requests.session(headers=RALLY_REST_HEADERS, auth=(self.user, self.password), 
+                                        timeout=10.0, proxies=proxy_dict, config=config)
         self.contextHelper = RallyContextHelper(self, server, user, password)
         self.contextHelper.check(self.server)
 
