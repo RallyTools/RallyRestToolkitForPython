@@ -54,8 +54,8 @@ relevant packages.
    Python 2.6.5 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
-   >> pyral.context.__version__
-   (0, 8, 8)
+   >> pyral.__version__
+   (0, 8, 9)
 
 
 
@@ -93,7 +93,7 @@ Common setup code ::
   from pyral import Rally, rallySettings
   options = [arg for arg in sys.argv[1:] if arg.startswith('--')]
   args    = [arg for arg in sys.argv[1:] if arg not in options] 
-  server, workspace, project, user, password = rallySettings(options)
+  server, user, password, workspace, project = rallySettings(options)
   rally = Rally(server, user, password, workspace=workspace, project=project)
   rally.enableLogging('mypyral.log')
 
