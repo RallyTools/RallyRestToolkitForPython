@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 9)
+__version__ = (0, 8, 10)
 
 import datetime
 import os
@@ -31,7 +31,7 @@ MAX_ITEMS   = 1000000  # a million seems an eminently reasonable limit ...
 
 RALLY_REST_HEADERS = \
     {
-      'X-RallyIntegrationName'     : 'Rally REST Toolkit for Python',
+      'X-RallyIntegrationName'     : 'Python toolkit for Rally REST API',
       'X-RallyIntegrationVendor'   : 'Rally Software Development', 
       'X-RallyIntegrationVersion'  :       '%s.%s.%s' % __version__,
       'X-RallyIntegrationLibrary'  : 'pyral-%s.%s.%s' % __version__,

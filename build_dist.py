@@ -11,7 +11,7 @@ import tarfile
 import zipfile
 
 PACKAGE_NAME = "pyral"
-VERSION      = "0.8.9"
+VERSION      = "0.8.10"
 
 AUX_FILES  = ['MANIFEST.in', 
               'LICENSE', 
@@ -42,6 +42,10 @@ DOC_FILES  = ['doc/Makefile',
               'doc/build/html/_sources',
               'doc/build/html/_static',
              ]
+
+#
+# The TEST_FILES are **NOT** placed into the distribution packages
+#
 TEST_FILES = ['test/test_conn.py',
               'test/test_query.py',
               'test/test_inflation.py',

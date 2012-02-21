@@ -22,7 +22,7 @@ def main(args):
     args    = [arg for arg in args if arg not in options]
     server, user, password, workspace, project = rallySettings(options)
     print " ".join(["|%s|" % item for item in [server, user, password, workspace, project]])
-    # add in the debuglevel=1 keyword arg if you want more verbiage ...
+    # add in the debug=True keyword arg if you want more verbiage ...
     rally = Rally(server, user, password, workspace=workspace, project=project) 
 
     workspace = rally.getWorkspace()

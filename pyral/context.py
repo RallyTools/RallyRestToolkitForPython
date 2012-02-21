@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 9)
+__version__ = (0, 8, 10)
 
 import sys
 import time
@@ -143,6 +143,11 @@ class RallyContextHelper(object):
 ##
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
+##
+##        response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
+##        print response.status_code
+##        print response.headers
+##
         try:
             timer_start = time.time()
             response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
@@ -190,9 +195,12 @@ class RallyContextHelper(object):
         self.inflated = 'minimal'
 
     def _loadSubscription(self):
-        sub = self.agent.get('Subscription', fetch=True, _disableAugments=True, instance=True)
-        self._subs_name       = sub.Name
-        self._subs_workspaces = sub.Workspaces
+        sub = self.agent.get('Subscription', fetch=True, _disableAugments=True)
+        if sub.errors:
+            raise Exception(sub.errors[0])
+        subscription = sub.next()
+        self._subs_name       = subscription.Name
+        self._subs_workspaces = subscription.Workspaces
 
     def _getDefaults(self, response):
         """
@@ -269,6 +277,8 @@ class RallyContextHelper(object):
 
     def setWorkspace(self, workspace_name):
         if self.isAccessibleWorkspaceName(workspace_name):
+            if workspace_name not in self._workspaces:
+                self._getWorkspacesAndProjects(workspace=workspace_name)
             self._currentWorkspace = workspace_name
             self.context.workspace = workspace_name
         else:
@@ -483,7 +493,7 @@ class RallyContextHelper(object):
         project = None        
         if 'project' in kwargs and kwargs['project']:
             project = kwargs['project']
-            wks = workspace or self._defaultWorkspace
+            wks = workspace or self._currentWorkspace or self._defaultWorkspace
             if project not in self._projects[wks]:
                 problem = 'Project specified: "%s" (in workspace: "%s") not accessible with current credentials' % \
                            (project, workspace)
@@ -581,10 +591,10 @@ class RallyContextHelper(object):
         items.append('%s = %s' % ('server',             self.server))
         items.append('%s = %s' % ('defaultContext',     self.defaultContext))
         items.append('%s = %s' % ('_subs_name',         self._subs_name))
-        items.append('%s = %s' % ('_workspaces',        self._workspaces))
-        items.append('%s = %s' % ('_projects',          self._projects))
-        items.append('%s = %s' % ('_workspace_ref',     self._workspace_ref))
-        items.append('%s = %s' % ('_project_ref',       self._project_ref))
+        items.append('%s = %s' % ('_workspaces',        repr(self._workspaces)))
+        items.append('%s = %s' % ('_projects',          repr(self._projects)))
+        items.append('%s = %s' % ('_workspace_ref',     repr(self._workspace_ref)))
+        items.append('%s = %s' % ('_project_ref',       repr(self._project_ref)))
         items.append('%s = %s' % ('_defaultWorkspace',  self._defaultWorkspace))
         items.append('%s = %s' % ('_defaultProject',    self._defaultProject))
         items.append('%s = %s' % ('_currentWorkspace',  self._currentWorkspace))

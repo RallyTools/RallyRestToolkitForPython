@@ -61,7 +61,7 @@ In the Rally vernacular, a logical entity is  called a *type*.  Some examples of
 *types* are UserStory, Defect, Release, UserProfile.  There is a subset of 
 *types* that are usually what a user of pyral will be interested in called *artifacts*.
 An *artifact* is either a UserStory, Defect, Task, DefectSuite, TestSet or TestCaseResult.
-The Python toolkig for the Rally REST API (pyral) is primarily oriented towards operations with artifacts.
+The Python toolkit for the Rally REST API (pyral) is primarily oriented towards operations with artifacts.
 But, it is not limited to those as it is very possible view/operate on other Rally 
 entities such as Workspace, Project, UserProfile, Release, Iteration, TestFolder, Tag and
 others.

@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 9)
+__version__ = (0, 8, 10)
 
 import sys, os
 import re
@@ -114,11 +114,12 @@ __all__ = ["Rally", "getResourceByOID", "hydrateAnInstance"]
 
 def _createShellInstance(context, entity_name, item_name, item_ref):
     oid = item_ref[:-3].split('/').pop()
-    item = {'_type' : entity_name,
-            '_ref'  : item_ref, 
-            'Name'  : item_name, 
-            'ObjectID': oid, 
-            'ref'   : '%s/%s' % (entity_name.lower(), oid)
+    item = {
+            'ObjectID' : oid, 
+            'Name'     : item_name, 
+            '_type'    : entity_name,
+            '_ref'     : item_ref, 
+            'ref'      : '%s/%s' % (entity_name.lower(), oid)
            }
     hydrator = EntityHydrator(context, hydration="shell")
     return hydrator.hydrateInstance(item)
@@ -154,12 +155,19 @@ class Rally(object):
         if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
             config['verbose'] = sys.stdout
 
+        credentials = requests.auth.HTTPBasicAuth(self.user, self.password)
         proxy_dict = {} 
-        if 'HTTP_PROXY' in os.environ:
-            proxy_dict['http_proxy'] = os.environ['HTTP_PROXY']
-        if 'HTTPS_PROXY' in os.environ:
-            proxy_dict['https_proxy'] = os.environ['HTTPS_PROXY']
-        self.session = requests.session(headers=RALLY_REST_HEADERS, auth=(self.user, self.password), 
+        http_proxy = os.environ.get('HTTP_PROXY', None) or os.environ.get('http_proxy', None)
+        if http_proxy:
+            proxy_dict['http'] = http_proxy
+        https_proxy = os.environ.get('HTTPS_PROXY', None) or os.environ.get('https_proxy', None)
+        if https_proxy:
+            proxy_dict['https'] = https_proxy
+
+        if http_proxy or https_proxy:
+            credentials = requests.auth.HTTPProxyAuth(self.user, self.password)
+        
+        self.session = requests.session(headers=RALLY_REST_HEADERS, auth=credentials,
                                         timeout=10.0, proxies=proxy_dict, config=config)
         self.contextHelper = RallyContextHelper(self, server, user, password)
         self.contextHelper.check(self.server)
@@ -358,12 +366,12 @@ class Rally(object):
         return _createShellInstance(context, 'Project', proj_name, proj_ref)
 
 
-    def getProjects(self, workspace='default'):
+    def getProjects(self, workspace=None):
         """
             Return a list of minimally hydrated Project instances
             that are available to the registered user in the currently active context.
         """
-        wksp_target = workspace if workspace else 'current'
+        wksp_target = workspace or 'current'
         projs = self.contextHelper.getAccessibleProjects(workspace=wksp_target)
         context = self.contextHelper.currentContext()
         projects = [_createShellInstance(context, 'Project', proj_name, proj_ref)
@@ -976,7 +984,8 @@ class RallyUrlBuilder(object):
         if self.pretty:
             qualifiers.append('pretty=true')
 
-        resource += ("&" + "&".join(qualifiers))
+        #resource += ("&" + "&".join(qualifiers))
+        resource += "&".join(qualifiers)
         return resource
 
 
@@ -1020,18 +1029,19 @@ class RallyUrlBuilder(object):
 
     def augmentWorkspace(self, augments, workspace_ref, use_default):
         wksp_augment = [aug for aug in augments if aug.startswith('workspace=')]
+        if use_default:
+            self.workspace = "workspace=%s" % workspace_ref
         if wksp_augment:
             self.workspace = wksp_augment[0]
-        if not use_default:
-            self.workspace = "workspace=%s" % workspace_ref
 
 
     def augmentProject(self, augments, project_ref,  use_default):
         proj_augment = [aug for aug in augments if aug.startswith('project=')]
+        self.project = "project=%s" % project_ref
+        if use_default:
+            self.project = "project=%s" % project_ref
         if proj_augment:
             self.project = proj_augment[0]
-        if not use_default:
-            self.project = "project=%s" % project_ref
 
     def augmentScoping(self, augments):
         scopeUp   = [aug for aug in augments if aug.startswith('projectScopeUp=')]

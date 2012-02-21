@@ -285,5 +285,5 @@ Additional Credits
 * ReadTheDocs_ for documentation hosting services.
 
 .. _GitHub: http://github.com/
-.. _ReadTheDocs: http://rtd.com/
+.. _ReadTheDocs: http://readthedocs.org/
 

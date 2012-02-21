@@ -6,10 +6,10 @@
 pyral documentation!
 ====================
 
-Rally REST toolkit for Python
-==============================
+Python toolkit for the Rally REST API
+=====================================
 
-The official name for this software is **Rally REST toolkit for Python**.  
+The official name for this software is **Python toolkit for the Rally REST API**.  
 
 The actual name of the package installed is **pyral**.
 
