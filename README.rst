@@ -15,7 +15,7 @@ Getting started
 
 Rally has created a Python package that you can quickly leverage to interact with the data in your 
 subscription via the REST web services API.  You can create, read, update, and delete the common 
-artifacts and other entities via the Rally REST toolkit for Python.
+artifacts and other entities via the Python toolkit for Rally.
 
 Download
 ````````
@@ -55,7 +55,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (0, 8, 9)
+   (0, 8, 11)
 
 
 
@@ -72,15 +72,16 @@ assigned to the name **story**, the following code iterates over the tasks.
        print task.Name
 
 There is no need to make a separate call to fetch all the tasks for the story.
-When you follow domain model attributes in the Python code, the Python toolkit for the 
+When you follow domain model attributes in the Python code, the Python toolkit for 
 Rally REST API machinery automatically loads in the necessary objects for you.
 
 
 Full Documentation
 ``````````````````
 
-The complete documentation for the Python toolkit for the Rally REST API is in the doc/build/html 
-subdirectory in the repository.  The rendered version of this is also available at
+The complete documentation for the Python toolkit for Rally REST API 
+is in the doc/build/html subdirectory in the repository.  
+The rendered version of this is also available at 
 http://readthedocs.org/docs/pyral.
 
 

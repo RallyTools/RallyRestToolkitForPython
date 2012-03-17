@@ -11,7 +11,7 @@ import tarfile
 import zipfile
 
 PACKAGE_NAME = "pyral"
-VERSION      = "0.8.10"
+VERSION      = "0.8.11"
 
 AUX_FILES  = ['MANIFEST.in', 
               'LICENSE', 

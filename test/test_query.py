@@ -2,7 +2,6 @@
 
 import sys, os
 import types
-import py
 
 from pyral import Rally
 
@@ -12,8 +11,8 @@ PREVIEW = "preview.rallydev.com"
 DEMO    = "demo.rallydev.com"
 PROD    = "rally1.rallydev.com"
 
-PREVIEW_USER = "usernumbernine@acme.com"
-PREVIEW_PSWD = "************"
+PREVIEW_USER = "usernumbernone@acme.com"
+PREVIEW_PSWD = "*******"
 
 ##################################################################################################
 
@@ -114,9 +113,9 @@ def test_multiple_entities_query():
     """
         Using a known valid Rally server and known valid access credentials,
         issue a simple query (no qualifying criteria) for a comma
-        separated list of known valid Rally entity names.  As of the initial
-        swag at the Python toolkit for the Rally REST API, this is an invalid request;
-        only a single Rally entity can be specified.
+        separated list of known valid Rally entity names.  
+        As of the initial swag at the Python toolkit for Rally REST API, 
+        this is an invalid request; only a single Rally entity can be specified.
     """
     rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
     response = rally.get('Project,Workspace', fetch=False, limit=10)

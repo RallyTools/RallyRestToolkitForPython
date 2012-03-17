@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 10)
+__version__ = (0, 8, 11)
 
 import sys
 import time
@@ -143,11 +143,6 @@ class RallyContextHelper(object):
 ##
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
-##
-##        response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
-##        print response.status_code
-##        print response.headers
-##
         try:
             timer_start = time.time()
             response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
@@ -201,6 +196,8 @@ class RallyContextHelper(object):
         subscription = sub.next()
         self._subs_name       = subscription.Name
         self._subs_workspaces = subscription.Workspaces
+        if subscription.Workspaces:
+            self._defaultWorkspace = subscription.Workspaces[0]
 
     def _getDefaults(self, response):
         """
@@ -234,9 +231,9 @@ class RallyContextHelper(object):
             self._currentWorkspace = self._defaultWorkspace
             wkspace_ref = up['DefaultWorkspace']['_ref']
         else:
-            self._defaultWorkspace = ""
-            self._currentWorkspace = ""
-            wkspace_ref = ""
+            self._currentWorkspace = self._defaultWorkspace.Name
+            wkspace_ref            = self._defaultWorkspace._ref
+            self._defaultWorkspace = self._defaultWorkspace.Name
 
         if up['DefaultProject']:
             self._defaultProject  = up['DefaultProject']['_refObjectName']
@@ -246,7 +243,12 @@ class RallyContextHelper(object):
             self._defaultProject  = ""
             self._currentProject  = ""
             proj_ref = ""
-
+            projects = self.agent.get('Project', fetch="Name", workspace=self._defaultWorkspace)
+            if projects:
+                proj = projects.next()
+                proj_ref = proj._ref
+                self._defaultProject = proj.Name
+                self._currentProject = proj.Name
 ##
 ##        print "   Default Workspace : %s" % self._defaultWorkspace
 ##        print "   Default Project   : %s" % self._defaultProject

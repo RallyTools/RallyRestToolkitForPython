@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 10)
+__version__ = (0, 8, 11)
 
 import sys, os
 import re
@@ -113,7 +113,10 @@ __all__ = ["Rally", "getResourceByOID", "hydrateAnInstance"]
 
 
 def _createShellInstance(context, entity_name, item_name, item_ref):
-    oid = item_ref[:-3].split('/').pop()
+    if item_ref.endswith('.js'):
+        oid = item_ref[:-3].split('/').pop()
+    else:
+        oid = item_ref.split('/').pop()
     item = {
             'ObjectID' : oid, 
             'Name'     : item_name, 
