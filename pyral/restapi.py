@@ -4,8 +4,9 @@
 #
 #  pyral.restapi - Python Rally REST API module
 #          round 8 version with GET, PUT, POST and DELETE operations, support multiple instances
-#          dependencies:
+#          notable dependencies:
 #               requests v0.8.2 or better
+#               requests v0.9.3 recommended (0.10.x no longer works for Python 2.5)
 #
 ###################################################################################################
 
@@ -17,7 +18,6 @@ import types
 import time
 import urllib
 import json
-from operator import itemgetter
 
 import requests   
 
@@ -97,6 +97,7 @@ def getResourceByOID(context, entity, oid, **kwargs):
 ##        print ""
 ##        print " apparently no key to match: -->%s<--" % context
 ##        print " context is a %s" % type(context)
+##
     rally = rallyContext.get('rally')
     resp = rally._getResourceByOID(context, entity, oid, **kwargs)
     if 'unwrap' not in kwargs or not kwargs.get('unwrap', False):
@@ -104,12 +105,13 @@ def getResourceByOID(context, entity, oid, **kwargs):
     response = RallyRESTResponse(rally.session, context, "%s.x" % entity, resp, "full", 1)
     return response
 
+
 #  these imports have to take place after the prior class and function defs 
 from .rallyresp import RallyRESTResponse, ErrorResponse
 from .hydrate   import EntityHydrator
 from .context   import RallyContext, RallyContextHelper
 
-__all__ = ["Rally", "getResourceByOID", "hydrateAnInstance"]
+__all__ = ["Rally", "getResourceByOID", "hydrateAnInstance", "RallyUrlBuilder"]
 
 
 def _createShellInstance(context, entity_name, item_name, item_ref):
@@ -127,7 +129,6 @@ def _createShellInstance(context, entity_name, item_name, item_ref):
     hydrator = EntityHydrator(context, hydration="shell")
     return hydrator.hydrateInstance(item)
         
-
 ##################################################################################################
 
 class Rally(object):
@@ -147,8 +148,6 @@ class Rally(object):
         self.version   = version
         self._inflated = False
         self.service_url = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE % self.version)
-        self._use_workspace_default = True
-        self._use_project_default   = True
         self.hydration   = "full"
         self._log        = False
         self._logDest    = None
@@ -188,7 +187,6 @@ class Rally(object):
            and kwargs['workspace'] != 'default':
             if self.contextHelper.isAccessibleWorkspaceName(kwargs['workspace']):
                 self.contextHelper.setWorkspace(kwargs['workspace'])
-                self._use_workspace_default = False
                 __adjust_cache = True
             else:
                  warning("WARNING: Unable to use your workspace specification, that value is not listed in your subscription\n")
@@ -196,12 +194,9 @@ class Rally(object):
         if 'project' in kwargs and kwargs['project'] != self.contextHelper.currentContext().project \
            and kwargs['project'] != 'default':
             accessibleProjects = [name for name, ref in self.contextHelper.getAccessibleProjects(workspace='current')]
-##
-##            print "accessible projects: %s" % ", ".join(accessibleProjects)
-##
+
             if kwargs['project'] in accessibleProjects:
                 self.contextHelper.setProject(kwargs['project'])
-                self._use_project_default = False
                 __adjust_cache = True
             else:
                 issue = ("Unable to use your project specification of '%s', " 
@@ -232,9 +227,7 @@ class Rally(object):
 
         if __adjust_cache:
             _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
-##
-##        print "successfully intitialized a new Rally ifc ..."
-##
+
 
     def _wpCacheStatus(self):
         """
@@ -367,7 +360,6 @@ class Rally(object):
         context = self.contextHelper.currentContext()
         proj_name, proj_ref = self.contextHelper.getProject()
         return _createShellInstance(context, 'Project', proj_name, proj_ref)
-
 
     def getProjects(self, workspace=None):
         """
@@ -503,7 +495,6 @@ class Rally(object):
 ##            print "_getResourceByOID, current contextDict: %s" % repr(contextDict)
 ##            sys.stdout.flush()
 ##
-            
             context, augments = self.contextHelper.identifyContext(**contextDict)
             if augments:
                 resource += ("?" + "&".join(augments))
@@ -511,8 +502,6 @@ class Rally(object):
 ##            print "_getResourceByOID, modified contextDict: %s" % repr(context.asDict())
 ##            sys.stdout.flush()
 ##
-
-
         full_resource_url = "%s/%s" % (self.service_url, resource)
         if self._logAttrGet:
             self._logDest.write('%s GET %s\n' % (timestamp(), resource))
@@ -631,11 +620,17 @@ class Rally(object):
             context, augments = self.contextHelper.identifyContext(**kwargs)
             workspace_ref = self.contextHelper.currentWorkspaceRef()
             project_ref   = self.contextHelper.currentProjectRef()
-            if workspace_ref:
-                resource.augmentWorkspace(augments, workspace_ref, self._use_workspace_default)
-                if project_ref:
-                    resource.augmentProject(augments, project_ref, self._use_project_default)
-                    resource.augmentScoping(augments)
+##
+##            print "   workspace_ref: %s"   % workspace_ref
+##            print "     project_ref:   %s" %   project_ref
+##
+            if workspace_ref:   # TODO: would we ever _not_ have a workspace_ref?
+                if 'workspace' not in kwargs or ('workspace' in kwargs and kwargs['workspace'] is not None):
+                    resource.augmentWorkspace(augments, workspace_ref)
+                    if project_ref:
+                        if 'project' not in kwargs or ('project' in kwargs and kwargs['project'] is not None):
+                            resource.augmentProject(augments, project_ref)
+                            resource.augmentScoping(augments)
         resource = resource.build()  # can also use resource = resource.build(pretty=True)
         full_resource_url = "%s/%s" % (self.service_url, resource)
 
@@ -699,15 +694,23 @@ class Rally(object):
     find = get # offer interface approximately matching Ruby Rally REST API, App SDK Javascript RallyDataSource
 
 
-    def put(self, entityName, itemData, workspace=None, project=None, **kwargs):
+    def put(self, entityName, itemData, workspace='current', project='current', **kwargs):
         """
-            Return the newly created target entity item
+            Given a Rally entityName, a dict with data that the newly created entity should contain,
+            issue the REST call and return the newly created target entity item.
         """
+        # see if we need to transform workspace / project values of 'current' to actual
+        if workspace == 'current':
+            workspace = self.getWorkspace().Name  # just need the Name here
+        if project == 'current':
+            project = self.getProject().Name  # just need the Name here
+
         entityName = self._officialRallyEntityName(entityName)
+
         resource = "%s/create.js" % entityName.lower()
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
-            resource += ("&" + "&".join(augments))
+            resource += ("?" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
         item = {entityName: itemData}
         payload = json.dumps(item)
@@ -740,7 +743,17 @@ class Rally(object):
     create = put  # a more intuitive alias for the operation
 
 
-    def post(self, entityName, itemData, workspace=None, project=None, **kwargs):
+    def post(self, entityName, itemData, workspace='current', project='current', **kwargs):
+        """
+            Given a Rally entityName, a dict with data that the entity should be updated with,
+            issue the REST call and return a representation of updated target entity item.
+        """
+        # see if we need to transform workspace / project values of 'current' to actual
+        if workspace == 'current':
+            workspace = self.getWorkspace().Name  # just need the Name here
+        if project == 'current':
+            project = self.getProject().Name  # just need the Name here
+
         entityName = self._officialRallyEntityName(entityName)
 
         oid = itemData.get('ObjectID', None)
@@ -751,7 +764,7 @@ class Rally(object):
             fmtIdQuery = 'FormattedID = "%s"' % formattedID
             response = self.get(entityName, fetch="ObjectID", query=fmtIdQuery, 
                                 workspace=workspace, project=project)
-            if response.status_code != 200:
+            if response.status_code != 200 or response.resultCount == 0:
                 raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, formattedID))
                 
             target = response.next()
@@ -764,7 +777,7 @@ class Rally(object):
         resource = '%s/%s.js' % (entityName.lower(), oid) 
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
-            resource += ("&" + "&".join(augments))
+            resource += ("?" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
 ##
 ##        print "resource: %s" % resource
@@ -787,8 +800,20 @@ class Rally(object):
     update = post  # a more intuitive alias for the operation
 
 
-    def delete(self, entityName, itemIdent, workspace=None, project=None, **kwargs):
+    def delete(self, entityName, itemIdent, workspace='current', project='current', **kwargs):
+        """
+            Given a Rally entityName, an identification of a specific Rally instnace of that 
+            entity (in either OID or FormattedID format), issue the REST DELETE call and 
+            return an indication of whether the delete operation was successful.
+        """
+        # see if we need to transform workspace / project values of 'current' to actual
+        if workspace == 'current':
+            workspace = self.getWorkspace().Name  # just need the Name here
+        if project == 'current':
+            project = self.getProject()[0].Name  # just need the Name here
+
         entityName = self._officialRallyEntityName(entityName)
+
         # guess at whether itemIdent is an ObjectID or FormattedID via 
         # regex matching (all digits or 1-2 upcase chars + digits)
         objectID = itemIdent  # at first assume itemIdent is the ObjectID
@@ -820,7 +845,7 @@ class Rally(object):
                 self._logDest.flush()
 ##
 ##            if kwargs.get('debug', False):
-##                print response
+##                print response.status_code, response.headers, response.content
 ##
             errorResponse = ErrorResponse(response.status_code, response.content)
             response = RallyRESTResponse(self.session, context, resource, errorResponse, self.hydration, 0)
@@ -847,7 +872,7 @@ class Rally(object):
 
     def allowedValueAlias(self, entity, refUrl):
         """
-            use the _allowedValueAlias as a cache. A cache hit results from 
+            Use the _allowedValueAlias as a cache. A cache hit results from 
             having an entity key in _allowedValueAlias AND and entry for the OID 
             contained in the refUrl, the return is the OID and the alias value.
             If there is no cache hit for the entity, issue a GET against
@@ -987,7 +1012,6 @@ class RallyUrlBuilder(object):
         if self.pretty:
             qualifiers.append('pretty=true')
 
-        #resource += ("&" + "&".join(qualifiers))
         resource += "&".join(qualifiers)
         return resource
 
@@ -1029,20 +1053,15 @@ class RallyUrlBuilder(object):
 
         return None
 
-
-    def augmentWorkspace(self, augments, workspace_ref, use_default):
+    def augmentWorkspace(self, augments, workspace_ref):
         wksp_augment = [aug for aug in augments if aug.startswith('workspace=')]
-        if use_default:
-            self.workspace = "workspace=%s" % workspace_ref
+        self.workspace = "workspace=%s" % workspace_ref
         if wksp_augment:
             self.workspace = wksp_augment[0]
 
-
-    def augmentProject(self, augments, project_ref,  use_default):
+    def augmentProject(self, augments, project_ref):
         proj_augment = [aug for aug in augments if aug.startswith('project=')]
         self.project = "project=%s" % project_ref
-        if use_default:
-            self.project = "project=%s" % project_ref
         if proj_augment:
             self.project = proj_augment[0]
 

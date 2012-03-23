@@ -1,7 +1,6 @@
+LICENSE
 README.short
 README.rst
-LICENSE
-MANIFEST
 setup.py
 template.cfg
 rallyfire.py
@@ -15,6 +14,6 @@ pyral/restapi.py
 examples/getitem.py
 examples/periscope.py
 examples/showdefects.py
+examples/statecounts.py
 examples/crtask.py
 examples/uptask.py
-examples/statecounts.py

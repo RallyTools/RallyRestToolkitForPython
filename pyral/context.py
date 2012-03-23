@@ -29,6 +29,7 @@ __all__ = ["RallyContext", "RallyContextHelper"]
 REQUEST_TIME_LIMIT = 5  # in seconds
 
 IPV4_ADDRESS_PATT = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
+FORMATTED_ID_PATT = re.compile(r'^[A-Z]{1,2}\d+$')
 
 ##################################################################################################
 
@@ -72,7 +73,7 @@ class RallyContext(object):
     def identity(self):
         workspace = self.workspace or 'None'
         project   = self.project   or 'None'
-        return " | ".join([self.server, self.user, self.password, workspace, project])
+        return " | ".join([self.server, self.user, self.password, workspace or "None", project or "None"])
 
     def __repr__(self):
         return self.identity()
@@ -161,7 +162,7 @@ class RallyContextHelper(object):
             if response.status_code == 404:
                 if elapsed >= float(REQUEST_TIME_LIMIT):
                     problem = "Request timed out on attempt to reach %s" % server
-                if response.errors and 'NoneType' in response.errors[0]:
+                elif response.errors and 'NoneType' in response.errors[0]:
                     problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 else:
                     #sys.stderr.write("404 Response for request\n")
@@ -184,6 +185,7 @@ class RallyContextHelper(object):
 ##        print " RallyContextHelper.check got the User info ..."
 ##        sys.stdout.flush()
 ##
+        self.user_oid = response.next().oid
         self._loadSubscription()
         self._getDefaults(response)
         self._getWorkspacesAndProjects(workspace=self._defaultWorkspace, project=self._defaultProject)
@@ -259,9 +261,15 @@ class RallyContextHelper(object):
         if not self._projects:
             self._projects      = {self._defaultWorkspace : [self._defaultProject]}
         if not self._workspace_ref:
-            self._workspace_ref = {self._defaultWorkspace : wkspace_ref}
+            if wkspace_ref.endswith('.js'):
+                wkspace_ref = wkspace_ref[:-3]
+            short_ref = "/".join(wkspace_ref.split('/')[-2:])  # we only need the 'workspace/<oid>' part to be a valid ref
+            self._workspace_ref = {self._defaultWorkspace : short_ref}
         if not self._project_ref:
-            self._project_ref   = {self._defaultWorkspace : {self._defaultProject : proj_ref}}
+            if proj_ref.endswith('.js'):
+                proj_ref = proj_ref[:-3]
+            short_ref = "/".join(proj_ref.split('/')[-2:])  # we only need the 'project/<oid>' part to be a valid ref
+            self._project_ref   = {self._defaultWorkspace : {self._defaultProject : short_ref}}
         self.defaultContext = RallyContext(self.server, 
                                            self.user, 
                                            self.password,
@@ -493,7 +501,11 @@ class RallyContextHelper(object):
             self.context.workspace = workspace
 
         project = None        
-        if 'project' in kwargs and kwargs['project']:
+        if 'project' in kwargs:
+            if not kwargs['project']:
+                self.context.project = None
+                return self.context, augments
+
             project = kwargs['project']
             wks = workspace or self._currentWorkspace or self._defaultWorkspace
             if project not in self._projects[wks]:
@@ -555,8 +567,9 @@ class RallyContextHelper(object):
             if workspace.Name not in self._workspaces:
                 self._workspaces.append(workspace.Name)
                 #self._workspace_ref[workspace.Name] = workspace._ref
-                # we only need the workspace/123534 section to qualify as a valid ref
-                self._workspace_ref[workspace.Name] = '/'.join(workspace._ref[:-3].split('/')[-2:])
+                # we only need the 'workspace/<oid>' fragment to qualify as a valid ref
+                wksp_ref = workspace._ref[:-3] if workspace._ref.endswith('.js') else workspace._ref
+                self._workspace_ref[workspace.Name] = '/'.join(wksp_ref.split('/')[-2:])
             if workspace.Name not in self._projects:
                 self._projects[   workspace.Name] = []
                 self._project_ref[workspace.Name] = {}
