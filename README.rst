@@ -251,8 +251,21 @@ Prerequisites
 
  * Python 2.6 or 2.7
  * The most excellent requests_ package, 0.8.2 or better
+   Developed using requests 0.9.3.  
+   There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL 
 
 .. _requests: http://github.com/kennethreitz/requests
+
+Versions
+--------
+    
+   * 0.8.11 - Fixed inappropriate error message when initial connect attempt timed out.
+              Message had stated that the target server did not speak the Rally WSAPI.
+              Improved context handling with respect to workspace and project settings.
+    
+   * 0.8.10 - Attempted to bolster proxy handling. 
+              Limited success as there is an outstanding issue in
+              requests (urllib3) not implementing CONNECT for https over http.
 
 TODO
 ----

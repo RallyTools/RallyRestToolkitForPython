@@ -185,7 +185,6 @@ class RallyContextHelper(object):
 ##        print " RallyContextHelper.check got the User info ..."
 ##        sys.stdout.flush()
 ##
-        self.user_oid = response.next().oid
         self._loadSubscription()
         self._getDefaults(response)
         self._getWorkspacesAndProjects(workspace=self._defaultWorkspace, project=self._defaultProject)
@@ -209,6 +208,7 @@ class RallyContextHelper(object):
             and handling the response (wrapped in a RallyRESTResponse).
         """
         user = response.next()
+        self.user_oid = user.oid
 ##
 ##        print " RallyContextHelper._getDefaults calling _getResourceByOID to get UserProfile info..."
 ##        sys.stdout.flush()

@@ -7,7 +7,7 @@ Rally supports a REST API that enables you to retrieve representations of
 entities in Rally, create entities in Rally, update existing entities in Rally and
 with proper permissions, delete entities in Rally.
 
-Once you have the *pyral* package installed, all you need is a valid subscription 
+Once you have the **pyral** package installed, all you need is a valid subscription 
 to Rally, working credentials and the name of
 the workspace and project you want to interact with and you're on your way!
 
@@ -59,9 +59,9 @@ Rally Entities and Artifacts
 
 In the Rally vernacular, a logical entity is  called a *type*.  Some examples of Rally
 *types* are UserStory, Defect, Release, UserProfile.  There is a subset of 
-*types* that are usually what a user of pyral will be interested in called *artifacts*.
+*types* that are usually what a user of **pyral** will be interested in called *artifacts*.
 An *artifact* is either a UserStory, Defect, Task, DefectSuite, TestSet or TestCaseResult.
-The Python toolkit for the Rally REST API (pyral) is primarily oriented towards operations with artifacts.
+The Python toolkit for the Rally REST API (**pyral**) is primarily oriented towards operations with artifacts.
 But, it is not limited to those as it is very possible view/operate on other Rally 
 entities such as Workspace, Project, UserProfile, Release, Iteration, TestFolder, Tag and
 others.
@@ -79,7 +79,7 @@ Rally Introspection
 ===================
 
 The Python toolkit for the Rally REST API makes it easy to obtain the names of Rally types (entities)
-and the attributes associated with each type.  You can also use pyral capabilities
+and the attributes associated with each type.  You can also use **pyral** capabilities
 to obtain the list of allowed values for Rally type attributes that have a pre-allocated
 list of values.
 

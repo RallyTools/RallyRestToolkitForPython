@@ -435,7 +435,7 @@ class Rally(object):
         return None
 
 
-    def getAllUsers(self, workspace=None, full=False):
+    def getAllUsers(self, workspace=None):
         """
             Given that actually getting full information about all users in the workspace
             via the Rally WSAPI is somewhat opaque, this method offers a one-stop convenient
@@ -459,7 +459,6 @@ class Rally(object):
         response = self.session.get(full_resource_url)
         if response.status_code != 200:
             return []
-        #TODO: what if anything should be done with full=True that isn't done now?
         response = RallyRESTResponse(self.session, context, resource, response, "full", 0)
 
         self.setWorkspace(saved_workspace_name)
