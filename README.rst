@@ -55,7 +55,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (0, 8, 11)
+   (0, 8, 12)
 
 
 
@@ -258,6 +258,8 @@ Prerequisites
 
 Versions
 --------
+
+   * 0.8.12 - Fixed premature exercise of iterator in initial response
     
    * 0.8.11 - Fixed inappropriate error message when initial connect attempt timed out.
               Message had stated that the target server did not speak the Rally WSAPI.
@@ -266,6 +268,12 @@ Versions
    * 0.8.10 - Attempted to bolster proxy handling. 
               Limited success as there is an outstanding issue in
               requests (urllib3) not implementing CONNECT for https over http.
+
+   * 0.8.9 -  initial attempt at providing proxy support
+
+   * 0.8.8 -  added warn=True/False to Rally instantiation
+
+   * 0.8.7 -  Initial release on developer.rallydev.com
 
 TODO
 ----
