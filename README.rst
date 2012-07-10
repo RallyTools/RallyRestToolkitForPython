@@ -55,7 +55,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (0, 8, 12)
+   (0, 9, 1)
 
 
 
@@ -108,7 +108,7 @@ Show a TestCase identified by the **FormattedID** value.
     if response.errors:
         sys.stdout.write("\n".join(errors))
         sys.exit(1)
-    for testcase in response:  # there should only be one qualifying TestCase  
+    for testCase in response:  # there should only be one qualifying TestCase  
         print "%s %s %s %s" % (testCase.Name, testCase.Type,  
                                testCase.DefectStatus, testCase.LastVerdict)
  
@@ -252,12 +252,19 @@ Prerequisites
  * Python 2.6 or 2.7
  * The most excellent requests_ package, 0.8.2 or better
    Developed using requests 0.9.3.  
-   There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL 
-
+   There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL.
+   If you are using requests >- 0.9.3, you must also have certifi-0.0.8 (available on PyPI)
 .. _requests: http://github.com/kennethreitz/requests
 
 Versions
 --------
+   * 0.9.1 -  Upped default WSAPI version in config.py to 1.30
+              All entities that are subclasses of WorkspaceDomainObject now have a details method
+              that show the attribute values in an easy to read multiline format.
+              Dropped attempted discrimination of server value to determine if it is a name or an IPv4 address    No longer look for http_proxy in environment, only https_proxy.
+              Introduced convenience methods dealing with attachments.
+              Corrected resource URL construction for the major ops (GET, PUT, POST, DEL)
+              when project=None specified (useful for Workspace spanning activities).
 
    * 0.8.12 - Fixed premature exercise of iterator in initial response
     

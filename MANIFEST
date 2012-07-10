@@ -17,3 +17,9 @@ examples/showdefects.py
 examples/statecounts.py
 examples/crtask.py
 examples/uptask.py
+examples/typedefs.py
+examples/repoitems.py
+examples/wkspcounts.py
+examples/builddefs.py
+examples/creattach.py
+examples/get_attachments.py
