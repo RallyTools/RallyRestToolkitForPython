@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Primary pyral classes and functions &mdash; pyral v0.8.11 documentation</title>
+    <title>Primary pyral classes and functions &mdash; pyral v0.9.1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.8.11',
+        VERSION:     '0.9.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral v0.8.11 documentation" href="index.html" />
+    <link rel="top" title="pyral v0.9.1 documentation" href="index.html" />
     <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
   </head>
   <body>
@@ -35,7 +35,7 @@
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral v0.8.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral v0.9.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -181,7 +181,7 @@ or you may elect to not specify the &#8216;.cfg&#8217; suffix.</p>
 <div class="section" id="rally">
 <h1>Rally<a class="headerlink" href="#rally" title="Permalink to this headline">¶</a></h1>
 <blockquote>
-<div><p>The Rally class is the central focus of the <strong>pyral</strong> package.  Instantation of this class
+<div><p>The Rally class is the central focus of the <strong>pyral</strong> package.  Instantiation of this class
 with appropriate and valid target/credential information then provides a means of
 interacting with the Rally server.</p>
 <dl class="docutils">
@@ -210,7 +210,7 @@ interacting with the Rally server.</p>
 <dd><p class="first last">Controls whether a warning is issued if no project is specified
 and the default project for the user is not in the workspace specified.
 Under those conditions, the project is changed to the first project
-(alphabetic ordering) in the list of projects for specified workspace.</p>
+(alphabetic ordering) in the list of projects for the specified workspace.</p>
 </dd>
 </dl>
 </li>
@@ -265,8 +265,8 @@ members of each returned entity record.</p>
 <dt>keyword arguments:</dt>
 <dd><ul class="first last simple">
 <li>fetch = True/False or &#8220;List,Of,Attributes,We,Are,Interested,In&#8221;</li>
-<li>query = &#8216;FieldName = &#8220;some value&#8221;&#8217; or [&#8216;fld1 = 10&#8217;, &#8216;fld2 != &#8220;Shamu&#8221;&#8217;, etc.]</li>
-<li>instance = True/False (defalts to False)</li>
+<li>query = &#8216;FieldName = &#8220;some value&#8221;&#8217; or [&#8216;EstimatedHours = 10&#8217;, &#8216;MiddleName != &#8220;Shamu&#8221;&#8217;, etc.]</li>
+<li>instance = True/False (defaults to False)</li>
 <li>pagesize = n  (defaults to 200)</li>
 <li>start = n  (defaults to 1)</li>
 <li>limit = n  (defaults to no limit)</li>
@@ -280,7 +280,7 @@ members of each returned entity record.</p>
 <p>Returns a RallyRESTResponse object that has errors and warnings attributes that
 should be checked before any further operations on the object are attempted.
 The Response object supports the iteration protocol so that the results of the
-get can be iterated over via either <tt class="docutils literal"><span class="pre">for</span> <span class="pre">rec</span> <span class="pre">in</span> <span class="pre">response:</span></tt> or <tt class="docutils literal"><span class="pre">response.next()</span></tt>.</p>
+<tt class="docutils literal"><span class="pre">get</span></tt> can be iterated over via either <tt class="docutils literal"><span class="pre">for</span> <span class="pre">rec</span> <span class="pre">in</span> <span class="pre">response:</span></tt> or <tt class="docutils literal"><span class="pre">response.next()</span></tt>.</p>
 <p>If the instance keyword value is True, then an instance of a Rally entity
 will be returned instead of a RallyRESTResponse.  This can be useful when
 retrieving an item you know exists and is uniquely identified by your query argument.</p>
@@ -312,12 +312,15 @@ get the first result with no means to obtain any further qualifying items.</p>
 <dt id="post">
 <tt class="descname">post</tt><big>(</big><em>entityName</em>, <em>itemData</em>, <em>workspace=None</em>, <em>project=None</em><big>)</big><a class="headerlink" href="#post" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method allows for updating a single Rally entity record with the data
-contained in the itemData dict.  The itemData dict may <em>not</em> attempt to change
-the ObjectID value of the entity as the value for the ObjectID is used to identify
+contained in the itemData dict.  The itemData dict <em>must</em> include a
+key-value pair for either the ObjectID or when applicable, the FormattedID,
+that will uniquely identify the entity to be updated.
+The itemData dict may <em>not</em> attempt to change the ObjectID value of the
+entity as the value for the ObjectID is used to identify
 the Rally entity to update.  An attempt to update an entity record for
-which the operational credentials do not include the privileges to update will
-result in a RallyRESTException being generated.</p>
-<p>Returns a representation of the item as an instance of a class named for the entity.</p>
+which the operational credentials do not include the privileges to update
+will result in a RallyRESTException being generated.</p>
+<p>Returns a representation of the updated item as an instance of a class named for the entity.</p>
 </dd></dl>
 
 <dl class="method">
@@ -399,15 +402,17 @@ in the currently active context.</p>
 
 <dl class="method">
 <dt id="getProjects">
-<tt class="descname">getProjects</tt><big>(</big><em>workspace='default'</em><big>)</big><a class="headerlink" href="#getProjects" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getProjects</tt><big>(</big><em>workspace=None</em><big>)</big><a class="headerlink" href="#getProjects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of Project instances that are available for the workspace context
-identified by the workspace keyword argument.</p>
+identified by the workspace keyword argument. If no workspace keyword argument
+is supplied (or is supplied as None), then the workspace context is that
+of the currently selected workspace.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="getUserInfo">
 <tt class="descname">getUserInfo</tt><big>(</big><em>oid=None</em>, <em>username=None</em>, <em>name=None</em><big>)</big><a class="headerlink" href="#getUserInfo" title="Permalink to this definition">¶</a></dt>
-<dd><p>A convenience method to collect specific user related information.</p>
+<dd><p>A convenience method to collect the information associated with a specific user.</p>
 <p>Caller must provide at least one keyword arg and non-None / non-empty value
 to identify the user target on which to obtain information.
 The <em>name</em>     keyword arg is associated with the User.DisplayName attribute.
@@ -418,12 +423,13 @@ even if the <em>name</em> keyword argument is provided.</p>
 <p>Returns either a single instance of a User entity when the oid keyword argument
 matches a User in the system, or a list of User entity items when the username
 or name keywords are given and are matched by at least one User in the system.
-Returns None if no match for keyword argument is found in the system.</p>
+Returns None if there is no match in the Rally subscription/workspace for
+the keyword argument used to identify the user target.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="getAllUsers">
-<tt class="descname">getAllUsers</tt><big>(</big><big>)</big><a class="headerlink" href="#getAllUsers" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getAllUsers</tt><big>(</big><em>workspace=None</em><big>)</big><a class="headerlink" href="#getAllUsers" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method offers a convenient one-stop means of obtaining usable information
 about all users in the named workspace.
 If no workspace is specified, then the current context&#8217;s workspace is used.</p>
@@ -438,11 +444,54 @@ whose ref and collection attributes will be lazy eval&#8217;ed upon access.</p>
 issue a request to obtain a list of allowed values for the attribute.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="addAttachment">
+<tt class="descname">addAttachment</tt><big>(</big><em>artifact</em>, <em>filename</em>, <em>mime_type='text/plain'</em><big>)</big><a class="headerlink" href="#addAttachment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an artifact (actual or FormattedID for an artifact), validate that
+it exists and then attempt to add an Attachment with the name and
+contents of filename into Rally and associate that Attachment with the
+Artifact.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="addAttachments">
+<tt class="descname">addAttachments</tt><big>(</big><em>artifact</em>, <em>attachments</em><big>)</big><a class="headerlink" href="#addAttachments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an artifact (either actual or FormattedID) and a list of dicts with
+each dict having keys and values for name (or Name), mime_type (or MimeType) and
+content_type (or ContentType), add an Attachment corresponding to each dict in
+the attachments list and associate it with the referenced Artifact.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getAttachment">
+<tt class="descname">getAttachment</tt><big>(</big><em>artifact</em>, <em>filename</em><big>)</big><a class="headerlink" href="#getAttachment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a real artifact instance or the FormattedID of an existing artifact,
+obtain the attachment named by filename.  If there is such an attachment,
+return an Attachment instance with hydration for  Name, Size, ContentType, Content,
+CreationDate and the User that supplied the attachment.
+If no such attachment is present, return None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getAttachmentNames">
+<tt class="descname">getAttachmentNames</tt><big>(</big><em>artifact</em><big>)</big><a class="headerlink" href="#getAttachmentNames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a real artifact instance that is hydrated for at least the Attachments attribute,
+return the names (filenames) of the Attachments associated with the artifact.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getAttachments">
+<tt class="descname">getAttachments</tt><big>(</big><em>artifact</em><big>)</big><a class="headerlink" href="#getAttachments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a real artifact instance, return a list of Attachment records.
+Each Attachment record will look like a Rally WSAPI Attachment with
+the additional Content attribute that will contain the decoded AttachmentContent.</p>
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="rallyrestresponse">
 <h1>RallyRESTResponse<a class="headerlink" href="#rallyrestresponse" title="Permalink to this headline">¶</a></h1>
-<p>A RallyRESTResponse instance is returned from a call to get (find) and several of the
+<p>A RallyRESTResponse instance is returned from a call to <tt class="docutils literal"><span class="pre">get</span></tt> (find) and several of the
 convenience methods.  A instance has the following useful state attributes:</p>
 <blockquote>
 <div><ul class="simple">
@@ -582,7 +631,7 @@ To access these tasks, you&#8217;d iterate over them as in:</p>
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              >previous</a> |</li>
-        <li><a href="index.html">pyral v0.8.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral v0.9.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -124,7 +124,7 @@ or you may elect to not specify the '.cfg' suffix.
 Rally
 =====
 
-    The Rally class is the central focus of the **pyral** package.  Instantation of this class
+    The Rally class is the central focus of the **pyral** package.  Instantiation of this class
     with appropriate and valid target/credential information then provides a means of 
     interacting with the Rally server.
 
@@ -144,7 +144,7 @@ Rally
                     Controls whether a warning is issued if no project is specified
                     and the default project for the user is not in the workspace specified.  
                     Under those conditions, the project is changed to the first project
-                    (alphabetic ordering) in the list of projects for specified workspace.
+                    (alphabetic ordering) in the list of projects for the specified workspace.
 
 .. py:class:: Rally (server, user, password, version=1.29, workspace=None, project=None, warn=True)
 
@@ -189,8 +189,8 @@ Core REST methods and CRUD aliases
 
         keyword arguments:
             - fetch = True/False or "List,Of,Attributes,We,Are,Interested,In"
-            - query = 'FieldName = "some value"' or ['fld1 = 10', 'fld2 != "Shamu"', etc.]
-            - instance = True/False (defalts to False)
+            - query = 'FieldName = "some value"' or ['EstimatedHours = 10', 'MiddleName != "Shamu"', etc.]
+            - instance = True/False (defaults to False)
             - pagesize = n  (defaults to 200)
             - start = n  (defaults to 1)
             - limit = n  (defaults to no limit)
@@ -202,7 +202,7 @@ Core REST methods and CRUD aliases
         Returns a RallyRESTResponse object that has errors and warnings attributes that
         should be checked before any further operations on the object are attempted.
         The Response object supports the iteration protocol so that the results of the
-        get can be iterated over via either ``for rec in response:`` or ``response.next()``.
+        ``get`` can be iterated over via either ``for rec in response:`` or ``response.next()``.
 
         If the instance keyword value is True, then an instance of a Rally entity
         will be returned instead of a RallyRESTResponse.  This can be useful when 
@@ -234,13 +234,16 @@ Core REST methods and CRUD aliases
 .. method:: post (entityName, itemData, workspace=None, project=None)
 
         This method allows for updating a single Rally entity record with the data
-        contained in the itemData dict.  The itemData dict may *not* attempt to change 
-        the ObjectID value of the entity as the value for the ObjectID is used to identify
+        contained in the itemData dict.  The itemData dict *must* include a 
+        key-value pair for either the ObjectID or when applicable, the FormattedID,
+        that will uniquely identify the entity to be updated.
+        The itemData dict may *not* attempt to change the ObjectID value of the 
+        entity as the value for the ObjectID is used to identify
         the Rally entity to update.  An attempt to update an entity record for
-        which the operational credentials do not include the privileges to update will
-        result in a RallyRESTException being generated.
+        which the operational credentials do not include the privileges to update 
+        will result in a RallyRESTException being generated.
 
-        Returns a representation of the item as an instance of a class named for the entity.
+        Returns a representation of the updated item as an instance of a class named for the entity.
 
 .. method:: update
 
@@ -308,15 +311,17 @@ pyral.Rally instance convenience methods
     in the currently active context.
 
 
-.. method:: getProjects(workspace='default')
+.. method:: getProjects(workspace=None)
 
     Return a list of Project instances that are available for the workspace context
-    identified by the workspace keyword argument.
+    identified by the workspace keyword argument. If no workspace keyword argument 
+    is supplied (or is supplied as None), then the workspace context is that 
+    of the currently selected workspace.
 
 
 .. method:: getUserInfo(oid=None, username=None, name=None)
 
-    A convenience method to collect specific user related information.
+    A convenience method to collect the information associated with a specific user.
     
     Caller must provide at least one keyword arg and non-None / non-empty value
     to identify the user target on which to obtain information.
@@ -329,10 +334,11 @@ pyral.Rally instance convenience methods
     Returns either a single instance of a User entity when the oid keyword argument
     matches a User in the system, or a list of User entity items when the username
     or name keywords are given and are matched by at least one User in the system.
-    Returns None if no match for keyword argument is found in the system.
+    Returns None if there is no match in the Rally subscription/workspace for
+    the keyword argument used to identify the user target.
 
 
-.. method:: getAllUsers()
+.. method:: getAllUsers(workspace=None)
 
     This method offers a convenient one-stop means of obtaining usable information 
     about all users in the named workspace.
@@ -347,11 +353,45 @@ pyral.Rally instance convenience methods
     Given an entityName and and attributeName (assumed to be valid for the entityName)
     issue a request to obtain a list of allowed values for the attribute.
 
+.. method:: addAttachment(artifact, filename, mime_type='text/plain')
+
+    Given an artifact (actual or FormattedID for an artifact), validate that
+    it exists and then attempt to add an Attachment with the name and
+    contents of filename into Rally and associate that Attachment with the
+    Artifact.
+
+.. method:: addAttachments(artifact, attachments)
+
+    Given an artifact (either actual or FormattedID) and a list of dicts with
+    each dict having keys and values for name (or Name), mime_type (or MimeType) and
+    content_type (or ContentType), add an Attachment corresponding to each dict in 
+    the attachments list and associate it with the referenced Artifact.
+
+.. method:: getAttachment(artifact, filename)
+
+    Given a real artifact instance or the FormattedID of an existing artifact,
+    obtain the attachment named by filename.  If there is such an attachment,
+    return an Attachment instance with hydration for  Name, Size, ContentType, Content,
+    CreationDate and the User that supplied the attachment.
+    If no such attachment is present, return None
+
+.. method:: getAttachmentNames(artifact)
+
+    Given a real artifact instance that is hydrated for at least the Attachments attribute,
+    return the names (filenames) of the Attachments associated with the artifact.
+
+.. method:: getAttachments(artifact)
+
+    Given a real artifact instance, return a list of Attachment records.
+    Each Attachment record will look like a Rally WSAPI Attachment with
+    the additional Content attribute that will contain the decoded AttachmentContent.
+
+    
 
 RallyRESTResponse
 =================
 
-A RallyRESTResponse instance is returned from a call to get (find) and several of the
+A RallyRESTResponse instance is returned from a call to ``get`` (find) and several of the
 convenience methods.  A instance has the following useful state attributes:
 
     - resource    = partial URL identifying the resource for the HTTP Request
