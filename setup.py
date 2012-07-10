@@ -12,14 +12,14 @@ except:
         from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '0.8.12'
+VERSION       = '0.9.1'
 OFFICIAL_NAME = 'Python toolkit for Rally REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 RALLY_DEVELOPER_SITE = 'http://developer.rallydev.com'
 RALLY_DEVELOPER_DOWNLOAD_FILES = '%s/sites/default/files/multimedia' % RALLY_DEVELOPER_SITE
 DOWNLOADABLE_ZIP = '%s/%s-%s.zip' % (RALLY_DEVELOPER_DOWNLOAD_FILES, PACKAGE, VERSION)
 
-MINIMUM_REQUESTS_VERSION = '0.8.2'
+MINIMUM_REQUESTS_VERSION = '0.9.3'
 
 setup(name=PACKAGE,
       version=VERSION,

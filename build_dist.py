@@ -11,7 +11,7 @@ import tarfile
 import zipfile
 
 PACKAGE_NAME = "pyral"
-VERSION      = "0.8.12"
+VERSION      = "0.9.1"
 
 AUX_FILES  = ['MANIFEST.in', 
               'LICENSE', 
@@ -25,7 +25,14 @@ EXAMPLES   = ['getitem.py',
               'periscope.py', 
               'showdefects.py', 
               'crtask.py', 
-              'uptask.py'
+              'uptask.py',
+              'statecounts.py',
+              'repoitems.py',
+              'typedefs.py',
+              'wkspcounts.py',
+              'builddefs.py',
+              'creattach.py',
+              'get_attachments.py',
              ]
 DOC_FILES  = ['doc/Makefile',
               'doc/source/conf.py',
@@ -47,9 +54,12 @@ DOC_FILES  = ['doc/Makefile',
 # The TEST_FILES are **NOT** placed into the distribution packages
 #
 TEST_FILES = ['test/test_conn.py',
-              'test/test_query.py',
-              'test/test_inflation.py',
+              'test/test_context.py',
               'test/test_convenience.py',
+              'test/test_inflation.py',
+              'test/test_query.py',
+              'test/test_wksprj_setting.py',
+              'test/test_attachments.py',
              ]
 
 ################################################################################

@@ -353,6 +353,40 @@ pyral.Rally instance convenience methods
     Given an entityName and and attributeName (assumed to be valid for the entityName)
     issue a request to obtain a list of allowed values for the attribute.
 
+.. method:: addAttachment(artifact, filename, mime_type='text/plain')
+
+    Given an artifact (actual or FormattedID for an artifact), validate that
+    it exists and then attempt to add an Attachment with the name and
+    contents of filename into Rally and associate that Attachment with the
+    Artifact.
+
+.. method:: addAttachments(artifact, attachments)
+
+    Given an artifact (either actual or FormattedID) and a list of dicts with
+    each dict having keys and values for name (or Name), mime_type (or MimeType) and
+    content_type (or ContentType), add an Attachment corresponding to each dict in 
+    the attachments list and associate it with the referenced Artifact.
+
+.. method:: getAttachment(artifact, filename)
+
+    Given a real artifact instance or the FormattedID of an existing artifact,
+    obtain the attachment named by filename.  If there is such an attachment,
+    return an Attachment instance with hydration for  Name, Size, ContentType, Content,
+    CreationDate and the User that supplied the attachment.
+    If no such attachment is present, return None
+
+.. method:: getAttachmentNames(artifact)
+
+    Given a real artifact instance that is hydrated for at least the Attachments attribute,
+    return the names (filenames) of the Attachments associated with the artifact.
+
+.. method:: getAttachments(artifact)
+
+    Given a real artifact instance, return a list of Attachment records.
+    Each Attachment record will look like a Rally WSAPI Attachment with
+    the additional Content attribute that will contain the decoded AttachmentContent.
+
+    
 
 RallyRESTResponse
 =================

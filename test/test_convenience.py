@@ -42,9 +42,9 @@ def test_get_project():
     assert response.warnings == []
     assert response.resultCount > 0
     proj_rec = response.next()
-    print proj_rec._ref
-    print proj_rec.ref
-    print proj_rec.oid
+    #print proj_rec._ref
+    #print proj_rec.ref
+    #print proj_rec.oid
 
 def test_user_info_query():
     """

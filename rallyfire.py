@@ -22,11 +22,15 @@ def main(args):
     args    = [arg for arg in args if arg not in options]
     server, user, password, workspace, project = rallySettings(options)
     print " ".join(["|%s|" % item for item in [server, user, password, workspace, project]])
+    rally = Rally(server, user, password, workspace=workspace, project=project) 
     # add in the debug=True keyword arg if you want more verbiage ...
-    rally = Rally(server, user, password, workspace=workspace, project=project, debug=True) 
+    #rally = Rally(server, user, password, workspace=workspace, project=project, debug=True) 
+    specified_workspace = workspace
 
     workspace = rally.getWorkspace()
     print "Workspace: %s " % workspace.Name
+    if specified_workspace != workspace.Name:
+        print "    ** The workspace you specified: %s is not a valid workspace name for your account, using your default  workspace instead" % specified_workspace
     #print "Workspace: %12.12s   %-18.18s    (%s)" % (workspace.oid, workspace.Name, workspace.ref)
 
     project = rally.getProject()

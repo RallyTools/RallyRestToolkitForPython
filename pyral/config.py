@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 12)
+__version__ = (0, 9, 1)
 
 import datetime
 import os
@@ -19,7 +19,7 @@ import glob
 PROTOCOL       = "https"
 SERVER         = "rally1.rallydev.com"
 WEB_SERVICE    = "slm/webservice/%s"
-WS_API_VERSION = "1.29"
+WS_API_VERSION = "1.30"
 JSON_FORMAT    = ".js"
 
 USER_NAME = "wiley@acme.com"

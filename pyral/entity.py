@@ -8,9 +8,10 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 12)
+__version__ = (0, 9, 1)
 
 import sys
+import re
 
 from .restapi   import hydrateAnInstance
 from .restapi   import getResourceByOID
@@ -101,9 +102,6 @@ class Persistable(object):
             if response.status_code != 200:
                 raise UnreferenceableOIDError, ("%s OID %s" % (rallyEntityTypeName, self.oid))
             item = response.content[rallyEntityTypeName]
-            #del item[u'Errors']     # this cruft from REST GET not actually part of the entity's attributes
-            #del item[u'Warnings']   # ditto
-
 ##
 ##            print "calling hydrateAnInstance from the __getattr__ of %s for %s" % (name, self._type)
 ##            sys.stdout.flush()
@@ -126,12 +124,13 @@ class Persistable(object):
 
 class Subscription(Persistable):  pass
 
+class AllowedAttributeValue(Persistable):  pass  # only used in an AttributeDefinition
+class AllowedQueryOperator (Persistable):  pass  # only used in an AttributeDefinition 
+                                                 #  (for AllowedQueryOperators)
+
 class DomainObject(Persistable):
     """ This is an Abstract Base class """
     pass
-
-class AllowedAttributeValue(Persistable):  pass  # only used in an AttributeDefinition
-class AllowedQueryOperator (Persistable):  pass  # only used in an AttributeDefinition (for AllowedQueryOperators)
 
 class User            (DomainObject): pass
 class UserProfile     (DomainObject): pass
@@ -142,8 +141,75 @@ class WorkspacePermission   (UserPermission): pass
 class ProjectPermission     (UserPermission): pass
 
 class WorkspaceDomainObject(DomainObject):
-    """ This is an Abstract Base class """
-    pass
+    """ 
+        This is an Abstract Base class, with a convenience method (details) that  
+        formats the attrbutes and corresponding values into an easily viewable
+        mulitiline string representation.
+    """
+    COMMON_ATTRIBUTES = ['_type', 
+                         'ObjectID', '_ref', '_CreatedAt', 
+                         'oid', 'ref', '_hydrated', 
+                         'Name', 'Subscription', 'Workspace'
+                        ]
+
+    def details(self):
+        """
+            order we want to have the attributes appear in...
+
+            Class Name (aka _type)
+                oid
+                ref
+                _ref
+                _hydrated
+                _CreatedAt
+                ObjectID
+                Name         ** not all items will have this...
+                Subscription (oid, Name)
+                Workspace    (oid, Name)
+
+                alphabetical from here on out
+        """
+        tank = ['%s' % self._type]
+        for attribute_name in self.COMMON_ATTRIBUTES[1:]:
+            value = getattr(self, attribute_name)
+            if 'pyral.entity.' not in str(type(value)):
+                anv = '    %-16.16s  : %s' % (attribute_name, value)
+            else:
+                mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
+                if mo:
+                    cln = mo.group(1)
+                    anv = "    %-16.16s  : %-16.16s   (OID  %s  Name: %s)" % \
+                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                else:
+                    anv = "    %-16.16s  : %s" % value
+            tank.append(anv)
+        tank.append("")
+        other_attributes = set(self.attributes()) - set(self.COMMON_ATTRIBUTES)
+        for attribute_name in sorted(other_attributes):
+            value = getattr(self, attribute_name)
+            if not isinstance(value, Persistable):
+                anv = "    %-16.16s  : %s" % (attribute_name, value)
+            else:
+                mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
+                if not mo:
+                    anv = "    %-16.16s : %s" % (attribute_name, value)
+                    continue
+
+                cln = mo.group(1)
+                anv = "    %-16.16s  : %-27.27s" % (attribute_name, cln + '.ref')
+                if   isinstance(value, Artifact):
+                    # also want the OID, FormattedID
+                    anv = "%s (OID  %s  FomattedID  %s)" % (anv, value.oid, value.FormattedID)
+                elif isinstance(value, User):
+                    # also want the className, OID, UserName, DisplayName
+                    anv = "    %-16.16s  : %s.ref  (OID  %s  UserName %s  DisplayName %s)" % \
+                          (attribute_name, cln, value.oid, value.UserName, value.DisplayName)
+                else:
+                    # also want the className, OID, Name)
+                    anv = "%s (OID  %s  Name %s)" % (anv, value.oid, value.Name)
+            tank.append(anv)
+        return "\n".join(tank)
+
 
 class WorkspaceConfiguration(WorkspaceDomainObject): pass
 class Type                  (WorkspaceDomainObject): pass

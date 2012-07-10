@@ -8,9 +8,9 @@
 #
 ###################################################################################################
 
-__version__ = (0, 8, 12)
+__version__ = (0, 9, 1)
 
-import sys
+import sys, os
 import time
 import socket
 import json
@@ -117,40 +117,52 @@ class RallyContextHelper(object):
             and speaks Rally WSAPI, and establishes the default workspace and project for
             the user.
         """
-        target_host = server
-        socket.setdefaulttimeout(REQUEST_TIME_LIMIT)
-        if IPV4_ADDRESS_PATT.match(server):  # is server an IPV4 address?
-            try:
-                info = socket.gethostbyaddr(server)
-            except socket.herror, msg:
-                problem = "IP v4 address '%s' not valid or unreachable" % server
-                raise RallyRESTAPIError(problem)
-            except Exception, msg:
-                print "Exception detected: %s" % msg
-                problem = "Exception detected trying to obtain host info for: %s" % server
-                raise RallyRESTAPIError(problem)
-
-        # TODO: look for IPV6 type address also?
-        else:
-            try:
-                target_host = socket.gethostbyname(server)
-            except socket.gaierror, msg:
-                problem = "hostname '%s' non-existent or unreachable"  % server
-                raise RallyRESTAPIError(problem)
-
 ##
 ##        print " RallyContextHelper.check starting ..."
 ##        sys.stdout.flush()
 ##
+        socket.setdefaulttimeout(REQUEST_TIME_LIMIT)
+        target_host = server
+
+        big_proxy   = os.environ.get('HTTPS_PROXY', False)
+        small_proxy = os.environ.get('https_proxy', False)
+        proxy = big_proxy if big_proxy else small_proxy if small_proxy else False
+        proxy_host = False
+        if proxy:
+            proxy_host, proxy_port = proxy.split(':')
+        target_host = proxy_host or server
+
+        if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
+            try:
+                info = socket.gethostbyaddr(target_host)
+            except socket.herror, msg:
+                problem = "IP v4 address '%s' not valid or unreachable" % target_host
+                raise RallyRESTAPIError(problem)
+            except Exception, msg:
+                print "Exception detected: %s" % msg
+                problem = "Exception detected trying to obtain host info for: %s" % target_host
+                raise RallyRESTAPIError(problem)
+
+        # TODO: look for IPV6 type address also?
+
+        else:
+            try:
+                target_host = socket.gethostbyname(target_host)
+            except socket.gaierror, msg:
+                problem = "hostname: '%s' non-existent or unreachable"  % target_host
+                raise RallyRESTAPIError(problem)
+
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
         try:
             timer_start = time.time()
-            response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
+            response = self.agent.get('User', fetch=True, query=user_name_query, 
+                                      _disableAugments=True)
             timer_stop = time.time()
         except Exception, msg:
             if str(msg).startswith('404 Service unavailable'):
-                raise RallyRESTAPIError("hostname '%s' non-existent or unreachable" % server)
+                # TODO: discern whether we should mention server or target_host as the culprit
+                raise RallyRESTAPIError("hostname: '%s' non-existent or unreachable" % server)
             else:
                 raise 
         elapsed = timer_stop - timer_start
@@ -162,6 +174,8 @@ class RallyContextHelper(object):
             if response.status_code == 404:
                 if elapsed >= float(REQUEST_TIME_LIMIT):
                     problem = "Request timed out on attempt to reach %s" % server
+                elif response.errors and 'Max retries exceeded with url' in response.errors[0]:
+                    problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 elif response.errors and 'NoneType' in response.errors[0]:
                     problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 else:

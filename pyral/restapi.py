@@ -3,14 +3,14 @@
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 8 version with GET, PUT, POST and DELETE operations, support multiple instances
+#          round 9 version with GET, PUT, POST and DELETE operations, support multiple instances
+#             adding support for Attachments to Artifact
 #          notable dependencies:
-#               requests v0.8.2 or better
 #               requests v0.9.3 recommended (0.10.x no longer works for Python 2.5)
 #
 ###################################################################################################
 
-__version__ = (0, 8, 12)
+__version__ = (0, 9, 1)
 
 import sys, os
 import re
@@ -18,6 +18,8 @@ import types
 import time
 import urllib
 import json
+import string
+import base64
 
 import requests   
 
@@ -140,6 +142,19 @@ class Rally(object):
         In addition, there are several convenience methods (for users, workspaces and projects)
         that allow the holder to quickly get a picture of their Rally operating environment.
     """
+    ARTIFACT_TYPE = { 'S' : 'Story', 
+                     'US' : 'Story', 
+                     'DE' : 'Defect',
+                     'DS' : 'DefectSuite',
+                     'TA' : 'Task',
+                     'TC' : 'TestCase',
+                     'TS' : 'TestSet',
+                    }
+    FORMATTED_ID_PATTERN = re.compile(r'^[A-Z]{1,2}\d+$')
+                                      #S|US|DE|DS|TA|TC|TS
+    MAX_ATTACHMENT_SIZE = 5000000  # approx 5MB 
+
+
     def __init__(self, server=SERVER, user=USER_NAME, password=PASSWORD, 
                        version=WS_API_VERSION, warn=True, **kwargs):
         self.server    = server
@@ -159,15 +174,9 @@ class Rally(object):
 
         credentials = requests.auth.HTTPBasicAuth(self.user, self.password)
         proxy_dict = {} 
-        http_proxy = os.environ.get('HTTP_PROXY', None) or os.environ.get('http_proxy', None)
-        if http_proxy:
-            proxy_dict['http'] = http_proxy
         https_proxy = os.environ.get('HTTPS_PROXY', None) or os.environ.get('https_proxy', None)
-        if https_proxy:
+        if https_proxy and https_proxy not in ["", None]:
             proxy_dict['https'] = https_proxy
-
-        if http_proxy or https_proxy:
-            credentials = requests.auth.HTTPProxyAuth(self.user, self.password)
         
         self.session = requests.session(headers=RALLY_REST_HEADERS, auth=credentials,
                                         timeout=10.0, proxies=proxy_dict, config=config)
@@ -316,6 +325,9 @@ class Rally(object):
         if not self.contextHelper.isAccessibleWorkspaceName(workspaceName):
             raise Exception('Specified workspace not valid for your credentials')
         self.contextHelper.setWorkspace(workspaceName)
+##
+##        print self.contextHelper.currentContext()
+##
 
     def getWorkspace(self):
         """
@@ -335,7 +347,7 @@ class Rally(object):
             that are available to the registered user in the currently active context.
         """
         context = self.contextHelper.currentContext()
-        wkspcs = self.contextHelper.getAccessibleWorkspaces()
+        wkspcs  = self.contextHelper.getAccessibleWorkspaces()
         workspaces = [_createShellInstance(context, 'Workspace', wksp_name, wksp_ref)
                       for wksp_name, wksp_ref in sorted(wkspcs)
                      ]
@@ -649,7 +661,7 @@ class Rally(object):
         except Exception, exc:
             if response:
 ##
-##               print response.status_code
+##                print response.status_code
 ##
                 ret_code, content = response.status_code, response.content
             else:
@@ -711,6 +723,7 @@ class Rally(object):
         if augments:
             resource += ("?" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
+
         item = {entityName: itemData}
         payload = json.dumps(item)
         if self._log:
@@ -809,7 +822,7 @@ class Rally(object):
         if workspace == 'current':
             workspace = self.getWorkspace().Name  # just need the Name here
         if project == 'current':
-            project = self.getProject()[0].Name  # just need the Name here
+            project = self.getProject().Name  # just need the Name here
 
         entityName = self._officialRallyEntityName(entityName)
 
@@ -950,6 +963,245 @@ class Rally(object):
             print "Unable to decode the json.loads target"
             print msg
             return None
+
+
+    def addAttachment(self, artifact, filename, mime_type='text/plain'):
+        """
+            Given an artifact (actual or FormattedID for an artifact), validate
+            that it exists and then attempt to add an Attachment with the name and
+            contents of filename into Rally and associate that Attachment 
+            with the Artifact.
+        """
+        # determine if artifact exists, if not short-circuit False
+        # determine if attachment already exists for filename (with same size and content)
+        #   if so, and already attached to artifact, short-circuit True
+        #   if so, but not attached to artifact, save attachment
+        #   if not, create the AttachmentContent with filename content, 
+        #           create the Attachment with basename for filename and ref the AttachmentContent 
+        #              and supply the ref for the artifact in the Artifact field for Attachment
+        #          
+        # grab the Attachments attribute for the artifact, save _ref attributes in a list
+        # update the target artifact with the augmented Attachments list of Attachment refs
+
+        art_type, artifact = self._realizeArtifact(artifact)
+##
+##        print "artifact oid: %s" % artifact.oid
+##
+        if not art_type:
+            return False
+
+        current_attachments = [att for att in artifact.Attachments]
+
+        attachment_file_name = os.path.basename(filename)
+        attachment_file_size = os.path.getsize(filename)
+        if attachment_file_size > self.MAX_ATTACHMENT_SIZE:
+            raise Exception('Attachment file size too large, unable to attach to Rally Artifact')
+            
+        contents = ''
+        with open(filename, 'r') as af:
+            contents = base64.encodestring(af.read())
+        size = len(contents)
+
+        response = self.get('Attachment', fetch=True, query='Name = "%s"' % attachment_file_name)
+        if response.resultCount:
+            attachment = response.next()
+            already_attached = [att for att in current_attachments if att.oid == attachment.oid]
+            if already_attached:
+                return artifact
+
+        else:  # create an AttachmentContent item
+            ac = self.create('AttachmentContent', {"Content" : contents}, project=None)
+            if not ac:
+                raise RallyRESTAPIError('Unable to create AttachmentContent for %s' % attachment_file_name)
+            
+            attachment_info = { "Name"         :  attachment_file_name,
+                                "Content"      :  ac.ref,       # ref to AttachmentContent
+                                "ContentType"  :  mime_type,    
+                                "Size"         :  size,         
+                                "User"         :  'user/%s' % self.contextHelper.user_oid,
+                                "Artifact"     :  artifact.ref  # (optional field)
+                              }
+            attachment = self.create('Attachment', attachment_info, project=None)
+
+        # now put the ref of the newly added Attachment in the Attachments for the artifact
+        #  ****  this is the key part here... *******
+        #  1) *  the full list of attachments (prior plus the new one) must be part of the update  
+        #  2) *  it must be a list of dicts with each dict having a '_ref' key and a attachment.ref value
+        
+        att_refs = [dict(_ref=str(att.ref)) for att in current_attachments]
+        att_refs.append(dict(_ref=str(attachment.ref)))
+        artifact_info = { 'ObjectID'    : artifact.ObjectID,
+                          'Attachments' : att_refs,
+                        }
+
+        upd_artifact = self.update(art_type, artifact_info, project=None)
+##
+##        print "Artifact %s includes Attachment for %s in its list of associated Attachments" % \
+##               (artifact.FormattedID, attachment.Name)
+##
+
+        return upd_artifact
+
+
+    def addAttachments(self, artifact, attachments):
+        """
+            Attachments must be a list of dicts, with each dict having key-value
+            pairs for Name, MimeType (or mime_type or content_type or ContentType), Content
+        """
+        candidates = []
+        attached   = []
+        for attachment in attachments:
+            att_name = attachment.get('Name', None)
+            if not att_name:
+                continue
+            ct_item =     attachment.get('mime_type',    None) or attachment.get('MimeType',    None) \
+                      or  attachment.get('content_type', None) or attachment.get('ContentType', None)
+            if not ct_item:
+                print "Bypassing attachment for %s, no mime_type/ContentType setting..." % att_name
+                continue
+            candidates.append(att_name)
+            upd_artifact = self.addAttachment(artifact, att_name, mime_type=ct_item)
+            if upd_artifact:
+                attached.append(att_name)
+        return len(attached) == len(candidates)
+
+
+    def getAttachment(self, artifact, filename):
+        """
+            Given a real artifact instance or the FormattedID of an existing artifact,
+            obtain the attachment named by filename.  If there is such an attachment,
+            return an Attachment instance with hydration for  Name, Size, ContentType, Content, 
+            CreationDate and the User that supplied the attachment.
+            If no such attachment is present, return None
+        """
+        art_type, artifact = self._realizeArtifact(artifact)
+        if not art_type:
+            return False
+
+        current_attachments = [att for att in artifact.Attachments]
+        hits = [att for att in current_attachments if att.Name == filename]
+        if not hits:
+            return None
+        att = hits.pop(0)
+        if not att._hydrated:
+            getattr(att, 'Description')  # forces the hydration to occur
+
+        # For reasons that are unclear, a "normal" pyral GET on 'AttachmentContent' comes 
+        # back as empty even if the specific OID for an AttachmentContent item exists.
+        # The target URL of the GET has to be constructed in a particular manner.
+        # Fortunately, our _getResourceByOID method fills this need.  
+        # But, we have to turn the raw response into a RallyRESTResponse ourselves here.
+
+        context, augments = self.contextHelper.identifyContext()
+        resp = self._getResourceByOID(context, 'AttachmentContent', att.Content.oid, project=None)
+        if resp.status_code not in [200, 201, 202]:
+            return None
+        response = RallyRESTResponse(self.session, context, "AttachmentContent.x", resp, "full", 1)
+        if response.errors or response.resultCount != 1:
+            return None
+        att_content = response.next()
+        att.Content = base64.decodestring(att_content.Content)  # maybe further txfm to Unicode ?
+        return att
+
+
+    def getAttachmentNames(self, artifact):
+        """
+            For the given Artifact, return the names (filenames) of the Attachments
+        """
+        names = []
+        if artifact.Attachments:
+            names = [att.Name for att in artifact.Attachments]
+        return names
+        
+
+    def getAttachments(self, artifact):
+        """
+            For the given Artifact, return a list of Attachment records.
+            Each Attachment record will look like a Rally WSAPI Attachment with
+            the additional Content attribute that will contain the decoded AttachmentContent.
+        """
+        attachment_names = self.getAttachmentNames(artifact)
+        attachments = [self.getAttachment(artifact, attachment_name) for attachment_name in attachment_names]
+        attachments = [att for att in attachments if att is not None]
+        return attachments
+
+
+    def __disabled__deleteAttachment(self, artifact, filename):
+        """
+            Unfortunately, at this time (WSAPI 1.30+) while AttachmentContent items can be deleted,
+            Attachment items cannot.  So, exposing this method would offer very limited utility.
+        """
+        return False
+
+        art_type, artifact = self._realizeArtifact(artifact)
+        if not art_type:
+            return False
+
+        current_attachments = [att for att in artifact.Attachments]
+        hits = [att for att in current_attachments if att.Name == filename]
+        if not hits:
+            return False
+
+        # get the target Attachment and the associated AttachmentContent item
+        attachment = hits.pop(0)
+        print attachment.details()
+        if attachment.Content and attachment.Content.oid:
+            success = self.delete('AttachmentContent', attachment.Content.oid, project=None)
+##
+##            print "deletion attempt on AttachmentContent %s succeeded? %s" % (attachment.Content.oid, success)
+##
+            if not success:
+                print "Panic!  unable to delete AttachmentContent item for %s" % attachment.Name
+                return False
+
+        # Squeamishness about the drawbacks of deleting certain entities in Rally has
+        # sloshed into the Attachment realm, so can't actually do a delete of an Attachment.
+        #deleted = self.delete('Attachment', attachment.oid, project=None)
+
+        # But, we can still just not include the targeted Attachment here from 
+        # being included in the list of Attachments for our target artifact
+        remaining_attachments = [att for att in current_attachments if att.ref != attachment.ref]
+        att_refs = [dict(_ref=str(att.ref)) for att in remaining_attachments]
+        artifact_info = { 'ObjectID'    : artifact.ObjectID,
+                          'Attachments' : att_refs,
+                        }
+        updated = self.update(art_type, artifact_info, project=None)
+        if updated:
+            return updated
+        else: 
+            return False
+
+
+    def _realizeArtifact(self, artifact):
+        """
+            Helper method to identify the artifact type and to retrieve it if the 
+            artifact value is a FormattedID. If the artifact is already an instance
+            of a Rally entity, then all that needs to be done is deduce the art_type
+            from the class name.  If the artifact argument given is neither of those 
+            two conditions, return back a 2 tuple of (False, None).
+            Once you have an Rally instance of the artifact, return back a 
+            2 tuple of (art_type, artifact)
+        """
+        art_type = False
+        if 'pyral.entity.' in str(type(artifact)):
+            # we've got the artifact already...
+            art_type = artifact.__class__.__name__
+        elif self.FORMATTED_ID_PATTERN.match(artifact): 
+            # artifact is a potential FormattedID value
+            prefix = artifact[:2]
+            if prefix[1] in string.digits:
+                prefix = prefix[0]
+            art_type = self.ARTIFACT_TYPE[prefix]
+            response = self.get(art_type, fetch=True, query='FormattedID = %s' % artifact)
+            if response.resultCount == 1:
+                artifact = response.next()
+            else:
+                art_type = False
+        else: # artifact isn't anything we can deal with here...
+            pass
+
+        return art_type, artifact
+        
 
 ##################################################################################################
 
