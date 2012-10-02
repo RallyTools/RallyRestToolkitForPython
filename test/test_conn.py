@@ -11,12 +11,12 @@ RallyRESTAPIError = pyral.context.RallyRESTAPIError
 
 ##################################################################################################
 
-PREVIEW = "preview.rallydev.com"
-DEMO    = "demo.rallydev.com"
-PROD    = "rally1.rallydev.com"
+TRIAL = "trial.rallydev.com"
 
-PREVIEW_USER = "usernumbernine@acme.com"
-PREVIEW_PSWD = "********"
+TRIAL_USER = "usernumbernine@acme.com"
+TRIAL_PSWD = "********"
+
+HTTPS_PROXY = "127.0.0.1:9654"
 
 ##################################################################################################
 
@@ -25,11 +25,26 @@ def test_basic_connection():
         Using a known valid Rally server and access credentials, issue a simple query 
         request against a known valid Rally entity.
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Project', fetch=False, limit=10)
     response = rally.get('Project', fetch=False, limit=10)
     assert response != None
     assert response.status_code == 200
+
+def test_basic_connection_with_proxy():
+    """
+        Using a known valid Rally server and access credentials, issue a simple query 
+        request against a known valid Rally entity via use of https_proxy.
+    """
+    os.environ['https_proxy'] = HTTPS_PROXY
+
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    response = rally.get('Project', fetch=False, limit=10)
+    assert response != None
+    assert response.status_code == 200
+
+    os.environ['https_proxy'] = ""
+    del os.environ['https_proxy']
 
 def test_nonexistent_server():
     """
@@ -43,8 +58,7 @@ def test_nonexistent_server():
         valid credentials to a non-existent server.
     """
     bogus_server = "bogus.notreally.bug"
-    expectedErrMsg = "hostname '%s' non-existent or unreachable" % bogus_server
-    #print expectedErrMsg
+    expectedErrMsg = "host: '%s' non-existent or unreachable" % bogus_server
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bogus_server)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
@@ -53,14 +67,42 @@ def test_nonexistent_server():
     assert actualErrVerbiage == expectedErrMsg
 
     bogus_server = "bogus.notreally.bugu"
-    expectedErrMsg = "hostname '%s' non-existent or unreachable" % bogus_server
+    expectedErrMsg = "host: '%s' non-existent or unreachable" % bogus_server
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bogus_server,
-                            user=PREVIEW_USER, 
-                            password=PREVIEW_PSWD)
+                            user=TRIAL_USER, 
+                            password=TRIAL_PSWD)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert actualErrVerbiage == expectedErrMsg
+
+def test_nonexistent_bad_server_with_proxy():
+    """
+        Same as above test but this time going through a proxy.
+    """
+    os.environ['https_proxy'] = HTTPS_PROXY
+
+    bogus_server = "bogus.notreally.bug"
+    expectedErrMsg = "Target Rally host: '%s' non-existent or unreachable" % bogus_server
+    with py.test.raises(RallyRESTAPIError) as excinfo:
+        rally = Rally(server=bogus_server)
+    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert actualErrVerbiage == expectedErrMsg
+
+    bogus_server = "bogus.notreally.bugu"
+    expectedErrMsg = "Target Rally host: '%s' non-existent or unreachable" % bogus_server
+    with py.test.raises(RallyRESTAPIError) as excinfo:
+        rally = Rally(server=bogus_server,
+                            user=TRIAL_USER, 
+                            password=TRIAL_PSWD)
+    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert actualErrVerbiage == expectedErrMsg
+
+    os.environ['https_proxy'] = ""
+    del os.environ['https_proxy']
+
 
 def test_non_rally_server():
     """
@@ -127,7 +169,7 @@ def test_insuff_credentials():
     expectedErrMsg = u"401 An Authentication object was not found in the SecurityContext"
     expectedErrMsg = u"The username or password you entered is incorrect"
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=PREVIEW, user=PREVIEW_USER, password="")
+        rally = Rally(server=TRIAL, user=TRIAL_USER, password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -135,7 +177,7 @@ def test_insuff_credentials():
     #print "detected valid user, missing password condition"
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=PREVIEW, user="", password="doofus")
+        rally = Rally(server=TRIAL, user="", password="doofus")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -143,7 +185,7 @@ def test_insuff_credentials():
     #print "detected blank user, invalid password condition"
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=PREVIEW, user="", password="")
+        rally = Rally(server=TRIAL, user="", password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -151,7 +193,7 @@ def test_insuff_credentials():
     #print "detected blank user and password condition"
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=PREVIEW, user="guest", password="")
+        rally = Rally(server=TRIAL, user="guest", password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -159,7 +201,7 @@ def test_insuff_credentials():
     #print "detected invalid user, blank password condition"
     
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=PREVIEW, user="guest", password="doofus")
+        rally = Rally(server=TRIAL, user="guest", password="doofus")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -167,7 +209,7 @@ def test_insuff_credentials():
     #print "detected invalid user, invalid password condition"
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=PREVIEW, user="guest")
+        rally = Rally(server=TRIAL, user="guest")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'

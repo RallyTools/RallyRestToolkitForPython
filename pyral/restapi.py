@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (0, 9, 2)
 
 import sys, os
 import re
@@ -40,6 +40,13 @@ _rallyCache = {}  # keyed by a context tuple (server, user, password, workspace,
                   # value is a dict with at least:
                   # a key of 'rally'    whose value there is a Rally instance  and
                   # a key of 'hydrator' whose value there is an EntityHydrator instance
+
+#
+# another module global for TypeDefinition info
+#  it's intended to be able to access a TypeDefinition.ref , .ElementName, and .Name attrs only
+#
+_type_definition_cache = {} # keyed by a type of context info and type definition ElementName
+                            # value is a minimally hydrated TypeDefinition instance
 
 #
 # Yo! another module global here...
@@ -112,6 +119,7 @@ def getResourceByOID(context, entity, oid, **kwargs):
 from .rallyresp import RallyRESTResponse, ErrorResponse
 from .hydrate   import EntityHydrator
 from .context   import RallyContext, RallyContextHelper
+from .entity    import validRallyType
 
 __all__ = ["Rally", "getResourceByOID", "hydrateAnInstance", "RallyUrlBuilder"]
 
@@ -149,9 +157,10 @@ class Rally(object):
                      'TA' : 'Task',
                      'TC' : 'TestCase',
                      'TS' : 'TestSet',
+                     'PI' : 'PortfolioItem'
                     }
     FORMATTED_ID_PATTERN = re.compile(r'^[A-Z]{1,2}\d+$')
-                                      #S|US|DE|DS|TA|TC|TS
+                                      #S|US|DE|DS|TA|TC|TS|PI
     MAX_ATTACHMENT_SIZE = 5000000  # approx 5MB 
 
 
@@ -178,8 +187,15 @@ class Rally(object):
         if https_proxy and https_proxy not in ["", None]:
             proxy_dict['https'] = https_proxy
         
+        verify_ssl_cert = True
+        if kwargs and 'verify_ssl_cert' in kwargs:
+            vsc = kwargs.get('verify_ssl_cert')
+            if vsc in [False, True]:
+                verify_ssl_cert = vsc
+
         self.session = requests.session(headers=RALLY_REST_HEADERS, auth=credentials,
-                                        timeout=10.0, proxies=proxy_dict, config=config)
+                                        timeout=10.0, proxies=proxy_dict, 
+                                        verify=verify_ssl_cert, config=config)
         self.contextHelper = RallyContextHelper(self, server, user, password)
         self.contextHelper.check(self.server)
 
@@ -364,14 +380,28 @@ class Rally(object):
             raise Exception('Specified project not valid for your current workspace or credentials')
         self.contextHelper.setProject(projectName)
 
-    def getProject(self):
+
+    def getProject(self, name=None):
         """
             Returns a minimally hydrated Project instance with the Name and ref
-            of the project in the currently active context.
+            of the project in the currently active context if the name keyword arg
+            is not supplied or the Name and ref of the project identified by the name
+            as long as the name identifies a valid project in the currently selected workspace.
+            Returns None if a name parameter is supplied that does not identify a valid project
+            in the currently selected workspace.
         """
         context = self.contextHelper.currentContext()
-        proj_name, proj_ref = self.contextHelper.getProject()
-        return _createShellInstance(context, 'Project', proj_name, proj_ref)
+        if not name:
+            proj_name, proj_ref = self.contextHelper.getProject()
+            return _createShellInstance(context, 'Project', proj_name, proj_ref)
+        projs = self.contextHelper.getAccessibleProjects(workspace='current')
+        hits = [(proj,ref) for proj,ref in projs if str(proj) == str(name)]
+        if not hits:
+            return None
+        tp = projs[0]
+        tp_ref = tp[1]
+        return _createShellInstance(context, 'Project', name, tp_ref)
+        
 
     def getProjects(self, workspace=None):
         """
@@ -479,9 +509,14 @@ class Rally(object):
 
     def _officialRallyEntityName(self, supplied_name):
         if supplied_name in ['Story', 'UserStory', 'User Story']:
-            official_name = 'HierarchicalRequirement'
-        else:
-            official_name = supplied_name
+            supplied_name = 'HierarchicalRequirement'
+
+        # here's where we'd make an inquiry into entity to see if the supplied_name
+        # is a Rally entity on which CRUD ops are permissible.
+        # An Exception is raised if not.
+        # If supplied_name resolves in some way to a valid Rally entity,
+        # this returns either a simple name or a TypePath string (like PortfolioItem/Feature)
+        official_name = validRallyType(self, supplied_name)
         return official_name
 
 
@@ -526,7 +561,11 @@ class Rally(object):
         except Exception, exc:
             exctype, value, tb = sys.exc_info()
             warning('%s: %s\n' % (exctype, value)) 
-            sys.exit(9)
+            return None
+##
+##        print raw_response: %s" % raw_response
+##        sys.stdout.flush()
+##
         return raw_response
 
 
@@ -881,6 +920,44 @@ class Rally(object):
 
         return status
 
+    def typedef(self, target_type):
+        """
+            Given the name of a target Rally type definition return an instance 
+            of a TypeDefinition class matching the target.  Cache the TypeDefinition
+            for the context so that repeated calls to the same target_type only result
+            in one call to Rally.
+        """
+        ctx  = self.contextHelper.currentContext()
+        td_key = (ctx.server, ctx.subs_name, ctx.workspace, ctx.project, target_type)
+        if td_key not in _type_definition_cache:
+            td = self.get('TypeDefinition', fetch='ElementName,Name,Parent,TypePath',
+                                            query='ElementName = "%s"' % target_type,
+                                            instance=True)
+            if not td:
+                raise Exception, "Invalid Rally entity name: %s" % target_type
+            _type_definition_cache[td_key] = td
+        return _type_definition_cache[td_key]
+
+    def getState(self, entity, state_name):
+        """
+            State is now (Sep 2012) a Rally type (aka entity) not a String.
+            In order to somewhere insulate pyral package users from the increased complexity 
+            of that approach, this is a convenience method that given a target entity (like
+            Defect, PortfolioItem/<subtype>, etc.) and a state name, an inquiry to the Rally
+            system is executed and the matching entity is returned.
+        """
+        criteria = [ 'TypeDef.Name = "%s"' % entity,
+                     'Name = "%s"'         % state_name
+                   ]
+
+        state = self.get('State', fetch=True, query=criteria, project=None, instance=True)
+        return state
+
+    def getStates(self, entity):
+        """
+        """
+        response = self.get('State', query='TypeDef.Name = "%s"' % entity, project=None)
+        return [item for item in response]
 
     def allowedValueAlias(self, entity, refUrl):
         """
@@ -971,6 +1048,13 @@ class Rally(object):
             that it exists and then attempt to add an Attachment with the name and
             contents of filename into Rally and associate that Attachment 
             with the Artifact.
+            Upon the successful creation of the Attachment and linkage to the artifact,
+            return an instance of the succesfully added Attachment.
+            Exceptions are raised for other error conditions, such as the filename
+            identified by the filename parm not existing, or not being a file, or the 
+            attachment file exceeding the maximum allowed size, or failure
+            to create the AttachmentContent or Attachment.
+           
         """
         # determine if artifact exists, if not short-circuit False
         # determine if attachment already exists for filename (with same size and content)
@@ -980,67 +1064,57 @@ class Rally(object):
         #           create the Attachment with basename for filename and ref the AttachmentContent 
         #              and supply the ref for the artifact in the Artifact field for Attachment
         #          
-        # grab the Attachments attribute for the artifact, save _ref attributes in a list
-        # update the target artifact with the augmented Attachments list of Attachment refs
-
-        art_type, artifact = self._realizeArtifact(artifact)
-##
-##        print "artifact oid: %s" % artifact.oid
-##
-        if not art_type:
-            return False
-
-        current_attachments = [att for att in artifact.Attachments]
+        if not os.path.exists(filename):
+            raise Exception('Named attachment filename: %s not found' % filename)
+        if not os.path.isfile(filename):
+            raise Exception('Named attachment filename: %s is not a regular file' % filename)
 
         attachment_file_name = os.path.basename(filename)
         attachment_file_size = os.path.getsize(filename)
         if attachment_file_size > self.MAX_ATTACHMENT_SIZE:
             raise Exception('Attachment file size too large, unable to attach to Rally Artifact')
             
-        contents = ''
-        with open(filename, 'r') as af:
-            contents = base64.encodestring(af.read())
-        size = len(contents)
+        art_type, artifact = self._realizeArtifact(artifact)
+        if not art_type:
+            return False
+
+        current_attachments = [att for att in artifact.Attachments]
 
         response = self.get('Attachment', fetch=True, query='Name = "%s"' % attachment_file_name)
         if response.resultCount:
             attachment = response.next()
             already_attached = [att for att in current_attachments if att.oid == attachment.oid]
             if already_attached:
-                return artifact
+                return already_attached[0]
 
-        else:  # create an AttachmentContent item
-            ac = self.create('AttachmentContent', {"Content" : contents}, project=None)
-            if not ac:
-                raise RallyRESTAPIError('Unable to create AttachmentContent for %s' % attachment_file_name)
+        contents = ''
+        with open(filename, 'r') as af:
+            contents = base64.encodestring(af.read())
             
-            attachment_info = { "Name"         :  attachment_file_name,
-                                "Content"      :  ac.ref,       # ref to AttachmentContent
-                                "ContentType"  :  mime_type,    
-                                "Size"         :  size,         
-                                "User"         :  'user/%s' % self.contextHelper.user_oid,
-                                "Artifact"     :  artifact.ref  # (optional field)
-                              }
-            attachment = self.create('Attachment', attachment_info, project=None)
+        # create an AttachmentContent item
+        ac = self.create('AttachmentContent', {"Content" : contents}, project=None)
+        if not ac:
+            raise RallyRESTAPIError('Unable to create AttachmentContent for %s' % attachment_file_name)
 
-        # now put the ref of the newly added Attachment in the Attachments for the artifact
-        #  ****  this is the key part here... *******
-        #  1) *  the full list of attachments (prior plus the new one) must be part of the update  
-        #  2) *  it must be a list of dicts with each dict having a '_ref' key and a attachment.ref value
         
-        att_refs = [dict(_ref=str(att.ref)) for att in current_attachments]
-        att_refs.append(dict(_ref=str(attachment.ref)))
-        artifact_info = { 'ObjectID'    : artifact.ObjectID,
-                          'Attachments' : att_refs,
-                        }
+        attachment_info = { "Name"        :  attachment_file_name,
+                            "Content"     :  ac.ref,       # ref to AttachmentContent
+                            "ContentType" :  mime_type,    
+                            "Size"        :  attachment_file_size, # must be size before encoding!!
+                            "User"        :  'user/%s' % self.contextHelper.user_oid,
+                           #"Artifact"    :  artifact.ref  # (Artifact is an 'optional' field)
+                          }
+        # While it's actually possible to have an Attachment not linked to an Artifact,
+        # in most cases, it'll be far more useful to have the linkage to an Artifact than not.
+        if artifact:  
+            attachment_info["Artifact"] = artifact.ref
 
-        upd_artifact = self.update(art_type, artifact_info, project=None)
-##
-##        print "Artifact %s includes Attachment for %s in its list of associated Attachments" % \
-##               (artifact.FormattedID, attachment.Name)
-##
+        # and finally, create the Attachment
+        attachment = self.create('Attachment', attachment_info, project=None)
+        if not attachment:
+            raise RallyRESTAPIError('Unable to create Attachment for %s' % attachment_file_name)
 
-        return upd_artifact
+        return attachment
 
 
     def addAttachments(self, artifact, attachments):
@@ -1096,6 +1170,7 @@ class Rally(object):
         resp = self._getResourceByOID(context, 'AttachmentContent', att.Content.oid, project=None)
         if resp.status_code not in [200, 201, 202]:
             return None
+
         response = RallyRESTResponse(self.session, context, "AttachmentContent.x", resp, "full", 1)
         if response.errors or response.resultCount != 1:
             return None
@@ -1128,7 +1203,7 @@ class Rally(object):
 
     def __disabled__deleteAttachment(self, artifact, filename):
         """
-            Unfortunately, at this time (WSAPI 1.30+) while AttachmentContent items can be deleted,
+            Unfortunately, at this time (WSAPI 1.34+) while AttachmentContent items can be deleted,
             Attachment items cannot.  So, exposing this method would offer very limited utility.
         """
         return False
@@ -1154,22 +1229,26 @@ class Rally(object):
                 print "Panic!  unable to delete AttachmentContent item for %s" % attachment.Name
                 return False
 
-        # Squeamishness about the drawbacks of deleting certain entities in Rally has
-        # sloshed into the Attachment realm, so can't actually do a delete of an Attachment.
-        #deleted = self.delete('Attachment', attachment.oid, project=None)
-
-        # But, we can still just not include the targeted Attachment here from 
-        # being included in the list of Attachments for our target artifact
-        remaining_attachments = [att for att in current_attachments if att.ref != attachment.ref]
-        att_refs = [dict(_ref=str(att.ref)) for att in remaining_attachments]
-        artifact_info = { 'ObjectID'    : artifact.ObjectID,
-                          'Attachments' : att_refs,
-                        }
-        updated = self.update(art_type, artifact_info, project=None)
-        if updated:
-            return updated
-        else: 
-            return False
+#        # Squeamishness about the drawbacks of deleting certain entities in Rally has
+#        # sloshed into the Attachment realm, so can't actually do a delete of an Attachment.
+#### 2012-09-24  re-attempt to delete an Attachment with Rally WSAPI 1.37
+####             attempt failed, no Exception raised, but Attachment not deleted...
+####
+#        #deleted = self.delete('Attachment', attachment.oid, project=None)
+#
+#        # But, we can still just not include the targeted Attachment here from 
+#### 2012-09-20  in fact, this is now dysfunctional also as of WSAPI 1.37 backward incompatible changes
+#        # being included in the list of Attachments for our target artifact
+#        remaining_attachments = [att for att in current_attachments if att.ref != attachment.ref]
+#        att_refs = [dict(_ref=str(att.ref)) for att in remaining_attachments]
+#        artifact_info = { 'ObjectID'    : artifact.ObjectID,
+#                          'Attachments' : att_refs,
+#                        }
+#        updated = self.update(art_type, artifact_info, project=None)
+#        if updated:
+#            return updated
+#        else: 
+#            return False
 
 
     def _realizeArtifact(self, artifact):
@@ -1245,7 +1324,7 @@ class RallyUrlBuilder(object):
         qualifiers = ['fetch=%s' % self.fetch]
         if self.query:
             encodedQuery = self._prepQuery(self.query)
-            qualifiers.append('%s=(%s)' % ('query', encodedQuery if encodedQuery else ""))
+            qualifiers.append('%s=%s' % ('query', encodedQuery if encodedQuery else ""))
         if self.order:
             qualifiers.append("order=%s" % urllib.quote(self.order))
         if self.workspace:
@@ -1277,30 +1356,41 @@ class RallyUrlBuilder(object):
                 if cond has pattern of '(thing relation value)', then urllib.quote content inside parens
                   then pass that result enclosed in parens back to the caller
             """
-            if condition[0] == '(' and condition[-1] == ')':
-                return '(%s)' % urllib.quote(condition[1:-1])
+            if condition[0] != '(' and condition[-1] != ')':
+                return '(%s)' % urllib.quote(condition)
             else:
                 return urllib.quote(condition)
 
         if type(query) in [types.StringType, types.UnicodeType]:
+            # if the query as provided is already surrounded by paren chars, return it 
+            # with the guts urllib.quote'ed
+            if query[0] == "(" and query[-1] == ")":
+                # restore any interior parens from the %28 / %29 encodings"
+                return "(%s)" % urllib.quote(query[1:-1]).replace('%28', '(').replace('%29', ')')
+
             if ' AND ' not in query and ' OR ' not in query and ' and ' not in query and ' or ' not in query:
-                return urllib.quote(query)
+                return "(%s)" % urllib.quote(query)
+
             else:  # do a regex split using ' AND|OR ' then urllib.quote the individual conditions
                 CONJUNCTIONS = ['and', 'or', 'AND', 'OR']
                 parts = CONJUNCTION_PATT.split(query)
                 parts = [p if p in CONJUNCTIONS else _encode(p) for p in parts]
-                return "%20".join(parts)
+                return "(%s)" % "%20".join(parts)
         elif type(query) in [types.ListType, types.TupleType]:
             # by fiat (and until requested by a paying customer), we assume the conditions are AND'ed
-            parts = ['(%s)' % _encode(condition) for condition in query] 
-            return "%20AND%20".join(parts)
+            parts = [_encode(condition) for condition in query] 
+            return "(%s)" % "%20AND%20".join(parts)
         elif type(query) == types.DictType:  # wow! look at this wildly unfounded assumption about what to do!
             parts = []
             for field, value in query.items():
                 # have to enclose string value in double quotes, otherwise turn whatever the value is into a string
                 tval = '"%s"' % value if type(value) == types.StringType else '%s' % value
                 parts.append('(%s)' % urllib.quote('%s = %s' % (field, tval)))
-            return "%20AND%20".join(parts)
+            anded = "%20AND%20".join(parts)
+            if len(parts) > 1:
+                return "(%s)" % anded
+            else:
+                return anded
 
         return None
 

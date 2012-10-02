@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (0, 9, 2)
 
 import datetime
 import os
@@ -19,7 +19,7 @@ import glob
 PROTOCOL       = "https"
 SERVER         = "rally1.rallydev.com"
 WEB_SERVICE    = "slm/webservice/%s"
-WS_API_VERSION = "1.30"
+WS_API_VERSION = "1.37"
 JSON_FORMAT    = ".js"
 
 USER_NAME = "wiley@acme.com"
@@ -38,6 +38,7 @@ RALLY_REST_HEADERS = \
       'X-RallyIntegrationPlatform' : 'Python %s' % platform.python_version(),
       'X-RallyIntegrationOS'       : platform.platform(),
       'User-Agent'                 : 'Pyral Rally WebServices Agent',
+      'Content-Type'               : 'application/json'
     }
 
 ##################################################################################################

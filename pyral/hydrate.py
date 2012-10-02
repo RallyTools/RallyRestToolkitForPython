@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (0, 9, 2)
 
 import types
 from pprint import pprint
@@ -49,11 +49,11 @@ class EntityHydrator(object):
                 For now we are not using try/except as in development we want any Exception to be 
                 raised to see what sort of problems might be encountered
             """
-            itemType = item.get(u'_type',          "CustomField")
+            itemType = item.get(u'_type', "CustomField")
 ##
 ##            print "in hydrateInstance, basicInstance to create a %s" % itemType
 ##
-            name     = item.get(u'_refObjectName', "Unknown")
+            name = item.get(u'_refObjectName', "Unknown")
             if itemType == 'AllowedQueryOperator':
                 name = item[u'OperatorName']
             #elif not item.get(u'_refObjectName', None):
@@ -64,11 +64,21 @@ class EntityHydrator(object):
             if resource_url:
                 oid = resource_url.split('/')[-1].replace('.js', '')
             try:
-                instance = classFor[itemType](oid, name, resource_url, self.context)
+                instance = classFor[str(itemType)](oid, name, resource_url, self.context)
             except KeyError, e:
-                print "No classFor item for |%s|" % itemType
-                raise KeyError(itemType)
-            instance = classFor[itemType](oid, name, resource_url, self.context)
+                bonked = True
+                if '/' in itemType:  # valid after intro of dyna-types in 1.37
+                    try:
+                        type_name, type_subdivision = itemType.split('/')
+                        instance = classFor[str(type_name)](oid, name, resource_url, self.context)
+                        itemType = type_name
+                        bonked = False
+                    except KeyError, e:
+                        pass
+                if bonked:    
+                    print "No classFor item for |%s|" % itemType
+                    raise KeyError(itemType)
+            instance = classFor[str(itemType)](oid, name, resource_url, self.context)
             instance._type = itemType  # although, this info is also available via instance.__class__.__name__
             if itemType == 'AllowedAttributeValue':
                 instance.Name  = 'AllowedValue'

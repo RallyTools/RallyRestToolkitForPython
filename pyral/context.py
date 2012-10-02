@@ -8,9 +8,11 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (0, 9, 2)
 
 import sys, os
+import platform
+import subprocess
 import time
 import socket
 import json
@@ -132,25 +134,31 @@ class RallyContextHelper(object):
             proxy_host, proxy_port = proxy.split(':')
         target_host = proxy_host or server
 
-        if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
-            try:
-                info = socket.gethostbyaddr(target_host)
-            except socket.herror, msg:
-                problem = "IP v4 address '%s' not valid or unreachable" % target_host
-                raise RallyRESTAPIError(problem)
-            except Exception, msg:
-                print "Exception detected: %s" % msg
-                problem = "Exception detected trying to obtain host info for: %s" % target_host
-                raise RallyRESTAPIError(problem)
+        reachable = Pinger.ping(target_host)
+        if not reachable:
+             problem = "host: '%s' non-existent or unreachable"  % target_host
+             raise RallyRESTAPIError(problem)
+
+        #if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
+        #    try:
+        #        info = socket.gethostbyaddr(target_host)
+        #    except socket.herror, msg:
+        #        pass
+        #        problem = "IP v4 address '%s' not valid or unreachable" % target_host
+        #        raise RallyRESTAPIError(problem)
+        #    except Exception, msg:
+        #        print "Exception detected: %s" % msg
+        #        problem = "Exception detected trying to obtain host info for: %s" % target_host
+        #        raise RallyRESTAPIError(problem)
 
         # TODO: look for IPV6 type address also?
 
-        else:
-            try:
-                target_host = socket.gethostbyname(target_host)
-            except socket.gaierror, msg:
-                problem = "hostname: '%s' non-existent or unreachable"  % target_host
-                raise RallyRESTAPIError(problem)
+        #else:
+        #    try:
+        #        target_host = socket.gethostbyname(target_host)
+        #    except socket.gaierror, msg:
+        #        problem = "hostname: '%s' non-existent or unreachable"  % target_host
+        #        raise RallyRESTAPIError(problem)
 
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
@@ -174,20 +182,24 @@ class RallyContextHelper(object):
             if response.status_code == 404:
                 if elapsed >= float(REQUEST_TIME_LIMIT):
                     problem = "Request timed out on attempt to reach %s" % server
+                elif response.errors and 'certificate verify failed' in response.errors[0]:
+                    problem = "SSL certificate verification failed"
                 elif response.errors and 'Max retries exceeded with url' in response.errors[0]:
                     problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 elif response.errors and 'NoneType' in response.errors[0]:
                     problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 else:
-                    #sys.stderr.write("404 Response for request\n")
-                    #sys.stderr.write("\n".join(response.errors + "\n")
-                    #sys.stderr.write("\n".join(response.warnings + "\n")
-                    #sys.stderr.flush()
+                    sys.stderr.write("404 Response for request\n")
+                    sys.stderr.write("\n".join(response.errors) + "\n")
+                    if response.warnings:
+                        sys.stderr.write("\n".join(response.warnings) + "\n")
+                    sys.stderr.flush()
                     problem = "404 Target host: '%s' doesn't support the Rally WSAPI" % server
             else:  # might be a 401 No Authentication or 401 The username or password you entered is incorrect.
 ##
 ##                print response.status_code
 ##                print response.headers
+##                print response.errors
 ##
                 if 'The username or password you entered is incorrect.' in response.errors[0]:
                     problem = "%s The username or password you entered is incorrect." % response.status_code
@@ -633,4 +645,31 @@ class RallyContextHelper(object):
 
 ##################################################################################################
 
+class Pinger(object):
+    """
+        An instance of this class attempts a single ping against a given target.
+        Response to the ping command results in the ping method returning True,
+        otherwise a False is returned
+    """
+    PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "1", "-t", "2"],
+                    'Unix'    : ["ping", "-n", "-1", "-w", "2"],
+                    'Linux'   : ["ping", "-n", "-1", "-w", "2"],
+                    'Windows' : ["ping", "-n", "-1", "-w", "2"]
+                   }
+    BLACK_HOLE   = {'Darwin'  : "/dev/null",
+                    'Unix'    : "/dev/null",
+                    'Linux'   : "/dev/null",
+                    'Windows' : "NUL"
+                   }
+
+    @classmethod
+    def ping(self, target):
+        plat_ident = platform.system()
+        vector = Pinger.PING_COMMAND[plat_ident][:]
+        vector.append(target)
+        abyss = Pinger.BLACK_HOLE[plat_ident]
+        rc = subprocess.call(vector, stdout=open(abyss, "w"))
+        return rc == 0
+
+##################################################################################################
 

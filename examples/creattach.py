@@ -9,9 +9,9 @@ Usage: py creattach.py <ArtifactIdentifier> <filename>
 """
 #################################################################################################
 
-import sys
+import sys, os
 import re
-import base64
+import string
 
 from pyral import Rally, rallySettings
 
@@ -21,8 +21,6 @@ errout = sys.stderr.write
 
 ARTY_FOR_PREFIX = {'S' : 'UserStory', 'US' : 'UserStory', 'DE' : 'Defect', 'TC' : 'TestCase'}
 
-COMMON_ATTRIBUTES = ['_type', 'oid', '_ref', '_CreatedAt', '_hydrated', 'Name']
-
 ATTACHMENT_ATTRIBUTES = ['oid', 'ObjectID', '_type', '_ref', '_CreatedAt', 'Name',
                          'CreationDate', 'Description', 
                          'Content', 'ContentType', 'Size', 
@@ -31,12 +29,6 @@ ATTACHMENT_ATTRIBUTES = ['oid', 'ObjectID', '_type', '_ref', '_CreatedAt', 'Name
                          'Artifact', 
                          'User'
                         ] 
-
-ATTACHMENT_CONTENT_ATTRS = """
-    Workspace  ref
-
-    Content    base64 content 
-"""
 
 ATTACHMENT_IMPORTANT_ATTRS = """
     Subscription   ref     (supplied at creation)
@@ -53,24 +45,6 @@ ATTACHMENT_IMPORTANT_ATTRS = """
     Artifact       ref to Artifact            (optional field)
 
     Description    TEXT        Optional
-
-"""
-
-ATTACHMENT_CREATION_ATTACHING_SEQUENCE = """
-   1)  Create the AttachmentContent item with content in base64 encoding
-       Get the oid of this created item back
-
-   2)  Create the Attachment item 
-          using the ref to newly created AttachmentContent item.
-          you also have to set
-               the User ref   (from the person who "uploaded" the AttachmentContent
-               the Name of the file associated with the AttachmentContent.Content
-               the Size of the base64 encoded stuff
-               the ContentType  (mime type, like text/xml, text/html, etc.)
-         
-       unclear at this time if you can set the Artifact ref ...    
-
-       you could also provide Description text
         
 """
 
@@ -95,29 +69,8 @@ def main(args):
     me = rally.getUserInfo(username=user).pop(0)
     #print "%s user oid: %s" % (user, me.oid)
 
-    att_content = base64.encodestring(open(attachment_file_name, 'r').read())
-    ac_size = len(att_content)
-    ac_info = {"Content" : att_content}
-    
-    ac = rally.create('AttachmentContent', ac_info, project=None)
-    #print "created AttachmentContent: %s    with size of %d" % (ac.oid, ac_size)
-
-    attachment_info = {
-                #"Subscription" :  subs.ref ,   (will default to current)
-                #"Workspace"    :  wksp.ref ,   (will default to current)
-
-                "Name"         :  attachment_file_name,
-                "Content"      :  ac.ref,     #ref to AttachmentContent
-                "Size"         :  ac_size,    
-                "ContentType"  :  'text/plain',  
-
-                "User"         :  me.ref,   
-
-                "Artifact"     :  artifact.ref  # (optional field)
-             }
-
-    att = rally.create('Attachment', attachment_info, project=None)
-    print "created Attachment: %s   with Name: %s" % (att.oid, att.Name)
+    att = rally.addAttachment(artifact, attachment_file_name)
+    print "created Attachment: %s for %s" % (attachment_file_name, target)
 
 #################################################################################################
 

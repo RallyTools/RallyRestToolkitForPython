@@ -55,7 +55,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (0, 9, 1)
+   (0, 9, 2)
 
 
 
@@ -250,14 +250,29 @@ Prerequisites
 -------------
 
  * Python 2.6 or 2.7
- * The most excellent requests_ package, 0.8.2 or better
+ * The  requests_ package, 0.8.2 or better
    Developed using requests 0.9.3.  
-   There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL.
+   There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL.  You should be able to use the verify_ssl_cert keyword argument when
+   obtaining a pyral Rally instance to overcome this issue.
    If you are using requests >- 0.9.3, you must also have certifi-0.0.8 (available on PyPI)
 .. _requests: http://github.com/kennethreitz/requests
 
 Versions
 --------
+   * 0.9.2 -  Fixed getProject to take optional project name argument.
+              Added HTTP header item in config.py to set Content-TYpe to 'application/json'.
+              Added recognition of verify_ssl_cert=True/False as keyword argment to
+              Rally constructor.  Explicit specification results in passing a
+              verify=True/False to the underlying requests package. This can be
+              useful when dealing with an expired SSL certificate.
+              Upped default WSAPI version in config.py to 1.37 to support dyna-types
+              (specifically PortfolioItem and sub-types)..
+              Modified addAttachment to conform with non-backward compatible change in Rally WSAPI 
+              involving how an attachment is related to an artifact.
+              Fixed defect in calculating an Attachment file size 
+                 (use pre-encoded rather than post-encoded size).
+              This release is intended as the final beta before a 1.0 release.
+
    * 0.9.1 -  Upped default WSAPI version in config.py to 1.30
               All entities that are subclasses of WorkspaceDomainObject now have a details method
               that show the attribute values in an easy to read multiline format.
@@ -285,14 +300,16 @@ Versions
 TODO
 ----
 
-* Python 3.2 + support
+* Python 3.3 + support
 
-* Create (better) documentation
+* Expand the documentation
 
 * Expand the repertoire of example scripts
 
 * Refactor the source code to make use decorators in pyral.restapi, 
   dynamically construct the Rally schema hierarchy economically.
+
+* Monitor requests/urllib3 for release that fully supports HTTPS over HTTP proxy.
 
 
 License

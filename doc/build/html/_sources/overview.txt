@@ -110,3 +110,30 @@ to obtain the value.  There are two significant advantages to this, one being li
 the load on the server with the reduction of data returned and the other being easy and 
 intuitive attribute access syntax.
 
+Introduction of Dyna-Types
+==========================
+
+As of Rally WebServices API 1.37, Rally has introduced a modification of their data model, which
+is termed dyna-types.  This modification offers a means of establishing and using a parent type
+and defining sub-types of that parent.  The PortfolioItem type is now an "abstract" type from which
+there are some pre-defined sub-types (Initiative, Theme, Feature).  For the user of the pyral package,
+the change manifests in two ways.  First, you'll only be able to work with PortfolioItem sub-types
+when specifying WSAPI version 1.37 or greater.  Second, by convention the preferred way to identify
+a PortfolioItem sub-type is via slashed naming, eg. 'PortfolioItem/Feature'.  While it is possible
+to identify a PortfolioItem sub-type by the sub-type name, eg, (Theme), this is not the preferred
+means.  The reason for the latter statement is that with dyna-types it is possible to define new
+"abstract" types and define sub-types therefrom that may have names identical to a sub-type whose
+parent differs from your newly defined "abstract" type.
+
+An example of this is a fictional "abstract" parent type named "Bogutrunk" (for a type that 
+encompasses stories about requests for things you'll never implement and aren't bugs, but you want
+ to track them anyway).  Additionally, let's say you define some sub-types whose parent type is
+"Bogutrunk" named "Outlandish", "NonScalable", "Theme" and "Feature".  Now, identifying a specific
+NonScalable Bogutrunk item is unambiguous, you'd just specify the entity in any pyral get/put/post/delete as a "NonScalable".  But, you cannot use that convention for a "Feature".  You'd need to specify
+one as a "Bogutrunk/Feature" to disambiguate from a "PortfolioItem/Feature".  The main take-away
+here is that if you don't use PortfolioItem instances with pyral, you can use any version of Rally WSAPI
+past version 1.20.  If you use PortfolioItem instances with pyral or you've defined your own "abstract" 
+parent types and specific sub-types thereof, you must use version 1.37 or greater and you are strongly
+encouraged to use the slashed specification to uniquely identify which Rally entity type you are 
+working with.
+  

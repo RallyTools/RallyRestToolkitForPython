@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (0, 9, 2)
 
 import sys
 import re
@@ -110,9 +110,12 @@ class RallyRESTResponse(object):
 
         #if self.request_type not in ['Operation', 'Create', 'Query', 'Update', 'Delete']:
         if self.request_type == 'ImpliedQuery':
-            # the request is against a Rally Type name, ie. 'Subscription', 'Workspace', 'UserProfile' etc
+            # the request is against a Rally Type name, ie. 'Subscription', 'Workspace', 'UserProfile', etc.
+            # or a Rally "sub-type" like PortfolioItem/Feature
             # which is context dependent and has a singleton result
             target = request.split('.')[0]  # request is either like Subscription.js?fetch=xxx, or just UserProfile
+            if '/' in target:
+                target = target.split('/')[1]
             if target not in self.content.keys():
                 # check to see if there is a case-insensitive match before upchucking...
                 ckls = [k.lower() for k in self.content.keys()]
