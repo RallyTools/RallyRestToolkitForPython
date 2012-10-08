@@ -2,17 +2,19 @@
 
 import sys, os
 import types
+import py
 
 from pyral import Rally
+import pyral
+
+InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
 
 ##################################################################################################
 
-PREVIEW = "preview.rallydev.com"
-DEMO    = "demo.rallydev.com"
-PROD    = "rally1.rallydev.com"
+TRIAL = "preview.rallydev.com"
 
-PREVIEW_USER = "usernumbernone@acme.com"
-PREVIEW_PSWD = "*******"
+TRIAL_USER = "usernumbernone@acme.com"
+TRIAL_PSWD = "*******"
 
 ##################################################################################################
 
@@ -22,8 +24,8 @@ def test_basic_query():
         issue a simple query (no qualifying criteria) for a known valid 
         Rally entity.
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
-    response = rally.get('project', fetch=False, limit=10)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
     assert response.warnings == []
@@ -36,7 +38,7 @@ def test_simple_named_fields_query():
         Rally entity. The fetch specifies a small number of known valid
         attributes on the Rally entity.
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Project', fetch="Owner,State", limit=10)
     assert response.status_code == 200
     assert len(response.errors) == 0
@@ -49,11 +51,11 @@ def test_all_fields_query():
         Rally entity.  The fetch value is True so each entity returned in
         the response (data) will have its _hydrated attribute value set to True.
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Project', fetch=True, limit=10)
     assert response.status_code == 200
     assert len(response.errors) ==   0
-    assert len(response._page)  ==  10
+    assert len(response._page)  ==   5
     for project in response:
         assert project.oid > 0
         assert len(project.Name) > 0
@@ -66,10 +68,14 @@ def test_bogus_query():
         The status_code in the response must not indicate a valid request/response
         and the errors attribute must have some descriptive info about the error.
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
-    response = rally.get('payjammas', fetch=False, limit=10)
-    assert response.status_code != 200
-    assert len(response.errors) > 0
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    bogus_entity = "Payjammas"
+    expectedErrMsg = "not a valid Rally entity: %s" % bogus_entity
+    with py.test.raises(InvalidRallyTypeNameError) as excinfo:
+        response = rally.get('Payjammas', fetch=False, limit=10)
+    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    assert excinfo.value.__class__.__name__ == 'InvalidRallyTypeNameError'
+    assert actualErrVerbiage == bogus_entity
 
 def test_good_and_bad_fields_query():
     """
@@ -80,7 +86,7 @@ def test_good_and_bad_fields_query():
         in the response data should not have the invalid attribute names, but
         should have attribute names/values for the correctly specified entity attributes.
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Project', fetch="Owner,State,Fabulote,GammaRays", limit=10)
     project = response.next()
     name  = None
@@ -117,13 +123,13 @@ def test_multiple_entities_query():
         As of the initial swag at the Python toolkit for Rally REST API, 
         this is an invalid request; only a single Rally entity can be specified.
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
-    response = rally.get('Project,Workspace', fetch=False, limit=10)
-    assert len(response.errors) > 0
-    # note how 'Project,Workspace' has been lower-cased to 'project,workspace'
-    expectedErrMsg = u"Not able to parse artifact type: project,workspace"
-    actualErrMsg   = response.errors[0]
-    assert actualErrMsg == expectedErrMsg
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    multiple_entities = "Project,Workspace"
+    with py.test.raises(InvalidRallyTypeNameError) as excinfo:
+        response = rally.get(multiple_entities, fetch=False, limit=10)
+    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    assert excinfo.value.__class__.__name__ == 'InvalidRallyTypeNameError'
+    assert actualErrVerbiage == multiple_entities
 
 def test_multiple_page_response_query():
     """
@@ -132,7 +138,7 @@ def test_multiple_page_response_query():
         (Defect) known to have more than 5 items.  Set the pagesize to 5 to
         force pyral to retrieve multiple pages to satisfy the query.
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Defect', fetch=False, pagesize=5, limit=15)
     count = 0
     for ix, bugger in enumerate(response):
@@ -151,7 +157,7 @@ def test_defects_revision_history():
         Ultimately, the attributes deeper than the first level must be obtained
         and have their attributes filled out completely (_hydrated == True).
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Defect', fetch=True, limit=10)
     
     defect1 = response.next()
@@ -175,6 +181,85 @@ def test_defects_revision_history():
 
     assert d1_rev1._hydrated == True
     assert d2_rev1._hydrated == True
+
+def test_single_condition_query_reg():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        issue a query with a single qualifying criterion against a Rally entity
+        (Defect) known to exist for which the qualifying criterion should return 
+        one or more Defects. The qualifying criterion is a string that is _not_
+        surrounded with paren chars.
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    workspace = rally.getWorkspace()
+    project   = rally.getProject()
+    qualifier = 'State = "Submitted"'
+
+    response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
+    assert response.resultCount > 0
+
+def test_single_condition_query_parenned():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        issue a query with a single qualifying criterion against a Rally entity
+        (Defect) known to exist for which the qualifying criterion should return 
+        one or more Defects. The qualifying criterion is a string that _is_
+        surrounded with paren chars.
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifier = "(State = Submitted)"
+    #qualifier = '(FormattedID = "US100")'
+    response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
+    assert response.resultCount > 0
+
+def test_single_condition_query_as_dict():
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifier = {'State' : 'Submitted'}
+    response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
+    assert response.resultCount > 0
+
+def test_two_condition_query_in_list():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        issue a query with two qualifying conditions against a Rally entity
+        (Defect) known to exist for which the qualifying criterion should return 
+        one or more Defects. The qualifying criterion is a list that contains
+        two condition strings, each condition string does _not_ have any 
+        surrounding paren chars.
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifiers = ["State = Submitted", "FormattedID != US100"]
+    response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
+    assert response.resultCount > 0
+
+def test_two_condition_query_in_unparenned_string():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        issue a query with two qualifying conditions against a Rally entity
+        (Defect) known to exist for which the qualifying criterion should return 
+        one or more Defects. The qualifying criterion is a list that contains
+        two condition strings, each condition string does _not_ have any 
+        surrounding paren chars.
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    double_qualifier = "State = Submitted AND FormattedID != US100"
+    response = rally.get('Defect', fetch=True, query=double_qualifier, limit=10)
+    assert response.resultCount > 0
+
+def test_two_condition_query_parenned():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        issue a query with two qualifying conditions against a Rally entity
+        (Defect) known to exist for which the qualifying criterion should return 
+        one or more Defects. The qualifying criterion is a string that _is_
+        surrounded with paren chars and each cohdition itself is surrounded by
+        parens..
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifiers = "((State = Submitted) AND (FormattedID != US100))"
+    response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
+    assert response.resultCount > 0
+
 
 #test_basic_query()
 #test_simple_named_fields_query()

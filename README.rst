@@ -51,11 +51,11 @@ relevant packages.
 :: 
 
    $ python
-   Python 2.6.5 [other Python interpreter info elided ...]
+   Python 2.6.6 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (0, 9, 2)
+   (0, 9, 3)
 
 
 
@@ -255,41 +255,50 @@ Prerequisites
    There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL.  You should be able to use the verify_ssl_cert keyword argument when
    obtaining a pyral Rally instance to overcome this issue.
    If you are using requests >- 0.9.3, you must also have certifi-0.0.8 (available on PyPI)
+
 .. _requests: http://github.com/kennethreitz/requests
 
 Versions
 --------
-   * 0.9.2 -  Fixed getProject to take optional project name argument.
-              Added HTTP header item in config.py to set Content-TYpe to 'application/json'.
-              Added recognition of verify_ssl_cert=True/False as keyword argment to
-              Rally constructor.  Explicit specification results in passing a
-              verify=True/False to the underlying requests package. This can be
-              useful when dealing with an expired SSL certificate.
-              Upped default WSAPI version in config.py to 1.37 to support dyna-types
-              (specifically PortfolioItem and sub-types)..
-              Modified addAttachment to conform with non-backward compatible change in Rally WSAPI 
-              involving how an attachment is related to an artifact.
-              Fixed defect in calculating an Attachment file size 
-                 (use pre-encoded rather than post-encoded size).
-              This release is intended as the final beta before a 1.0 release.
+   * 0.9.3 -
+            Fixed Pinger class to use correct ping options on Linux and Windows
+            Updated exception catching and exception raising to Python 2.6/2.7 syntax.            
 
-   * 0.9.1 -  Upped default WSAPI version in config.py to 1.30
-              All entities that are subclasses of WorkspaceDomainObject now have a details method
-              that show the attribute values in an easy to read multiline format.
-              Dropped attempted discrimination of server value to determine if it is a name or an IPv4 address    No longer look for http_proxy in environment, only https_proxy.
-              Introduced convenience methods dealing with attachments.
-              Corrected resource URL construction for the major ops (GET, PUT, POST, DEL)
-              when project=None specified (useful for Workspace spanning activities).
+   * 0.9.2 -  
+            Fixed getProject to take optional project name argument.
+            Added HTTP header item in config.py to set Content-TYpe to 'application/json'.
+            Added recognition of verify_ssl_cert=True/False as keyword argment to
+            Rally constructor.  Explicit specification results in passing a
+            verify=True/False to the underlying requests package. This can be
+            useful when dealing with an expired SSL certificate.
+            Upped default WSAPI version in config.py to 1.37 to support dyna-types
+            (specifically PortfolioItem and sub-types)..
+            Modified addAttachment to conform with non-backward compatible change in Rally WSAPI 
+            involving how an attachment is related to an artifact.
+            Fixed defect in calculating an Attachment file size (use pre-encoded rather than post-encoded size).
+
+            This release is intended as the final beta before a 1.0 release.
+
+   * 0.9.1 -  
+            Upped default WSAPI version in config.py to 1.30
+            All entities that are subclasses of WorkspaceDomainObject now have a details method
+            that show the attribute values in an easy to read multiline format.
+            Dropped attempted discrimination of server value to determine if it is a name or an IPv4 address    No longer look for http_proxy in environment, only https_proxy.
+            Introduced convenience methods dealing with attachments.
+            Corrected resource URL construction for the major ops (GET, PUT, POST, DEL)
+            when project=None specified (useful for Workspace spanning activities).
 
    * 0.8.12 - Fixed premature exercise of iterator in initial response
     
-   * 0.8.11 - Fixed inappropriate error message when initial connect attempt timed out.
-              Message had stated that the target server did not speak the Rally WSAPI.
-              Improved context handling with respect to workspace and project settings.
+   * 0.8.11 -
+            Fixed inappropriate error message when initial connect attempt timed out. 
+            Message had stated that the target server did not speak the Rally WSAPI.  
+            Improved context handling with respect to workspace and project settings.
     
-   * 0.8.10 - Attempted to bolster proxy handling. 
-              Limited success as there is an outstanding issue in
-              requests (urllib3) not implementing CONNECT for https over http.
+   * 0.8.10 - 
+            Attempted to bolster proxy handling.  
+            Limited success as there is an outstanding issue in equests (urllib3) not 
+            implementing CONNECT for https over http.
 
    * 0.8.9 -  initial attempt at providing proxy support
 
@@ -299,7 +308,6 @@ Versions
 
 TODO
 ----
-
 * Python 3.3 + support
 
 * Expand the documentation

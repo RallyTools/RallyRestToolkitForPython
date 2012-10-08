@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 2)
+__version__ = (0, 9, 3)
 
 import datetime
 import os
@@ -106,7 +106,7 @@ def rallySettings(args):
             cf.close()
             sc = "%s, %s, %s, %s, %s" % tuple(server_creds)
             return server_creds
-        except Exception, msg:
+        except Exception as ex:
             pass
 
     # #5

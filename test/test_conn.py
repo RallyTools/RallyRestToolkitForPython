@@ -123,8 +123,8 @@ def test_non_rally_server():
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=non_rally_server, 
-                            user=PREVIEW_USER, 
-                            password=PREVIEW_PSWD)
+                            user=TRIAL_USER, 
+                            password=TRIAL_PSWD)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert actualErrVerbiage == expectedErrMsg
@@ -149,8 +149,8 @@ def test_bad_server_spec():
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bad_server, 
-                            user=PREVIEW_USER, 
-                            password=PREVIEW_PSWD, timeout=3)
+                            user=TRIAL_USER, 
+                            password=TRIAL_PSWD, timeout=3)
         response = rally.get('Project', fetch=False, limit=5)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'

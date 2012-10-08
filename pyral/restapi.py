@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 2)
+__version__ = (0, 9, 3)
 
 import sys, os
 import re
@@ -186,7 +186,7 @@ class Rally(object):
         https_proxy = os.environ.get('HTTPS_PROXY', None) or os.environ.get('https_proxy', None)
         if https_proxy and https_proxy not in ["", None]:
             proxy_dict['https'] = https_proxy
-        
+
         verify_ssl_cert = True
         if kwargs and 'verify_ssl_cert' in kwargs:
             vsc = kwargs.get('verify_ssl_cert')
@@ -226,7 +226,7 @@ class Rally(object):
             else:
                 issue = ("Unable to use your project specification of '%s', " 
                          "that value is not associated with current workspace setting of: '%s'" )
-                raise Exception, issue % (kwargs['project'], self.contextHelper.currentContext().workspace)
+                raise Exception(issue % (kwargs['project'], self.contextHelper.currentContext().workspace))
 
         if 'project' not in kwargs:
             #
@@ -286,7 +286,7 @@ class Rally(object):
                 if append:
                     mode = 'a'
                 self._logDest = open(dest, mode)
-            except IOError, ex:
+            except IOError as ex:
                 self._log = False
                 self._logDest = None
         else:
@@ -313,7 +313,7 @@ class Rally(object):
                 try:
                     self._logDest.flush()
                     self._logDest.close()
-                except IOError, ex:
+                except IOError as ex:
                     # emit a warning that the logging destination was unable to be closed
                     pass
                 self._logDest = None
@@ -495,7 +495,22 @@ class Rally(object):
         context, augments = self.contextHelper.identifyContext(workspace=workspace)
         workspace_ref = self.contextHelper.currentWorkspaceRef()
 
-        resource = 'users.js?fetch=true&query=&pagesize=200&start=1&workspace=%s' % workspace_ref
+        # the only reason we are specifically listing the User attributes is to also sneak in
+        # the TimeZone attribute which is actually an attribute on UserProfile.  If we simply
+        # had the fetch clause of "fetch=true", each access of TimeZone would be a lazy-eval
+        # (a new request to Rally). So, we do the explicit listing of attributes for better performance.
+        user_attrs = ["Name", "UserName", "DisplayName", "FirstName", "LastName", "MiddleName",
+                      "CreationDate", "EmailAddress",
+                      "ShortDisplayName", "OnpremLdapUsername",
+                      "LastPasswordUpdateDate", "Disabled",
+                      "Subscription", "SubscriptionAdmin",
+                      "Role", "UserPermissions", "TeamMemberships", 
+                      "UserProfile", 
+                      "TimeZone"  # a UserProfile attribute
+                     ]
+        fields = ",".join(user_attrs)
+
+        resource = 'users.js?fetch="%s"&query=&pagesize=200&start=1&workspace=%s' % (fields, workspace_ref)
         full_resource_url = '%s/%s' % (self.service_url, resource)
 
         response = self.session.get(full_resource_url)
@@ -558,7 +573,7 @@ class Rally(object):
 ##
         try:
             raw_response = self.session.get(full_resource_url)
-        except Exception, exc:
+        except Exception as ex:
             exctype, value, tb = sys.exc_info()
             warning('%s: %s\n' % (exctype, value)) 
             return None
@@ -638,7 +653,7 @@ class Rally(object):
                 usi = int(kwargs['start'])  # usi - user supplied start index
                 if 0 < usi < MAX_ITEMS:     # start index must be greater than 0 and less than max
                     startIndex = usi
-            except ValueError, e: 
+            except ValueError as ex: 
                 pass
 
         if kwargs and 'limit' in kwargs:
@@ -697,14 +712,14 @@ class Rally(object):
             # or 'OperationResult' whose value is in turn a dict with values of 
             # 'Errors', 'Warnings', 'Results'
             response = self.session.get(full_resource_url)
-        except Exception, exc:
+        except Exception as ex:
             if response:
 ##
 ##                print response.status_code
 ##
                 ret_code, content = response.status_code, response.content
             else:
-                ret_code, content = 404, str(exc)
+                ret_code, content = 404, str(ex.args[0])
             if self._log:
                 self._logDest.write('%s %s\n' % (timestamp(), ret_code))
                 self._logDest.flush()
@@ -934,14 +949,14 @@ class Rally(object):
                                             query='ElementName = "%s"' % target_type,
                                             instance=True)
             if not td:
-                raise Exception, "Invalid Rally entity name: %s" % target_type
+                raise Exception("Invalid Rally entity name: %s" % target_type)
             _type_definition_cache[td_key] = td
         return _type_definition_cache[td_key]
 
     def getState(self, entity, state_name):
         """
             State is now (Sep 2012) a Rally type (aka entity) not a String.
-            In order to somewhere insulate pyral package users from the increased complexity 
+            In order to somewhat insulate pyral package users from the increased complexity 
             of that approach, this is a convenience method that given a target entity (like
             Defect, PortfolioItem/<subtype>, etc.) and a state name, an inquiry to the Rally
             system is executed and the matching entity is returned.
@@ -1021,7 +1036,7 @@ class Rally(object):
             self._logDest.flush()
         try:
             response = self.session.get(full_resource_url, headers=RALLY_REST_HEADERS)
-        except Exception, exc:
+        except Exception as ex:
             exception_type, value, traceback = sys.exc_info()
             warning('%s: %s\n' % (exception_type, value)) 
             sys.exit(9)
@@ -1036,9 +1051,9 @@ class Rally(object):
         try:
             allowed_values_dict = json.loads(response.content)
             return allowed_values_dict
-        except Exception, msg:
+        except Exception as ex:
             print "Unable to decode the json.loads target"
-            print msg
+            print ex.args[0]
             return None
 
 
@@ -1063,7 +1078,7 @@ class Rally(object):
         #   if not, create the AttachmentContent with filename content, 
         #           create the Attachment with basename for filename and ref the AttachmentContent 
         #              and supply the ref for the artifact in the Artifact field for Attachment
-        #          
+        #
         if not os.path.exists(filename):
             raise Exception('Named attachment filename: %s not found' % filename)
         if not os.path.isfile(filename):
@@ -1073,7 +1088,7 @@ class Rally(object):
         attachment_file_size = os.path.getsize(filename)
         if attachment_file_size > self.MAX_ATTACHMENT_SIZE:
             raise Exception('Attachment file size too large, unable to attach to Rally Artifact')
-            
+
         art_type, artifact = self._realizeArtifact(artifact)
         if not art_type:
             return False
@@ -1090,13 +1105,13 @@ class Rally(object):
         contents = ''
         with open(filename, 'r') as af:
             contents = base64.encodestring(af.read())
-            
+
         # create an AttachmentContent item
         ac = self.create('AttachmentContent', {"Content" : contents}, project=None)
         if not ac:
             raise RallyRESTAPIError('Unable to create AttachmentContent for %s' % attachment_file_name)
+       
 
-        
         attachment_info = { "Name"        :  attachment_file_name,
                             "Content"     :  ac.ref,       # ref to AttachmentContent
                             "ContentType" :  mime_type,    
@@ -1108,7 +1123,7 @@ class Rally(object):
         # in most cases, it'll be far more useful to have the linkage to an Artifact than not.
         if artifact:  
             attachment_info["Artifact"] = artifact.ref
-
+                      
         # and finally, create the Attachment
         attachment = self.create('Attachment', attachment_info, project=None)
         if not attachment:

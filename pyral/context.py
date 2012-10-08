@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 2)
+__version__ = (0, 9, 3)
 
 import sys, os
 import platform
@@ -142,12 +142,12 @@ class RallyContextHelper(object):
         #if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
         #    try:
         #        info = socket.gethostbyaddr(target_host)
-        #    except socket.herror, msg:
+        #    except socket.herror as ex:
         #        pass
         #        problem = "IP v4 address '%s' not valid or unreachable" % target_host
         #        raise RallyRESTAPIError(problem)
-        #    except Exception, msg:
-        #        print "Exception detected: %s" % msg
+        #    except Exception as ex:
+        #        print "Exception detected: %s" % ex.args[0]
         #        problem = "Exception detected trying to obtain host info for: %s" % target_host
         #        raise RallyRESTAPIError(problem)
 
@@ -156,7 +156,7 @@ class RallyContextHelper(object):
         #else:
         #    try:
         #        target_host = socket.gethostbyname(target_host)
-        #    except socket.gaierror, msg:
+        #    except socket.gaierror as ex:
         #        problem = "hostname: '%s' non-existent or unreachable"  % target_host
         #        raise RallyRESTAPIError(problem)
 
@@ -167,8 +167,8 @@ class RallyContextHelper(object):
             response = self.agent.get('User', fetch=True, query=user_name_query, 
                                       _disableAugments=True)
             timer_stop = time.time()
-        except Exception, msg:
-            if str(msg).startswith('404 Service unavailable'):
+        except Exception as ex:
+            if str(ex.args[0]).startswith('404 Service unavailable'):
                 # TODO: discern whether we should mention server or target_host as the culprit
                 raise RallyRESTAPIError("hostname: '%s' non-existent or unreachable" % server)
             else:
@@ -652,9 +652,9 @@ class Pinger(object):
         otherwise a False is returned
     """
     PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "1", "-t", "2"],
-                    'Unix'    : ["ping", "-n", "-1", "-w", "2"],
-                    'Linux'   : ["ping", "-n", "-1", "-w", "2"],
-                    'Windows' : ["ping", "-n", "-1", "-w", "2"]
+                    'Unix'    : ["ping",       "-c", "1", "-w", "2"],
+                    'Linux'   : ["ping",       "-c", "1", "-w", "2"],
+                    'Windows' : ["ping",       "-n", "1", "-w", "2"]
                    }
     BLACK_HOLE   = {'Darwin'  : "/dev/null",
                     'Unix'    : "/dev/null",

@@ -28,7 +28,7 @@ Installation
 Once requests has been installed, run the setup.py program supplied with 
 this distribution as::
 
-    python setup.py install.
+    python setup.py install
 
 Validation
 ----------

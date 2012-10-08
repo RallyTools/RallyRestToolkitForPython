@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 2)
+__version__ = (0, 9, 3)
 
 import sys
 import re
@@ -105,12 +105,12 @@ class Persistable(object):
 ##            sys.stdout.flush()
 ##
             if not response:
-                raise UnreferenceableOIDError, ("%s OID %s" % (rallyEntityTypeName, self.oid))
+                raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
             if not isinstance(response, object): # TODO: would like to be specific with RallyRESTResponse here...
                 print "bad guess on response type in __getattr__, response is a %s" % type(response)
-                raise UnreferenceableOIDError, ("%s OID %s" % (rallyEntityTypeName, self.oid))
+                raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
             if response.status_code != 200:
-                raise UnreferenceableOIDError, ("%s OID %s" % (rallyEntityTypeName, self.oid))
+                raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
             item = response.content[rallyEntityTypeName]
 ##
 ##            print "calling hydrateAnInstance from the __getattr__ of %s for %s" % (name, self._type)
@@ -125,7 +125,8 @@ class Persistable(object):
             entity_name, oid = self._ref.split('/')[-2:]
             return '%s/%s' % (entity_name, oid.replace('.js', ''))
         else:    
-            raise AttributeError, "%s instance has no attribute: '%s'" % (rallyEntityTypeName, name)
+            description = "%s instance has no attribute: '%s'" % (rallyEntityTypeName, name)
+            raise AttributeError(description)
 
 ##################################################################################################
 #

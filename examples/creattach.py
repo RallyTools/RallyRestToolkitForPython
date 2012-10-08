@@ -45,7 +45,7 @@ ATTACHMENT_IMPORTANT_ATTRS = """
     Artifact       ref to Artifact            (optional field)
 
     Description    TEXT        Optional
-        
+
 """
 
 #################################################################################################

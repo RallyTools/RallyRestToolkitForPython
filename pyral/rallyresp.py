@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 2)
+__version__ = (0, 9, 3)
 
 import sys
 import re
@@ -270,7 +270,7 @@ class RallyRESTResponse(object):
 ##            print "full URL for next page of data:\n    %s" % full_resource_url
 ##
             response = self.session.get(full_resource_url)
-        except Exception, msg:
+        except Exception as ex:
             exception_type, value, traceback = sys.exc_info()
             sys.stderr.write('%s: %s\n' % (exception_type, value)) 
             sys.stderr.write(traceback)

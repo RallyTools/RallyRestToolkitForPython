@@ -7,12 +7,10 @@ from pyral import Rally, RallyRESTAPIError
 
 ##################################################################################################
 
-PREVIEW = "preview.rallydev.com"
-DEMO    = "demo.rallydev.com"
-PROD    = "rally1.rallydev.com"
+TRIAL = "preview.rallydev.com"
 
-PREVIEW_USER = "usernumbernine@acme.com"
-PREVIEW_PSWD = "************"
+TRIAL_USER = "usernumbernine@acme.com"
+TRIAL_PSWD = "************"
 
 ##################################################################################################
 
@@ -23,7 +21,7 @@ def test_default_connection():
         Return status should be OK, 
         Rally._wpCacheStatus should be 'minimal'
     """
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Project', fetch=False, limit=10)
     assert response != None
     assert response.status_code == 200
@@ -39,7 +37,7 @@ def test_default_workspace_with_named_default_project():
         _inflated value should be 'minimal'
     """
     project = 'Shopping Team'
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   project=project)
     response = rally.get('Project', fetch=False)
     assert response != None
@@ -55,7 +53,7 @@ def test_default_workspace_non_default_valid_project():
         _inflated value should be 'minimal'
     """
     project = 'Online Store'
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   project=project)
     response = rally.get('Project', fetch=False)
     assert response != None
@@ -72,7 +70,7 @@ def test_default_workspace_non_valid_project():
     project = 'Halfling Leaf Pipe'
     expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, 'User Story Pattern')
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+        rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       project=project)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'Exception'
@@ -87,7 +85,7 @@ def test_named_default_workspace_use_default_project():
         _inflated value should be 'minimal'
     """
     workspace = 'User Story Pattern'
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace)
     response = rally.get('Project')
     assert response != None
@@ -107,7 +105,7 @@ def test_named_default_workspace_named_default_project():
     """
     workspace = 'User Story Pattern'
     project   = 'Shopping Team'
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project)
     response = rally.get('Project')
     assert response != None
@@ -124,7 +122,7 @@ def test_named_default_workspace_named_valid_project():
     """
     workspace = 'User Story Pattern'
     project   = 'Online Store'
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project)
     response = rally.get('Project')
     assert response != None
@@ -142,7 +140,7 @@ def test_named_default_workspace_named_invalid_project():
     project = 'Sailor Sami'
     expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, workspace)
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+        rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       workspace=workspace, project=project)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'Exception'
@@ -164,13 +162,13 @@ def test_named_non_default_workspace_use_default_project():
     """
     #default_workspace = 'User Story Pattern'
     workspace = 'Integrations'
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD, workspace=workspace)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace)
     ai_proj = rally.getProject()
     assert str(ai_proj.Name) == 'Shopping Team'   # is valid on both default and 'Integrations'
     assert rally._wpCacheStatus() == 'narrow'
 
     workspace = 'Healthcare Story Pattern 1'
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD, workspace=workspace)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace)
     ai_proj = rally.getProject()
     assert str(ai_proj.Name) == 'Big Healthcare'   # is valid only in 'Healthcare Story Pattern 1'
     assert rally._wpCacheStatus() == 'narrow'
@@ -184,7 +182,7 @@ def test_named_non_default_workspace_named_valid_project():
     """
     workspace = 'Integrations'
     project   = 'Consumer Site'
-    rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project)
     response = rally.get('Project')
     assert response != None
@@ -201,7 +199,7 @@ def test_named_non_default_workspace_named_invalid_project():
     project   = 'Barney Rubble'
     expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, workspace)
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(server=PREVIEW, user=PREVIEW_USER, password=PREVIEW_PSWD,
+        rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project, timeout=10)
         response = rally.get('Project', fetch=False, limit=5)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(

@@ -86,14 +86,13 @@ def main(args):
 
     try:
         rally = Rally(server, user=user, password=password)
-    except Exception, msg:
-        errout(str(msg))       
+    except Exception as ex:
+        errout(str(ex.args[0]))       
         sys.exit(1)
     #rally.enableLogging('rally.hist.typedefs')
 
     response = rally.get('TypeDefinition', fetch=ATTRIBUTE_FIELDS, query=query, pretty=True,
                                            project=None)
-    
     if response.errors:
         errout("Request could not be successfully serviced, error code: %d\n" % response.status_code)
         errout("\n".join(response.errors))
