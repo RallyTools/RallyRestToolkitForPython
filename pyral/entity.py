@@ -265,6 +265,7 @@ class TimeEntryItem         (WorkspaceDomainObject): pass
 class TimeEntryValue        (WorkspaceDomainObject): pass
 class PreliminaryEstimate   (WorkspaceDomainObject): pass
 class State                 (WorkspaceDomainObject): pass
+class UserIterationCapacity (WorkspaceDomainObject): pass
 
 class WebLinkDefinition(AttributeDefinition): pass
 
@@ -368,6 +369,7 @@ classFor = { 'WorkspaceDomainObject'   : WorkspaceDomainObject,
              'CustomField'             : CustomField,
              'ReleaseCumulativeFlowData'   : ReleaseCumulativeFlowData,
              'IterationCumulativeFlowData' : IterationCumulativeFlowData,
+             'UserIterationCapacity'    :  UserIterationCapacity,
            }
 
 for entity_name, entity_class in classFor.items():
