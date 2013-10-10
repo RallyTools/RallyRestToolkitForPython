@@ -17,6 +17,7 @@ import time
 import socket
 import json
 import re  # we use compile, match
+import logging
 from pprint import pprint
 
 # intra-package imports
@@ -196,10 +197,10 @@ class RallyContextHelper(object):
                     sys.stderr.flush()
                     problem = "404 Target host: '%s' doesn't support the Rally WSAPI" % server
             else:  # might be a 401 No Authentication or 401 The username or password you entered is incorrect.
-##
-##                print response.status_code
-##                print response.headers
-##                print response.errors
+                logger=logging.getLogger('restapi.Rally')
+                logger.error("404 Response for request:")
+                logger.error("\n".join(response.errors))
+                logger.error("\n".join(response.warnings))
 ##
                 if 'The username or password you entered is incorrect.' in response.errors[0]:
                     problem = "%s The username or password you entered is incorrect." % response.status_code
