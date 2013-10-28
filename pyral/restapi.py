@@ -192,10 +192,17 @@ class Rally(object):
             vsc = kwargs.get('verify_ssl_cert')
             if vsc in [False, True]:
                 verify_ssl_cert = vsc
-
-        self.session = requests.session(headers=RALLY_REST_HEADERS, auth=credentials,
-                                        timeout=10.0, proxies=proxy_dict, 
-                                        verify=verify_ssl_cert, config=config)
+       
+        self.session = requests.Session()
+        self.session.auth = (self.user, self.password)
+        self.session.timeout = 10.0
+        self.session.proxies = proxy_dict
+        self.session.verify = verify_ssl_cert
+        self.session.config = config
+        
+        #self.session = requests.session(headers=RALLY_REST_HEADERS, auth=credentials,
+        #                                timeout=10.0, proxies=proxy_dict, 
+        #                                verify=verify_ssl_cert, config=config)
         self.contextHelper = RallyContextHelper(self, server, user, password)
         self.contextHelper.check(self.server)
 
@@ -1393,8 +1400,12 @@ class RallyUrlBuilder(object):
                 return "(%s)" % "%20".join(parts)
         elif type(query) in [types.ListType, types.TupleType]:
             # by fiat (and until requested by a paying customer), we assume the conditions are AND'ed
-            parts = [_encode(condition) for condition in query] 
-            return "(%s)" % "%20AND%20".join(parts)
+            parts = [_encode(condition) for condition in query]
+            query_string = "%s" % parts.pop(0)
+            for query_term in parts:
+                query_string = "(%s AND %s)" % (query_string, query_term)
+            return query_string        
+        
         elif type(query) == types.DictType:  # wow! look at this wildly unfounded assumption about what to do!
             parts = []
             for field, value in query.items():
