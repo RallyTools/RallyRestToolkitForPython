@@ -8,9 +8,11 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (0, 9, 4)
 
 import sys, os
+import platform
+import subprocess
 import time
 import socket
 import json
@@ -26,10 +28,12 @@ __all__ = ["RallyContext", "RallyContextHelper"]
 
 ###################################################################################################
 
-REQUEST_TIME_LIMIT = 5  # in seconds
+INITIAL_REQUEST_TIME_LIMIT =   5 # in seconds
+SERVICE_REQUEST_TIME_LIMIT = 120 # in seconds
 
-IPV4_ADDRESS_PATT = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
-FORMATTED_ID_PATT = re.compile(r'^[A-Z]{1,2}\d+$')
+IPV4_ADDRESS_PATT  = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
+FORMATTED_ID_PATT  = re.compile(r'^[A-Z]{1,2}\d+$')
+SCHEME_PREFIX_PATT = re.compile(r'^https?://')
 
 ##################################################################################################
 
@@ -121,7 +125,7 @@ class RallyContextHelper(object):
 ##        print " RallyContextHelper.check starting ..."
 ##        sys.stdout.flush()
 ##
-        socket.setdefaulttimeout(REQUEST_TIME_LIMIT)
+        socket.setdefaulttimeout(INITIAL_REQUEST_TIME_LIMIT)
         target_host = server
 
         big_proxy   = os.environ.get('HTTPS_PROXY', False)
@@ -129,28 +133,37 @@ class RallyContextHelper(object):
         proxy = big_proxy if big_proxy else small_proxy if small_proxy else False
         proxy_host = False
         if proxy:
+            if proxy.startswith('http'):
+                proxy = SCHEME_PREFIX_PATT.sub('', proxy)
             proxy_host, proxy_port = proxy.split(':')
         target_host = proxy_host or server
 
-        if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
-            try:
-                info = socket.gethostbyaddr(target_host)
-            except socket.herror, msg:
-                problem = "IP v4 address '%s' not valid or unreachable" % target_host
-                raise RallyRESTAPIError(problem)
-            except Exception, msg:
-                print "Exception detected: %s" % msg
-                problem = "Exception detected trying to obtain host info for: %s" % target_host
-                raise RallyRESTAPIError(problem)
+        reachable, problem = Pinger.ping(target_host)
+        if not reachable:
+             if not problem:
+                 problem = "host: '%s' non-existent or unreachable"  % target_host
+             raise RallyRESTAPIError(problem)
+
+        #if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
+        #    try:
+        #        info = socket.gethostbyaddr(target_host)
+        #    except socket.herror as ex:
+        #        pass
+        #        problem = "IP v4 address '%s' not valid or unreachable" % target_host
+        #        raise RallyRESTAPIError(problem)
+        #    except Exception as ex:
+        #        print "Exception detected: %s" % ex.args[0]
+        #        problem = "Exception detected trying to obtain host info for: %s" % target_host
+        #        raise RallyRESTAPIError(problem)
 
         # TODO: look for IPV6 type address also?
 
-        else:
-            try:
-                target_host = socket.gethostbyname(target_host)
-            except socket.gaierror, msg:
-                problem = "hostname: '%s' non-existent or unreachable"  % target_host
-                raise RallyRESTAPIError(problem)
+        #else:
+        #    try:
+        #        target_host = socket.gethostbyname(target_host)
+        #    except socket.gaierror as ex:
+        #        problem = "hostname: '%s' non-existent or unreachable"  % target_host
+        #        raise RallyRESTAPIError(problem)
 
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
@@ -159,8 +172,12 @@ class RallyContextHelper(object):
             response = self.agent.get('User', fetch=True, query=user_name_query, 
                                       _disableAugments=True)
             timer_stop = time.time()
-        except Exception, msg:
-            if str(msg).startswith('404 Service unavailable'):
+        except Exception as ex:
+##
+            print "-----"
+            print str(ex)
+##
+            if str(ex.args[0]).startswith('404 Service unavailable'):
                 # TODO: discern whether we should mention server or target_host as the culprit
                 raise RallyRESTAPIError("hostname: '%s' non-existent or unreachable" % server)
             else:
@@ -168,26 +185,30 @@ class RallyContextHelper(object):
         elapsed = timer_stop - timer_start
         if response.status_code != 200:
 ##
-##            print "context check response: %s" % response
+##            print "context check response:\n%s\n" % response
 ##            print "request attempt elapsed time: %6.2f" % elapsed
 ##
             if response.status_code == 404:
-                if elapsed >= float(REQUEST_TIME_LIMIT):
+                if elapsed >= float(INITIAL_REQUEST_TIME_LIMIT):
                     problem = "Request timed out on attempt to reach %s" % server
+                elif response.errors and 'certificate verify failed' in response.errors[0]:
+                    problem = "SSL certificate verification failed"
                 elif response.errors and 'Max retries exceeded with url' in response.errors[0]:
                     problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 elif response.errors and 'NoneType' in response.errors[0]:
                     problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 else:
-                    #sys.stderr.write("404 Response for request\n")
-                    #sys.stderr.write("\n".join(response.errors + "\n")
-                    #sys.stderr.write("\n".join(response.warnings + "\n")
-                    #sys.stderr.flush()
+                    sys.stderr.write("404 Response for request\n")
+                    sys.stderr.write("\n".join(response.errors) + "\n")
+                    if response.warnings:
+                        sys.stderr.write("\n".join(response.warnings) + "\n")
+                    sys.stderr.flush()
                     problem = "404 Target host: '%s' doesn't support the Rally WSAPI" % server
             else:  # might be a 401 No Authentication or 401 The username or password you entered is incorrect.
 ##
 ##                print response.status_code
 ##                print response.headers
+##                print response.errors
 ##
                 if 'The username or password you entered is incorrect.' in response.errors[0]:
                     problem = "%s The username or password you entered is incorrect." % response.status_code
@@ -221,6 +242,10 @@ class RallyContextHelper(object):
             User.UserProfile.OID value and issue a GET for that using _getResourceByOID
             and handling the response (wrapped in a RallyRESTResponse).
         """
+##
+##        print "in RallyContextHelper._getDefaults, response arg has:"
+##        pprint(response.data[u'Results'])
+##
         user = response.next()
         self.user_oid = user.oid
 ##
@@ -260,6 +285,9 @@ class RallyContextHelper(object):
             self._currentProject  = ""
             proj_ref = ""
             projects = self.agent.get('Project', fetch="Name", workspace=self._defaultWorkspace)
+##
+##            print projects.content
+##
             if projects:
                 proj = projects.next()
                 proj_ref = proj._ref
@@ -633,4 +661,37 @@ class RallyContextHelper(object):
 
 ##################################################################################################
 
+class Pinger(object):
+    """
+        An instance of this class attempts a single ping against a given target.
+        Response to the ping command results in the ping method returning True,
+        otherwise a False is returned
+    """
+    PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "2", "-t", "2"],
+                    'Unix'    : ["ping",       "-c", "2", "-w", "2"],
+                    'Linux'   : ["ping",       "-c", "2", "-w", "2"],
+                    'Windows' : ["ping",       "-n", "2", "-w", "2"]
+                   }
+
+    @classmethod
+    def ping(self, target):
+        plat_ident = platform.system()
+        vector = Pinger.PING_COMMAND[plat_ident][:]
+        vector.append(target)
+        abyss = ".abyss"
+        result = ""
+        try:
+            with open(abyss, 'w') as sink:
+                rc = subprocess.call(vector, stdout=sink, stderr=sink)
+        except:
+            stuff = sys.exc_info()
+            result = stuff[1]
+        finally:
+            with open(abyss, 'r') as of:
+                result = of.read()
+            os.unlink(abyss)
+
+        return rc == 0, result
+
+##################################################################################################
 
