@@ -39,7 +39,7 @@ The priority chain consists of these steps:
         - RALLY_PROJECT
     * if present, use information from a rally-<version>.cfg file in the current directory,
       where <version> matches the Rally WSAPI version defined in the pyral.config module.
-      Currently, that version is defined as 1.29.
+      Currently, that version is defined as 1.43.
     * if present, use the contents of a file named in the RALLY_CONFIG environment variable.
     * if present, use the contents of a config named on the command line via the --config-<filename>
       option
@@ -136,17 +136,17 @@ Rally
     either in this specific order or as keyword arguments.
 
     You can optionally specify the following as keyword arguments.
-        * version
         * workspace
         * project
-        * version  (specify the Rally WSAPI version, default is 1.29)
+        * version  (specify the Rally WSAPI version, default is 1.43)
+        * verify_ssl_cert  (True or False, default is True)
         * warn     (True or False, default is True) 
                     Controls whether a warning is issued if no project is specified
                     and the default project for the user is not in the workspace specified.  
                     Under those conditions, the project is changed to the first project
                     (alphabetic ordering) in the list of projects for the specified workspace.
 
-.. py:class:: Rally (server, user, password, version=1.29, workspace=None, project=None, warn=True)
+.. py:class:: Rally (server, user, password, version=1.43, workspace=None, project=None, warn=True)
 
 Examples::
 
@@ -156,7 +156,7 @@ Examples::
 
     rally = Rally(server, user, password, workspace='Division #1 Products', project='ABC')
 
-    rally = Rally(server, user, password, workspace='Brontoville', warn=False)
+    rally = Rally(server, user, password, workspace='Brontoville', verify_ssl_cert=False, warn=False)
 
 
 
@@ -305,10 +305,15 @@ pyral.Rally instance convenience methods
     that project in subsequent interractions with Rally.
 
 
-.. method:: getProject(projectName)
+.. method:: getProject(name=None)
 
-    Returns an instance of a Project entity with information about the project 
-    in the currently active context.
+    Returns a minimally hydrated Project entity instance with the Name and ref
+    of the project in the currently active context if the name keyword arg
+    is not supplied or the Name and ref of the project identified by the value of 
+    the name parameter as long as the name identifies a valid project in the currently 
+    selected workspace.
+    Returns None if a name parameter is supplied that does not identify a valid project
+    in the currently selected workspace.
 
 
 .. method:: getProjects(workspace=None)
@@ -337,7 +342,6 @@ pyral.Rally instance convenience methods
     Returns None if there is no match in the Rally subscription/workspace for
     the keyword argument used to identify the user target.
 
-
 .. method:: getAllUsers(workspace=None)
 
     This method offers a convenient one-stop means of obtaining usable information 
@@ -347,6 +351,32 @@ pyral.Rally instance convenience methods
     Return a list of User instances (fully hydrated for scalar attributes)
     whose ref and collection attributes will be lazy eval'ed upon access.
 
+.. method:: typedef(entityName)
+    
+    This method returns a TypeDefinition instance for the given entityName.
+    The is handy for occasions where you need identify a specific entity
+    for something like 'Feature' or 'Theme' when creating or updating a
+    PortfolioItem subclass.  Intended usage is to use the return *.ref* attribute.
+    For example, within an info dict, "PortfolioItemType" : rally.typedef('Feature').ref .
+
+.. method:: getState(entityName, stateName)
+    
+    As of Rally WSAPI 1.37 (Sep 2012), the State attribute is no longer a String value for 
+    many entities, it is itself an entity (aka Rally Type). To be able to create (or update) 
+    an Artifact's State attribute, you must provide a reference (_ref or ref) in the information 
+    dictionary used to populate the Artifact's attributes.  This method provides an
+    easy means of obtaining the appropriate entity for the particular entity and state Name
+    you want.  Typically the usage would be along the lines of this example:
+
+       info = { ...., "State" : rally.getState('Feature', 'Discovering').ref, ... })
+
+    WARNING: This method only works with PortfolioItem subclasses at this time.
+             (Theme, Initiative, Feature)
+
+.. method:: getStates(entityName)
+    
+    Given an entityName, returns a list of State instances populated with information
+    about each state value permitted for the entityName.
 
 .. method:: getAllowedValues(entityName, attributeName [,workspace=None])
 
@@ -359,6 +389,7 @@ pyral.Rally instance convenience methods
     it exists and then attempt to add an Attachment with the name and
     contents of filename into Rally and associate that Attachment with the
     Artifact.
+    Returns the Attachment item.
 
 .. method:: addAttachments(artifact, attachments)
 
@@ -479,4 +510,51 @@ Item Attributes
             for task in story.Tasks:
                 print task.oid, task.Name, task.ActualHours
 
-    
+
+.. method:: details()
+
+    This convenience method is available on all *WorkspaceDomain*
+    subclass instances and provides an organized and easy to read multiline string
+    with the content of the instance.
+
+Example::
+
+    response = rally.get('UserStory', fetch=True, query='FormattedID = S321')
+    story1 = response.next()
+    print story1.details()
+
+    HierarchicalRequirement
+        oid               : 12345678
+        ref               : hierarchicalrequirement/12345678
+        ObjectID          : 12345678
+        _ref              : https://rallydev.rallydev.com/slm/webservice/1.30/hierarchicalrequirement/12345678.js
+        _CreatedAt        : today at 3:14 am
+        _hydrated         : True
+        Name              : Filbert nuts should be added to all energy bars
+        Subscription      : Subscription.ref   (OID  400060  Name: Company 1)
+        Workspace         : Workspace.ref      (OID  722746  Name: Prime Cuts Workspace)
+        FormattedID       : S321
+
+        AcceptedDate      : None
+        AccountingProjec  : None
+        AccountingTask    : None
+        AffectedCustomer  : 
+        Attachments       : []
+        Blocked           : False
+        Blocker           : None
+        Capitalizable     : None
+        Changesets        : []
+        Children          : []
+        CreationDate      : 2012-07-12T09:14:35.852Z
+        DefectStatus      : NONE
+        Defects           : []
+        Description       : As a health conscious PO, I want better nutritional content in all bars
+        Discussion        : []
+        IdeaURL           : <pyral.entity.CustomField object at 0x101931290>
+        IdeaVotes         : None
+        InProgressDate    : 2012-07-12T09:14:36.098Z
+        Iteration         : Iteration.ref               (OID  1242381  Name Iteration 5 (Summer))
+        KanbanState       : Accepted
+        LastUpdateDate    : 2012-07-12T09:14:36.237Z
+        ...
+
