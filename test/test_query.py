@@ -28,7 +28,7 @@ def test_basic_query():
     response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
-    assert len(response.warnings) == 1  # damn deprecation warnings
+    assert len(response.warnings) == 1  # WSAPI deprecation warning
     assert response.resultCount > 0
 
 def test_simple_named_fields_query():
