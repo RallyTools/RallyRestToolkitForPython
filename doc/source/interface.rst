@@ -39,7 +39,7 @@ The priority chain consists of these steps:
         - RALLY_PROJECT
     * if present, use information from a rally-<version>.cfg file in the current directory,
       where <version> matches the Rally WSAPI version defined in the pyral.config module.
-      Currently, that version is defined as 1.37.
+      Currently, that version is defined as 1.43.
     * if present, use the contents of a file named in the RALLY_CONFIG environment variable.
     * if present, use the contents of a config named on the command line via the --config-<filename>
       option
@@ -138,7 +138,7 @@ Rally
     You can optionally specify the following as keyword arguments.
         * workspace
         * project
-        * version  (specify the Rally WSAPI version, default is 1.37)
+        * version  (specify the Rally WSAPI version, default is 1.43)
         * verify_ssl_cert  (True or False, default is True)
         * warn     (True or False, default is True) 
                     Controls whether a warning is issued if no project is specified
@@ -146,7 +146,7 @@ Rally
                     Under those conditions, the project is changed to the first project
                     (alphabetic ordering) in the list of projects for the specified workspace.
 
-.. py:class:: Rally (server, user, password, version=1.34, workspace=None, project=None, warn=True)
+.. py:class:: Rally (server, user, password, version=1.43, workspace=None, project=None, warn=True)
 
 Examples::
 
@@ -367,7 +367,11 @@ pyral.Rally instance convenience methods
     dictionary used to populate the Artifact's attributes.  This method provides an
     easy means of obtaining the appropriate entity for the particular entity and state Name
     you want.  Typically the usage would be along the lines of this example:
+
        info = { ...., "State" : rally.getState('Feature', 'Discovering').ref, ... })
+
+    WARNING: This method only works with PortfolioItem subclasses at this time.
+             (Theme, Initiative, Feature)
 
 .. method:: getStates(entityName)
     
@@ -506,7 +510,7 @@ Item Attributes
             for task in story.Tasks:
                 print task.oid, task.Name, task.ActualHours
 
-    
+
 .. method:: details()
 
     This convenience method is available on all *WorkspaceDomain*

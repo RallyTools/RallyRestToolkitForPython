@@ -3,17 +3,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Python toolkit for the Rally REST API &mdash; pyral v0.9.3 documentation</title>
+    <title>Python toolkit for the Rally REST API &mdash; pyral 0.9.4 documentation</title>
+    
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.3',
+        VERSION:     '0.9.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral v0.9.3 documentation" href="index.html" />
+    <link rel="top" title="pyral 0.9.4 documentation" href="index.html" />
     <link rel="next" title="Primary pyral classes and functions" href="interface.html" />
     <link rel="prev" title="pyral documentation!" href="index.html" /> 
   </head>
@@ -39,7 +42,7 @@
         <li class="right" >
           <a href="index.html" title="pyral documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral v0.9.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 0.9.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -157,12 +160,12 @@ means.  The reason for the latter statement is that with dyna-types it is possib
 &#8220;abstract&#8221; types and define sub-types therefrom that may have names identical to a sub-type whose
 parent differs from your newly defined &#8220;abstract&#8221; type.</p>
 <p>An example of this is a fictional &#8220;abstract&#8221; parent type named &#8220;Bogutrunk&#8221; (for a type that
-encompasses stories about requests for things you&#8217;ll never implement and aren&#8217;t bugs, but you want</p>
-<blockquote>
-<div>to track them anyway).  Additionally, let&#8217;s say you define some sub-types whose parent type is</div></blockquote>
-<p>&#8220;Bogutrunk&#8221; named &#8220;Outlandish&#8221;, &#8220;NonScalable&#8221;, &#8220;Theme&#8221; and &#8220;Feature&#8221;.  Now, identifying a specific
-NonScalable Bogutrunk item is unambiguous, you&#8217;d just specify the entity in any pyral get/put/post/delete as a &#8220;NonScalable&#8221;.  But, you cannot use that convention for a &#8220;Feature&#8221;.  You&#8217;d need to specify
-one as a &#8220;Bogutrunk/Feature&#8221; to disambiguate from a &#8220;PortfolioItem/Feature&#8221;.  The main take-away
+encompasses stories about requests for things you&#8217;ll never implement and aren&#8217;t bugs, but you want
+to track them anyway).  Additionally, let&#8217;s say you define some sub-types whose parent type is
+&#8220;Bogutrunk&#8221; named &#8220;Outlandish&#8221;, &#8220;NonScalable&#8221;, &#8220;Theme&#8221; and &#8220;Feature&#8221;.  Now, identifying a specific
+NonScalable Bogutrunk item is unambiguous, you&#8217;d just specify the entity in any pyral
+get/put/post/delete as a &#8220;NonScalable&#8221;.  But, you cannot use that convention for a &#8220;Feature&#8221;.  You&#8217;d need
+to specify one as a &#8220;Bogutrunk/Feature&#8221; to disambiguate from a &#8220;PortfolioItem/Feature&#8221;.  The main take-away
 here is that if you don&#8217;t use PortfolioItem instances with pyral, you can use any version of Rally WSAPI
 past version 1.20.  If you use PortfolioItem instances with pyral or you&#8217;ve defined your own &#8220;abstract&#8221;
 parent types and specific sub-types thereof, you must use version 1.37 or greater and you are strongly
@@ -202,7 +205,7 @@ working with.</p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -228,12 +231,12 @@ working with.</p>
         <li class="right" >
           <a href="index.html" title="pyral documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">pyral v0.9.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 0.9.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Rally Software Development 2010-2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

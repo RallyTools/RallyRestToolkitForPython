@@ -7,11 +7,15 @@ from pyral import Rally
 
 ##################################################################################################
 
-TRIAL   = "trial.rallydev.com"
-
+TRIAL = "trial.rallydev.com"
+PROD  = "rally1.rallydev.com"
 
 TRIAL_USER = "usernumbernine@acme.com"
 TRIAL_PSWD = "************"
+
+TRIAL_NICKNAME = 'Regular Rabbit'
+
+DEFAULT_WORKSPACE = "BriarPatch"
 
 ##################################################################################################
 
@@ -34,11 +38,12 @@ def test_get_project():
         issue a simple query (no qualifying criteria) for a known valid 
         Rally entity.
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, version="1.43")
     response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
-    assert response.warnings == []
+    assert len(response.warnings) == 1 and 'Deprecated' in response.warnings[0]
+
     assert response.resultCount > 0
     proj_rec = response.next()
     #print proj_rec._ref
@@ -51,13 +56,14 @@ def test_user_info_query():
         request the information associated with a single username.
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    qualifiers = rally.getUserInfo(username='paul@acme.com')
+    qualifiers = rally.getUserInfo(username=TRIAL_USER)
     assert len(qualifiers) == 1
     user = qualifiers.pop()
-    assert user.Name == 'Paul'
-    assert user.UserName == 'paul@acme.com'
-    assert user.UserProfile.DefaultWorkspace.Name == 'User Story Pattern'
-    assert user.Role == 'ORGANIZER'
+    assert user.Name     == TRIAL_NICKNAME
+    assert user.UserName == TRIAL_USER
+    assert user.UserProfile.DefaultWorkspace.Name == DEFAULT_WORKSPACE
+    #assert user.Role == 'CONTRIBUTOR'  # or this may be set to ORGANIZER
+    #assert user.Role == 'Developer'    # this would have to be set up...
     #ups = [up for up in user.UserPermissions]
     #assert len(ups) > 0
     #up = ups.pop(0)
@@ -81,8 +87,6 @@ def test_allowed_values_query():
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     avs = rally.getAllowedValues('Defect', 'State')
-    #for av in avs.values():
-    #    print "%s" % av
     assert len(avs) > 0
     assert len(avs) == 6
     assert u'Open' in avs
@@ -91,11 +95,11 @@ def test_allowed_values_query():
 def test_typedef():
     """
         Using a known valid Rally server and known valid access credentials,
-        exercise the Rally.typedef convenience method using 'Feature' 
+        exercise the Rally.typedef convenience method using 'Portfolio/Feature' 
         as a target.
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    target_type = 'Feature'
+    target_type = 'PortfolioItem/Feature'
     td = rally.typedef(target_type)
     assert td != None
     assert td._type == 'TypeDefinition'

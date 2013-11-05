@@ -1,16 +1,15 @@
-#!/opt/local/bin/python2.6
 
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 9 version with GET, PUT, POST and DELETE operations, support multiple instances
-#             adding support for Attachments to Artifact
+#          round 10 version with better RallyQueryBuilder
 #          notable dependencies:
-#               requests v0.9.3 recommended (0.10.x no longer works for Python 2.5)
+#               requests v2.x or greater now recommended
+#                  must use Python 2.6, 2.7 now with requests >= 2.x
 #
 ###################################################################################################
 
-__version__ = (0, 9, 3)
+__version__ = (0, 9, 4)
 
 import sys, os
 import re
@@ -20,13 +19,14 @@ import urllib
 import json
 import string
 import base64
+from operator import itemgetter, attrgetter
 
 import requests   
 
 # intra-package imports
 from .config  import PROTOCOL, SERVER, WS_API_VERSION, WEB_SERVICE, RALLY_REST_HEADERS
 from .config  import USER_NAME, PASSWORD 
-from .config  import JSON_FORMAT, PAGESIZE, START_INDEX, MAX_ITEMS
+from .config  import PAGESIZE, START_INDEX, MAX_ITEMS
 from .config  import timestamp
 
 ###################################################################################################
@@ -56,6 +56,8 @@ _allowedValueAlias = {}  # a dict keyed by entity name
                          # User & Owner are conspicuously not covered...
 
 warning = sys.stderr.write
+
+SERVICE_REQUEST_TIMEOUT = 120
 
 ###################################################################################################
 
@@ -120,6 +122,7 @@ from .rallyresp import RallyRESTResponse, ErrorResponse
 from .hydrate   import EntityHydrator
 from .context   import RallyContext, RallyContextHelper
 from .entity    import validRallyType
+from .query_builder import RallyUrlBuilder
 
 __all__ = ["Rally", "getResourceByOID", "hydrateAnInstance", "RallyUrlBuilder"]
 
@@ -185,6 +188,10 @@ class Rally(object):
         proxy_dict = {} 
         https_proxy = os.environ.get('HTTPS_PROXY', None) or os.environ.get('https_proxy', None)
         if https_proxy and https_proxy not in ["", None]:
+            if not https_proxy.startswith('http'):
+                https_proxy = "http://%s" % https_proxy # prepend the standard http scheme on the front-end
+                os.environ['https_proxy'] = https_proxy
+                os.environ['HTTPS_PROXY'] = https_proxy
             proxy_dict['https'] = https_proxy
 
         verify_ssl_cert = True
@@ -192,17 +199,21 @@ class Rally(object):
             vsc = kwargs.get('verify_ssl_cert')
             if vsc in [False, True]:
                 verify_ssl_cert = vsc
-       
-        self.session = requests.Session()
-        self.session.auth = (self.user, self.password)
-        self.session.timeout = 10.0
-        self.session.proxies = proxy_dict
-        self.session.verify = verify_ssl_cert
-        self.session.config = config
+
+        requests_version_major = int(requests.__version__.split('.').pop(0))
+        if requests_version_major == 0: # requests 0.x.y syntax for getting a session
+            self.session = requests.session(headers=RALLY_REST_HEADERS, auth=credentials,
+                                            timeout=10.0, proxies=proxy_dict, 
+                                            verify=verify_ssl_cert, config=config)
+        else:  # requests 1.x and greater syntax for getting a session
+            self.session = requests.Session()
+            self.session.headers = RALLY_REST_HEADERS
+            self.session.auth = credentials
+            self.session.timeout = 10.0
+            self.session.proxies = proxy_dict
+            self.session.verify = verify_ssl_cert
+            self.session.config = config
         
-        #self.session = requests.session(headers=RALLY_REST_HEADERS, auth=credentials,
-        #                                timeout=10.0, proxies=proxy_dict, 
-        #                                verify=verify_ssl_cert, config=config)
         self.contextHelper = RallyContextHelper(self, server, user, password)
         self.contextHelper.check(self.server)
 
@@ -280,7 +291,7 @@ class Rally(object):
     def enableLogging(self, dest=sys.stdout, attrget=False, append=False):
         """
             Use this to enable logging. dest can set to the name of a file or an open file/stream (writable). 
-            If attrget is set to true, all Rally REST requests that are executed to obtain attribute informatin
+            If attrget is set to true, all Rally REST requests that are executed to obtain attribute information
             will also be logged. Be careful with that as the volume can get quite large.
             The append parm controls whether any existing file will be appended to or overwritten.
         """
@@ -502,31 +513,60 @@ class Rally(object):
         context, augments = self.contextHelper.identifyContext(workspace=workspace)
         workspace_ref = self.contextHelper.currentWorkspaceRef()
 
-        # the only reason we are specifically listing the User attributes is to also sneak in
-        # the TimeZone attribute which is actually an attribute on UserProfile.  If we simply
-        # had the fetch clause of "fetch=true", each access of TimeZone would be a lazy-eval
-        # (a new request to Rally). So, we do the explicit listing of attributes for better performance.
-        user_attrs = ["Name", "UserName", "DisplayName", "FirstName", "LastName", "MiddleName",
-                      "CreationDate", "EmailAddress",
+        # Somewhere post 1.3x in Rally WSAPI, the ability to list the User attrs along with the TimeZone
+        # attr of UserProfile and have that all returned in 1 query was no longer supported.
+        # So we do a full bucket query on User and UserProfile separately and "join" them via our
+        # own brute force method so that the the caller can access any UserProfile attribute
+        # for a User.
+        user_attrs = ["Name", "UserName", "DisplayName", 
+                      "FirstName", "LastName", "MiddleName",
                       "ShortDisplayName", "OnpremLdapUsername",
+                      "CreationDate", "EmailAddress",
                       "LastPasswordUpdateDate", "Disabled",
                       "Subscription", "SubscriptionAdmin",
                       "Role", "UserPermissions", "TeamMemberships", 
                       "UserProfile", 
-                      "TimeZone"  # a UserProfile attribute
+                      "TimeZone",            # a UserProfile attribute
+                      # and other UserProfile attributes
                      ]
-        fields = ",".join(user_attrs)
 
-        resource = 'users.js?fetch="%s"&query=&pagesize=200&start=1&workspace=%s' % (fields, workspace_ref)
-        full_resource_url = '%s/%s' % (self.service_url, resource)
-
-        response = self.session.get(full_resource_url)
+        users_resource = 'users.js?fetch=true&query=&pagesize=200&start=1&workspace=%s' % (workspace_ref)
+        full_resource_url = '%s/%s' % (self.service_url, users_resource)
+        response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
         if response.status_code != 200:
             return []
-        response = RallyRESTResponse(self.session, context, resource, response, "full", 0)
+        response = RallyRESTResponse(self.session, context, users_resource, response, "full", 0)
+        users = [user for user in response]
 
+        user_profile_resource = 'userprofile.js?fetch=true&query=&pagesize=200&start=1&workspace=%s' % (workspace_ref)
+        response = self.session.get('%s/%s' % (self.service_url, user_profile_resource), 
+                                    timeout=SERVICE_REQUEST_TIMEOUT)
+        if response.status_code != 200:
+            warning("WARNING: Unable to retrieve UserProfile information for users\n")
+            profiles = []
+        else:
+            response = RallyRESTResponse(self.session, context, user_profile_resource, response, "full", 0)
+
+            profiles = [prof for prof in response]
+
+        # do our own brute force "join" operation on User to UserProfile info 
+        for user in users:
+            # get any matching user profiles (aka mups), there really should only be 1 matching...
+            mups = [prof for prof in profiles 
+                          if prof._ref == user.UserProfile._ref] 
+            if not mups:
+                problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
+                warning("WARNING: %s\n" % (problem % (user.DisplayName, user.UserProfile)))
+                continue
+            else:
+                if len(mups) > 1:
+                    anomaly = "Found %d UserProfile items associated with username: %s"
+                    warning("WARNING: %s\n" % (anomaly % (len(mups), user.UserName)))
+                # now attach the first matching UserProfile to the User
+                user.UserProfile = mups[0]
+            
         self.setWorkspace(saved_workspace_name)
-        return [user_rec for user_rec in response]
+        return users
 
 
     def _officialRallyEntityName(self, supplied_name):
@@ -618,6 +658,52 @@ class Rally(object):
         return item    # return back an instance representing the item
 
 
+    def _greased(self, item_data):
+        """
+            Given a dict instance with keys that are attribute names for some
+            Rally entity associated with values that are to be created for
+            or updated in a target Rally entity, identify which attributes are 
+            likely COLLECTION types and perform any transformation necessary to 
+            ensure that the prospective attribute values are refs that are placed 
+            in a dict and thence put in a list of values for the attribute.
+            As an initial implementation to forego yet another round trip query
+            to Rally for all the Attributes on an entity name, we employ
+            the following rough heuristic to determine what attributes 
+            are COLLECTIONS and thus _may_ need greasing:
+               Attribute name of Children or an attribute that ends in 's'.
+            So, we'll look at the keys in item_data that match our heuristic
+            (case-insensitive) and then we also check to see if the value 
+            associated with the attribute name key is a list.
+            If there are no hits for those criteria, return the item_data untouched.
+            Otherwise, roll thru the attribute name hits whose value is a list
+            and determine if each element in the list is a string that has the 
+            pattern of "someentityname/324324", (where the digits are an OID value)
+            and if so, replace the element value with a dict with a key of "_ref"
+            whose value is the original list element.
+            Return the item_dict with any updates to COLLECTIONS attributes that
+            needed "greasing".
+        """
+        collection_attributes = [attr_name for attr_name in item_data.keys()
+                                            if attr_name.lower == 'children'
+                                            or attr_name[-1] == 's'
+                                ]
+        if not collection_attributes:
+            return item_data
+        for attr_name in collection_attributes:
+            if type(item_data[attr_name]) != types.ListType:
+                continue
+            obj_list = []
+            for value in item_data[attr_name]:
+                # is value like "someentityname/34223214" ?
+                if type(value) == types.StringType and '/' in value \
+                and re.match('^\d+$', value.split('/')[-1]):
+                    obj_list.append({"_ref" : value})  # transform to a dict instance
+                else:
+                    obj_list.append(value)   # value is untouched
+            item_data[attr_name] = obj_list
+        return item_data
+
+
     def get(self, entity, fetch=False, query=None, order=None, **kwargs):
         """
             A REST approach has the world seen as resources with the big 4 ops available on them
@@ -639,6 +725,7 @@ class Rally(object):
             All optional keyword args:
                 fetch=True/False or "List,Of,Attributes,We,Are,Interested,In"
                 query='FieldName = "some value"' or ['fld1 = 19', 'fld27 != "Shamu"', etc.]
+                order="fieldName ASC|DESC"
                 instance=False/True
                 pagesize=n
                 start=n
@@ -718,11 +805,11 @@ class Rally(object):
             # the data attribute is a dict that has a single entry for the key 'QueryResult' 
             # or 'OperationResult' whose value is in turn a dict with values of 
             # 'Errors', 'Warnings', 'Results'
-            response = self.session.get(full_resource_url)
+            response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
         except Exception as ex:
             if response:
 ##
-##                print response.status_code
+##                print "Exception detected for session.get requests, response status code: %s" % response.status_code
 ##
                 ret_code, content = response.status_code, response.content
             else:
@@ -730,6 +817,7 @@ class Rally(object):
             if self._log:
                 self._logDest.write('%s %s\n' % (timestamp(), ret_code))
                 self._logDest.flush()
+
             errorResponse = ErrorResponse(ret_code, content)
             response = RallyRESTResponse(self.session, context, resource, errorResponse, self.hydration, 0)
             return response
@@ -785,7 +873,10 @@ class Rally(object):
             resource += ("?" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
 
-        item = {entityName: itemData}
+        item = {entityName: self._greased(itemData)} # where _greased is a convenience
+                                                     # method that will transform
+                                                     # any ref lists for COLLECTION attributes
+                                                     # into a list of one-key dicts {'_ref' : ref}
         payload = json.dumps(item)
         if self._log:
             self._logDest.write('%s PUT %s\n%27.27s %s\n' % (timestamp(), resource, " ", payload))
@@ -799,9 +890,8 @@ class Rally(object):
                 self._logDest.flush()
             raise RallyRESTAPIError('%s %s' % (response.status_code, desc))
 
-        result = response.content
-        item = result[u'CreateResult'][u'Object']
-        ref = str(item[u'_ref'])
+        item = response.content[u'CreateResult'][u'Object']
+        ref  = str(item[u'_ref'])
         item_oid = int(ref.split('/')[-1][:-3])
         desc = "created %s OID: %s" % (entityName, item_oid)
         if self._log:
@@ -855,7 +945,7 @@ class Rally(object):
 ##
 ##        print "resource: %s" % resource
 ##
-        item = {entityName: itemData}
+        item = {entityName: self._greased(itemData)}
         payload = json.dumps(item)
         if self._log:
             self._logDest.write('%s POST %s\n%27.27s %s\n' % (timestamp(), resource, " ", item))
@@ -951,14 +1041,32 @@ class Rally(object):
         """
         ctx  = self.contextHelper.currentContext()
         td_key = (ctx.server, ctx.subs_name, ctx.workspace, ctx.project, target_type)
+
         if td_key not in _type_definition_cache:
-            td = self.get('TypeDefinition', fetch='ElementName,Name,Parent,TypePath',
-                                            query='ElementName = "%s"' % target_type,
-                                            instance=True)
+            td = self.get('TypeDefinition', fetch='ElementName,Name,Parent,TypePath')
+
             if not td:
+                raise Exception("Unable to obtain Rally TypeDefinition information")
+
+            tds = [item for item in td]
+            if not tds:
                 raise Exception("Invalid Rally entity name: %s" % target_type)
-            _type_definition_cache[td_key] = td
-        return _type_definition_cache[td_key]
+
+            for td in tds:
+                type_name = '%s' % td.ElementName
+                parent = td.Parent.ElementName
+                if parent == "PortfolioItem":
+                    type_name = "%s/%s" % (parent, td.ElementName)
+                td_cache_key = (ctx.server, ctx.subs_name, ctx.workspace, ctx.project, type_name)
+                _type_definition_cache[td_cache_key] = td
+
+        if td_key in _type_definition_cache:
+            return _type_definition_cache[td_key]
+        alt_keys = [quint_key[-1] for quint_key in _type_definition_cache.keys if quint_key[-1] == target_type]
+        if alt_keys and len(alt_keys) == 1: # good, there's only one possible match
+            return _type_definition_cache[alt_keys[0]]
+
+        return None
 
     def getState(self, entity, state_name):
         """
@@ -967,6 +1075,9 @@ class Rally(object):
             of that approach, this is a convenience method that given a target entity (like
             Defect, PortfolioItem/<subtype>, etc.) and a state name, an inquiry to the Rally
             system is executed and the matching entity is returned.
+
+            WARNING:  This only works with PortfolioItem subclasses:
+                       Theme, Initiative, Feature
         """
         criteria = [ 'TypeDef.Name = "%s"' % entity,
                      'Name = "%s"'         % state_name
@@ -977,9 +1088,18 @@ class Rally(object):
 
     def getStates(self, entity):
         """
+            This method must deal with essentially duplicated results as for whatever reason
+            there can be multiple State items with the same OrderIndex, Name, Enabled, Accepted values
+            but with differing ObjectID and CreationDate values.  We arbitrarily take the last State
+            for each OrderIndex, Name pair and return the resulting list.
         """
-        response = self.get('State', query='TypeDef.Name = "%s"' % entity, project=None)
-        return [item for item in response]
+        response = self.get('State', query='TypeDef.Name = "%s"' % entity, order="OrderIndex,ObjectID", project=None)
+        state_ix = {}
+        for state in [item for item in response]:
+            state_ix[(state.OrderIndex, state.Name)] = state
+        state_keys = sorted(state_ix.keys(), key=itemgetter(0))
+        states = [state_ix[key] for key in state_keys]
+        return states
 
     def allowedValueAlias(self, entity, refUrl):
         """
@@ -1117,8 +1237,7 @@ class Rally(object):
         ac = self.create('AttachmentContent', {"Content" : contents}, project=None)
         if not ac:
             raise RallyRESTAPIError('Unable to create AttachmentContent for %s' % attachment_file_name)
-       
-
+          
         attachment_info = { "Name"        :  attachment_file_name,
                             "Content"     :  ac.ref,       # ref to AttachmentContent
                             "ContentType" :  mime_type,    
@@ -1130,7 +1249,7 @@ class Rally(object):
         # in most cases, it'll be far more useful to have the linkage to an Artifact than not.
         if artifact:  
             attachment_info["Artifact"] = artifact.ref
-                      
+
         # and finally, create the Attachment
         attachment = self.create('Attachment', attachment_info, project=None)
         if not attachment:
@@ -1302,197 +1421,5 @@ class Rally(object):
             pass
 
         return art_type, artifact
-        
-
-##################################################################################################
-
-class RallyUrlBuilder(object):
-    """
-        An instance of this class is used to collect information needed to construct a
-        valid URL that can be issued in a REST Request to Rally.
-        The sequence of use is to obtain a RallyUrlBuilder for a named entity, 
-        provide qualifying criteria, augments, scoping criteria and any provision 
-        for a pretty response, and then call build to return the resulting resource URL.
-        An instance can be re-used (for the same entity) by simply re-calling the 
-        specification methods with differing values and then re-calling the build method.
-    """
-    parts = ['fetch', 'query', 'order', 
-             'workspace', 'project', 'projectScopeUp', 'projectScopeDown', 
-             'pagesize', 'start', 'pretty'
-            ]
-
-    def __init__(self, entity):
-        self.entity = entity
-
-    def qualify(self, fetch, query, order, pagesize, startIndex):
-        self.fetch = fetch
-        self.query = query
-        self.order = order
-        self.pagesize   = pagesize
-        self.startIndex = startIndex
-        self.workspace  = None
-        self.project    = None
-        self.scopeUp    = None
-        self.scopeDown  = None
-        self.pretty     = False
-            
-
-    def build(self, pretty=None):
-        if pretty:
-            self.pretty = True
-        
-        resource = "%s%s?" % (self.entity, JSON_FORMAT)
-
-        qualifiers = ['fetch=%s' % self.fetch]
-        if self.query:
-            encodedQuery = self._prepQuery(self.query)
-            qualifiers.append('%s=%s' % ('query', encodedQuery if encodedQuery else ""))
-        if self.order:
-            qualifiers.append("order=%s" % urllib.quote(self.order))
-        if self.workspace:
-            qualifiers.append(self.workspace)
-        if self.project:
-            qualifiers.append(self.project)
-        if self.scopeUp:
-            qualifiers.append(self.scopeUp)
-        if self.scopeDown:
-            qualifiers.append(self.scopeDown)
-
-        qualifiers.append('pagesize=%s' % self.pagesize)
-        qualifiers.append('start=%s'    % self.startIndex)
-
-        if self.pretty:
-            qualifiers.append('pretty=true')
-
-        resource += "&".join(qualifiers)
-        return resource
-
-
-    def _prepQuery(self, query):
-        if not query:
-            return None
-
-        def _encode(condition):
-            """
-                if cond has pattern of 'thing relation value', then urllib.quote it and return it
-                if cond has pattern of '(thing relation value)', then urllib.quote content inside parens
-                  then pass that result enclosed in parens back to the caller
-            """
-            if condition[0] != '(' and condition[-1] != ')':
-                return '(%s)' % urllib.quote(condition)
-            else:
-                return urllib.quote(condition)
-
-        if type(query) in [types.StringType, types.UnicodeType]:
-            # if the query as provided is already surrounded by paren chars, return it 
-            # with the guts urllib.quote'ed
-            if query[0] == "(" and query[-1] == ")":
-                # restore any interior parens from the %28 / %29 encodings"
-                return "(%s)" % urllib.quote(query[1:-1]).replace('%28', '(').replace('%29', ')')
-
-            if ' AND ' not in query and ' OR ' not in query and ' and ' not in query and ' or ' not in query:
-                return "(%s)" % urllib.quote(query)
-
-            else:  # do a regex split using ' AND|OR ' then urllib.quote the individual conditions
-                CONJUNCTIONS = ['and', 'or', 'AND', 'OR']
-                parts = CONJUNCTION_PATT.split(query)
-                parts = [p if p in CONJUNCTIONS else _encode(p) for p in parts]
-                return "(%s)" % "%20".join(parts)
-        elif type(query) in [types.ListType, types.TupleType]:
-            # by fiat (and until requested by a paying customer), we assume the conditions are AND'ed
-            parts = [_encode(condition) for condition in query]
-            query_string = "%s" % parts.pop(0)
-            for query_term in parts:
-                query_string = "(%s AND %s)" % (query_string, query_term)
-            return query_string        
-        
-        elif type(query) == types.DictType:  # wow! look at this wildly unfounded assumption about what to do!
-            parts = []
-            for field, value in query.items():
-                # have to enclose string value in double quotes, otherwise turn whatever the value is into a string
-                tval = '"%s"' % value if type(value) == types.StringType else '%s' % value
-                parts.append('(%s)' % urllib.quote('%s = %s' % (field, tval)))
-            anded = "%20AND%20".join(parts)
-            if len(parts) > 1:
-                return "(%s)" % anded
-            else:
-                return anded
-
-        return None
-
-    def augmentWorkspace(self, augments, workspace_ref):
-        wksp_augment = [aug for aug in augments if aug.startswith('workspace=')]
-        self.workspace = "workspace=%s" % workspace_ref
-        if wksp_augment:
-            self.workspace = wksp_augment[0]
-
-    def augmentProject(self, augments, project_ref):
-        proj_augment = [aug for aug in augments if aug.startswith('project=')]
-        self.project = "project=%s" % project_ref
-        if proj_augment:
-            self.project = proj_augment[0]
-
-    def augmentScoping(self, augments):
-        scopeUp   = [aug for aug in augments if aug.startswith('projectScopeUp=')]
-        if scopeUp:
-            self.scopeUp = scopeUp[0]
-        scopeDown = [aug for aug in augments if aug.startswith('projectScopeDown=')]
-        if scopeDown:
-            self.scopeDown = scopeDown[0]
-
-    def beautifyResponse(self):
-        self.pretty = True
-
-##################################################################################################
-
-class RallyQueryFormatter(object):
-    CONJUNCTIONS = ['and', 'AND', 'or', 'OR']
-    CONJUNCTION_PATT = re.compile('\s+(AND|OR)\s+', re.I | re.M)
-
-    @staticmethod
-    def parenGroups(condition):
-        """
-            Keep in mind that Rally WSAPI only supports a binary condition of (x) op (y)
-            as in "(foo) and (bar)"
-            or     (foo) and ((bar) and (egg))  
-            Note that Rally doesn't handle (x and y and z) directly.
-            Look at the condition to see if there are any parens other than begin and end 
-            if the only parens are at begin and end, strip them and subject the condition to our
-            clause grouper and binary condition confabulator. 
-            Otherwise, we'll naively assume the caller knows what they are doing, ie., they are 
-            aware of the binary condition requirement.
-        """
-        # if the caller has a simple query in the form "(something = a_value)"
-        # then return the query as is (after stripping off the surrounding parens)
-        if     condition.count('(')  == 1   \
-           and condition.count(')')  == 1   \
-           and condition.strip()[0]  == '(' \
-           and condition.strip()[-1] == ')':
-            return condition.strip()[1:-1]
-       
-        # if caller has more than one opening paren, summarily return the query 
-        # essentially untouched.  The assumption is that the caller has correctly
-        # done the parenthisized grouping to end up in a binary form
-        if condition.count('(') > 1:
-            return condition.strip()
-
-        parts = RallyQueryFormatter.CONJUNCTION_PATT.split(condition.strip())
-        
-        # if no CONJUNCTION is in parts, use the condition as is (simple case)
-        conjunctions = [p for p in parts if p in RallyQueryFormatter.CONJUNCTIONS]
-        if not conjunctions:
-            return condition.strip()
-
-        binary_condition = parts.pop()
-        while parts:
-            item = parts.pop()
-            if item in RallyQueryFormatter.CONJUNCTIONS:
-                conj = item
-                binary_condition = "%s (%s)" % (conj, binary_condition)
-            else:
-                cond = item
-                binary_condition = "(%s) %s" % (cond, binary_condition)
-
-        return binary_condition
 
 ##################################################################################################

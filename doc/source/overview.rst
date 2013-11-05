@@ -127,10 +127,11 @@ parent differs from your newly defined "abstract" type.
 
 An example of this is a fictional "abstract" parent type named "Bogutrunk" (for a type that 
 encompasses stories about requests for things you'll never implement and aren't bugs, but you want
- to track them anyway).  Additionally, let's say you define some sub-types whose parent type is
+to track them anyway).  Additionally, let's say you define some sub-types whose parent type is
 "Bogutrunk" named "Outlandish", "NonScalable", "Theme" and "Feature".  Now, identifying a specific
-NonScalable Bogutrunk item is unambiguous, you'd just specify the entity in any pyral get/put/post/delete as a "NonScalable".  But, you cannot use that convention for a "Feature".  You'd need to specify
-one as a "Bogutrunk/Feature" to disambiguate from a "PortfolioItem/Feature".  The main take-away
+NonScalable Bogutrunk item is unambiguous, you'd just specify the entity in any pyral 
+get/put/post/delete as a "NonScalable".  But, you cannot use that convention for a "Feature".  You'd need 
+to specify one as a "Bogutrunk/Feature" to disambiguate from a "PortfolioItem/Feature".  The main take-away
 here is that if you don't use PortfolioItem instances with pyral, you can use any version of Rally WSAPI
 past version 1.20.  If you use PortfolioItem instances with pyral or you've defined your own "abstract" 
 parent types and specific sub-types thereof, you must use version 1.37 or greater and you are strongly

@@ -8,11 +8,11 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 3)
+__version__ = (0, 9, 4)
 
 import sys
 import re
-
+##
 from .restapi   import hydrateAnInstance
 from .restapi   import getResourceByOID
 
@@ -36,7 +36,7 @@ class UnreferenceableOIDError(Exception):
 class InvalidRallyTypeNameError(Exception):
     """
         An Exception to be raised in the case where a candidate Rally entity name
-        doesn't resolve to a valud Rally entity.
+        doesn't resolve to a valid Rally entity.
     """
     pass
 
@@ -143,7 +143,46 @@ class DomainObject(Persistable):
     """ This is an Abstract Base class """
     pass
 
-class User            (DomainObject): pass
+class User (DomainObject): 
+    USER_ATTRIBUTES = ['oid', 'ref', 'ObjectID', '_ref', 
+                       '_CreatedAt', '_hydrated', 
+                       'UserName', 'DisplayName', 'EmailAddress', 
+                       'FirstName', 'MiddleName', 'LastName', 
+                       'ShortDisplayName', 
+                       'SubscriptionAdmin',
+                       'Role',
+                       'UserPermissions',
+                       #'TeamMemberships',
+                       #'UserProfile'
+                      ]
+    def details(self):
+        """
+            Assemble a list of USER_ATTRIBUTES and values 
+            and join it into a single string with newline "delimiters".
+            Return this string so that the caller can simply print it and have
+            a nicely formatted block of information about the specific User.
+        """
+        tank = ['%s' % self._type]
+        for attribute_name in self.USER_ATTRIBUTES[1:]:
+            try:
+                value = getattr(self, attribute_name)
+            except AttributeError:
+                continue
+            if value is None:
+                continue
+            if 'pyral.entity.' not in str(type(value)):
+                anv = '    %-20s  : %s' % (attribute_name, value)
+            else:
+                mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
+                if mo:
+                    cln = mo.group(1)
+                    anv = "    %-20s  : %-20.20s   (OID  %s  Name: %s)" % \
+                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                else:
+                    anv = "    %-20s  : %s" % value
+            tank.append(anv)
+        return "\n".join(tank)
+
 class UserProfile     (DomainObject): pass
 class Workspace       (DomainObject): pass
 class Blocker         (DomainObject): pass
@@ -256,15 +295,16 @@ class BuildMetricDefinition (WorkspaceDomainObject): pass  # query capable only
 class Change                (WorkspaceDomainObject): pass
 class Changeset             (WorkspaceDomainObject): pass
 class ConversationPost      (WorkspaceDomainObject): pass  # query capable only
+class Preference            (WorkspaceDomainObject): pass
+class PreliminaryEstimate   (WorkspaceDomainObject): pass
+class State                 (WorkspaceDomainObject): pass
 class TestCaseStep          (WorkspaceDomainObject): pass
 class TestCaseResult        (WorkspaceDomainObject): pass
 class TestFolder            (WorkspaceDomainObject): pass
 class Tag                   (WorkspaceDomainObject): pass
-class Preference            (WorkspaceDomainObject): pass
 class TimeEntryItem         (WorkspaceDomainObject): pass
 class TimeEntryValue        (WorkspaceDomainObject): pass
-class PreliminaryEstimate   (WorkspaceDomainObject): pass
-class State                 (WorkspaceDomainObject): pass
+class UserIterationCapacity (WorkspaceDomainObject): pass
 
 class WebLinkDefinition(AttributeDefinition): pass
 
@@ -315,7 +355,9 @@ class CustomField(object):
 # very strictly enforced
 # 
 
-classFor = { 'WorkspaceDomainObject'   : WorkspaceDomainObject,
+classFor = { 'Persistable'             : Persistable,
+             'DomainObject'            : DomainObject,
+             'WorkspaceDomainObject'   : WorkspaceDomainObject,
              'Subscription'            : Subscription,
              'User'                    : User,
              'UserProfile'             : UserProfile,
@@ -329,8 +371,10 @@ classFor = { 'WorkspaceDomainObject'   : WorkspaceDomainObject,
              'Program'                 : Program,
              'Project'                 : Project,
              'ProjectPermission'       : ProjectPermission,
+             'Artifact'                : Artifact,
              'Release'                 : Release,
              'Iteration'               : Iteration,
+             'Requirement'             : Requirement,
              'HierarchicalRequirement' : HierarchicalRequirement,
              'UserStory'               : UserStory,
              'Story'                   : Story,
@@ -366,6 +410,8 @@ classFor = { 'WorkspaceDomainObject'   : WorkspaceDomainObject,
              'AllowedAttributeValue'   : AllowedAttributeValue,
              'AllowedQueryOperator'    : AllowedQueryOperator,
              'CustomField'             : CustomField,
+             'UserIterationCapacity'   : UserIterationCapacity,
+             'CumulativeFlowData'      : CumulativeFlowData,
              'ReleaseCumulativeFlowData'   : ReleaseCumulativeFlowData,
              'IterationCumulativeFlowData' : IterationCumulativeFlowData,
            }
@@ -391,14 +437,13 @@ for cls_name, cls in classes:
 
 def getEntityName(candidate):
     """
+        Looks for an entry in the _rally_entity_cache of the form '*/candidate'
+        and returns that value if it exists.
     """
     global _rally_entity_cache
 
     official_name = candidate
-    # look for an entry in _rally_entity_cache of the form '*/candidate'
-    # and use that as the official_name if such an entry exists
     hits = [path for entity, path in _rally_entity_cache.items()
-                    #if re.match("^.*/%s$" % candidate, candidate)]
                     if '/' in path and path.split('/')[1] == candidate]
 ##
 ##    print "for candidate |%s|  hits: |%s|" % (candidate, hits)
@@ -441,6 +486,17 @@ def validRallyType(rally, candidate):
 
 def retrieveAllTypeDefinitions(rally):
     """
+        A "simple" entity is one whose TypeDefinition info has the same value for both
+        ElementName and TypePath.  A "compound" entity is one whose TypeDefinition info
+        has a '/' char in the TypePath and whose ElementName matches the segment of the 
+        TypePath to the right of the '/' and whose Parent matches the segment of the TypePath
+        to the left of the '/' char.
+        The requirement for the use of the result of this function is that the _rally_entity_cache
+        must have unambiguously defined entries for all accessible Rally entities.
+        This means that for "normal" entities like 'HierarcharchicalRequirement', 'Defect', 'TestCase',
+        etc. there is an entry in _rally_entity_cache.  For compound entities, there is an entry
+        for each "Parent"/"Sub-Type" so that we accommodate things like PortfolioItem/Feature and
+        Multimedia/Feature.
     """
     global _rally_entity_cache
     global classFor
@@ -450,25 +506,33 @@ def retrieveAllTypeDefinitions(rally):
                                            project=None)
     for td in response:
         elementName = str(td.ElementName) # d*mn unicode defensiveness manuever
+        typePath    = str(td.TypePath)    # ditto
+        parentElement = None
+        if td.Parent:
+            parentElement = str(td.Parent.ElementName)
+
         if elementName.startswith('ObjectAttr'):
             continue
-        if elementName not in _rally_entity_cache:
-            #
-            # If there isn't an entry in _rally_entity_cache, dynamically create 
-            # the class subclassed the Parent (or Artifact) and stuff an entry in 
-            # classFor for it in addition to marking the _rally_entity_cache
-            #
-            parentElement = None
-            if td.Parent:
-                parentElement = str(td.Parent.ElementName)
-            parent = parentElement or 'Artifact'
-            parentClass = classFor[parent]
+        if parentElement == 'PersistableObject':
+            parentElement = 'Persistable'
+
+        parent = parentElement or 'Artifact'
+        parentClass = classFor[parent]
+
+        if elementName == typePath:
+            _rally_entity_cache[elementName] = elementName
             rally_entity_class = _createClass(elementName, parentClass)
             classFor[elementName] = rally_entity_class
-            _rally_entity_cache[elementName] = elementName
-            if '/' in str(td.TypePath):
-                _rally_entity_cache[str(td.TypePath)] = elementName
-                _rally_entity_cache[elementName]      = str(td.TypePath)
+            
+        elif '/' in typePath:
+            _rally_entity_cache[typePath] = typePath
+            pyralized_class_name = typePath.replace('/', '_')
+            rally_entity_class = _createClass(pyralized_class_name, parentClass)
+            classFor[typePath] = rally_entity_class
+        else:
+            desc = "Unable to handle Rally elementName |%s| with TypePath of |%s|"
+            raise InvalidRallyTypeNameError(desc % (elementName, typePath))
+            
 ##
 #    for key, value in _rally_entity_cache.items():
 #        if '/' in value:

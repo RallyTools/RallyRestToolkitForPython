@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 3)
+__version__ = (0, 9, 4)
 
 import sys
 import re
@@ -55,7 +55,7 @@ class ErrorResponse(object):
 
 class RallyRESTResponse(object):
     """
-        An instance of this class is used to wrap the response from the wellrested.JsonRestClient.
+        An instance of this class is used to wrap the response from the Rally REST endpoint.
         Part of the wrapping includes an iterator based interface to the collection of records
         returned by the request (for GET).
     """
@@ -77,6 +77,7 @@ class RallyRESTResponse(object):
         self.warnings = []
         self._item_type  = None
 ##
+##        print "+" * 85
 ##        print "resource: ", self.resource
 ##        print "response is a %s" % type(response)  
 ##        # with attributes of status_code, content, data
@@ -108,7 +109,6 @@ class RallyRESTResponse(object):
 ##        print "RallyRESTResponse request_type: %s" % self.request_type
 ##
 
-        #if self.request_type not in ['Operation', 'Create', 'Query', 'Update', 'Delete']:
         if self.request_type == 'ImpliedQuery':
             # the request is against a Rally Type name, ie. 'Subscription', 'Workspace', 'UserProfile', etc.
             # or a Rally "sub-type" like PortfolioItem/Feature
@@ -144,6 +144,7 @@ class RallyRESTResponse(object):
         self.startIndex  = int(qr[u'StartIndex'])       if u'StartIndex'       in qr else 0
         self.pageSize    = int(qr[u'PageSize'])         if u'PageSize'         in qr else 0
         self.resultCount = int(qr[u'TotalResultCount']) if u'TotalResultCount' in qr else 0
+        self._limit      = limit if limit > 0 else self.resultCount
         self._page = []
 
         if u'Results' in qr:
@@ -152,23 +153,37 @@ class RallyRESTResponse(object):
             if u'QueryResult' in qr and u'Results' in qr[u'QueryResult']:
                 self._page = qr[u'QueryResult'][u'Results']
 ##
-##        num_items = len(self._page)
-##        print "initial page has %d items" % num_items
+##        print "initial page has %d items" % len(self._page)
 ##
 
         if qr.get('Object', None):
             self._page = qr['Object']['_ref']
+##
+##        print "%d items in the results starting at index: %d" % (self.resultCount, self.startIndex)
+##
 
-        self._servable   = self.resultCount - (self.startIndex -1) # to account for indexing starting at 1
-        self._limit      = limit
+        # for whatever reason, some queries where a start index is unspecified 
+        # result in the start index returned being a 0 or a 1, go figure ...
+        # so we don't adjust the _servable value unless the start index is > 1
+        self._servable = 0
+        if self.resultCount > 0:
+           self._servable = self.resultCount
+           if self.startIndex > 1:
+               self._servable = self.resultCount - self.startIndex
+        self._servable   = min(self._servable, self._limit)
         self._served     = 0
         self._curIndex   = 0
         self.hydrator    = EntityHydrator(context, hydration=hydration)
         if self.errors:
-            # transform the status code to an error code if not already an error code
-            self.status_code = 404 if self.status_code == 200 else self.status_code
+            # transform the status code to an error code indicating an Unprocessable Entity if not already an error code
+            self.status_code = 422 if self.status_code == 200 else self.status_code
 ##
+##        print "RallyRESTResponse, self.target: |%s|" % self.target
 ##        print "RallyRESTResponse._page: %s" % self._page
+##        print "RallyRESTResponse, self.resultCount: |%s|" % self.resultCount
+##        print "RallyRESTResponse, self.startIndex : |%s|" % self.startIndex
+##        print "RallyRESTResponse, self._servable  : |%s|" % self._servable
+##        print ""
 ##
 
     def _determineRequestResponseType(self, request):
@@ -216,13 +231,16 @@ class RallyRESTResponse(object):
             that can be manufactured (self._curIndex > self.resultCount)
         """
 ##
-##        print "RRR for %s, stdFormat?: %s, servable: %d  limit: %d  served: %d " % \
+##        print "RallyRestResponse for %s, _stdFormat?: %s, _servable: %d  _limit: %d  _served: %d " % \
 ##              (self.target, self._stdFormat, self._servable, self._limit, self._served)
 ##
         if (self._served >= self._servable) or (self._limit and self._served >= self._limit):
             raise StopIteration
 
         if self._stdFormat:
+## 
+##            print "RallyRESTResponse.next, _stdFormat detected"
+##
             if self._curIndex == self.pageSize:
                 self._page[:]  = self.__retrieveNextPage()
                 self._curIndex = 0
@@ -240,7 +258,7 @@ class RallyRESTResponse(object):
                 raise IndexError("RallyRESTResponse._page[%d]" % self._curIndex)
         else:  # the Response had a non-std format
 ##
-##            print "item from page is a %s, but Response was not in std-format" % self._item_type
+##            print "RallyRESTResponse.next: item from page is a %s, but Response was not in std-format" % self._item_type
 ##
             #
             # have to stuff the item type into the item dict like it is for the _stdFormat responses
@@ -251,6 +269,10 @@ class RallyRESTResponse(object):
                 item[item_type_key] = unicode(self._item_type) 
 ##
 ##        print " next item served is a %s" % self._item_type
+##        print "RallyRESTResponse.next, item before call to to hydrator.hydrateInstance"
+##        for key in sorted(item.keys()):
+##            print "    %16.16s: %s" % (key, item[key])
+##        print "+" * 48
 ##
         entityInstance = self.hydrator.hydrateInstance(item)
         self._curIndex += 1

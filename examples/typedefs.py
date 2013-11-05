@@ -121,7 +121,6 @@ def showAttributes(attributes):
     optional = []
 
     for attr in attributes:
-        #name   = '%s' % attr[u'Name']   # or use attr[u'ElementName']
         name   = '%s' % attr[u'ElementName']
         a_type = '%s' % attr[u'AttributeType']
         reqd   = 'Required' if attr[u'Required'] else 'Optional'

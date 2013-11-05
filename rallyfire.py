@@ -24,6 +24,7 @@ def main(args):
     print " ".join(["|%s|" % item for item in [server, user, password, workspace, project]])
     #rally = Rally(server, user, password, workspace=workspace, project=project, 
     #              verify_ssl_cert=False) 
+    #rally = Rally(server, user, password, workspace=workspace, project=project, debug=True) 
     rally = Rally(server, user, password, workspace=workspace, project=project) 
     #rally = Rally(server, user, password, debug=True) 
     # add in the debug=True keyword arg if you want more verbiage ...

@@ -3,17 +3,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Primary pyral classes and functions &mdash; pyral v0.9.3 documentation</title>
+    <title>Primary pyral classes and functions &mdash; pyral 0.9.4 documentation</title>
+    
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.3',
+        VERSION:     '0.9.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral v0.9.3 documentation" href="index.html" />
+    <link rel="top" title="pyral 0.9.4 documentation" href="index.html" />
     <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
   </head>
   <body>
@@ -35,7 +38,7 @@
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral v0.9.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 0.9.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -87,7 +90,7 @@ returned to the caller.</p>
 </li>
 <li><p class="first">if present, use information from a rally-&lt;version&gt;.cfg file in the current directory,
 where &lt;version&gt; matches the Rally WSAPI version defined in the pyral.config module.
-Currently, that version is defined as 1.37.</p>
+Currently, that version is defined as 1.43.</p>
 </li>
 <li><p class="first">if present, use the contents of a file named in the RALLY_CONFIG environment variable.</p>
 </li>
@@ -201,7 +204,7 @@ interacting with the Rally server.</p>
 </li>
 <li><p class="first">project</p>
 </li>
-<li><p class="first">version  (specify the Rally WSAPI version, default is 1.37)</p>
+<li><p class="first">version  (specify the Rally WSAPI version, default is 1.43)</p>
 </li>
 <li><p class="first">verify_ssl_cert  (True or False, default is True)</p>
 </li>
@@ -220,7 +223,7 @@ Under those conditions, the project is changed to the first project
 </div></blockquote>
 <dl class="class">
 <dt id="Rally">
-<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user</em>, <em>password</em>, <em>version=1.34</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user</em>, <em>password</em>, <em>version=1.43</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Examples:</p>
@@ -463,6 +466,10 @@ easy means of obtaining the appropriate entity for the particular entity and sta
 you want.  Typically the usage would be along the lines of this example:</p>
 <blockquote>
 <div>info = { ...., &#8220;State&#8221; : rally.getState(&#8216;Feature&#8217;, &#8216;Discovering&#8217;).ref, ... })</div></blockquote>
+<dl class="docutils">
+<dt>WARNING: This method only works with PortfolioItem subclasses at this time.</dt>
+<dd>(Theme, Initiative, Feature)</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -692,7 +699,7 @@ HierarchicalRequirement
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -715,12 +722,12 @@ HierarchicalRequirement
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              >previous</a> |</li>
-        <li><a href="index.html">pyral v0.9.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 0.9.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Rally Software Development 2010-2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

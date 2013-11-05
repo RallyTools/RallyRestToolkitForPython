@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 3)
+__version__ = (0, 9, 4)
 
 import sys, os
 import platform
@@ -28,10 +28,12 @@ __all__ = ["RallyContext", "RallyContextHelper"]
 
 ###################################################################################################
 
-REQUEST_TIME_LIMIT = 5  # in seconds
+INITIAL_REQUEST_TIME_LIMIT =   5 # in seconds
+SERVICE_REQUEST_TIME_LIMIT = 120 # in seconds
 
-IPV4_ADDRESS_PATT = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
-FORMATTED_ID_PATT = re.compile(r'^[A-Z]{1,2}\d+$')
+IPV4_ADDRESS_PATT  = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
+FORMATTED_ID_PATT  = re.compile(r'^[A-Z]{1,2}\d+$')
+SCHEME_PREFIX_PATT = re.compile(r'^https?://')
 
 ##################################################################################################
 
@@ -123,7 +125,7 @@ class RallyContextHelper(object):
 ##        print " RallyContextHelper.check starting ..."
 ##        sys.stdout.flush()
 ##
-        socket.setdefaulttimeout(REQUEST_TIME_LIMIT)
+        socket.setdefaulttimeout(INITIAL_REQUEST_TIME_LIMIT)
         target_host = server
 
         big_proxy   = os.environ.get('HTTPS_PROXY', False)
@@ -131,12 +133,15 @@ class RallyContextHelper(object):
         proxy = big_proxy if big_proxy else small_proxy if small_proxy else False
         proxy_host = False
         if proxy:
+            if proxy.startswith('http'):
+                proxy = SCHEME_PREFIX_PATT.sub('', proxy)
             proxy_host, proxy_port = proxy.split(':')
         target_host = proxy_host or server
 
-        reachable = Pinger.ping(target_host)
+        reachable, problem = Pinger.ping(target_host)
         if not reachable:
-             problem = "host: '%s' non-existent or unreachable"  % target_host
+             if not problem:
+                 problem = "host: '%s' non-existent or unreachable"  % target_host
              raise RallyRESTAPIError(problem)
 
         #if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
@@ -168,6 +173,10 @@ class RallyContextHelper(object):
                                       _disableAugments=True)
             timer_stop = time.time()
         except Exception as ex:
+##
+            print "-----"
+            print str(ex)
+##
             if str(ex.args[0]).startswith('404 Service unavailable'):
                 # TODO: discern whether we should mention server or target_host as the culprit
                 raise RallyRESTAPIError("hostname: '%s' non-existent or unreachable" % server)
@@ -176,11 +185,11 @@ class RallyContextHelper(object):
         elapsed = timer_stop - timer_start
         if response.status_code != 200:
 ##
-##            print "context check response: %s" % response
+##            print "context check response:\n%s\n" % response
 ##            print "request attempt elapsed time: %6.2f" % elapsed
 ##
             if response.status_code == 404:
-                if elapsed >= float(REQUEST_TIME_LIMIT):
+                if elapsed >= float(INITIAL_REQUEST_TIME_LIMIT):
                     problem = "Request timed out on attempt to reach %s" % server
                 elif response.errors and 'certificate verify failed' in response.errors[0]:
                     problem = "SSL certificate verification failed"
@@ -233,6 +242,10 @@ class RallyContextHelper(object):
             User.UserProfile.OID value and issue a GET for that using _getResourceByOID
             and handling the response (wrapped in a RallyRESTResponse).
         """
+##
+##        print "in RallyContextHelper._getDefaults, response arg has:"
+##        pprint(response.data[u'Results'])
+##
         user = response.next()
         self.user_oid = user.oid
 ##
@@ -272,6 +285,9 @@ class RallyContextHelper(object):
             self._currentProject  = ""
             proj_ref = ""
             projects = self.agent.get('Project', fetch="Name", workspace=self._defaultWorkspace)
+##
+##            print projects.content
+##
             if projects:
                 proj = projects.next()
                 proj_ref = proj._ref
@@ -651,15 +667,10 @@ class Pinger(object):
         Response to the ping command results in the ping method returning True,
         otherwise a False is returned
     """
-    PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "1", "-t", "2"],
-                    'Unix'    : ["ping",       "-c", "1", "-w", "2"],
-                    'Linux'   : ["ping",       "-c", "1", "-w", "2"],
-                    'Windows' : ["ping",       "-n", "1", "-w", "2"]
-                   }
-    BLACK_HOLE   = {'Darwin'  : "/dev/null",
-                    'Unix'    : "/dev/null",
-                    'Linux'   : "/dev/null",
-                    'Windows' : "NUL"
+    PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "2", "-t", "2"],
+                    'Unix'    : ["ping",       "-c", "2", "-w", "2"],
+                    'Linux'   : ["ping",       "-c", "2", "-w", "2"],
+                    'Windows' : ["ping",       "-n", "2", "-w", "2"]
                    }
 
     @classmethod
@@ -667,9 +678,20 @@ class Pinger(object):
         plat_ident = platform.system()
         vector = Pinger.PING_COMMAND[plat_ident][:]
         vector.append(target)
-        abyss = Pinger.BLACK_HOLE[plat_ident]
-        rc = subprocess.call(vector, stdout=open(abyss, "w"))
-        return rc == 0
+        abyss = ".abyss"
+        result = ""
+        try:
+            with open(abyss, 'w') as sink:
+                rc = subprocess.call(vector, stdout=sink, stderr=sink)
+        except:
+            stuff = sys.exc_info()
+            result = stuff[1]
+        finally:
+            with open(abyss, 'r') as of:
+                result = of.read()
+            os.unlink(abyss)
+
+        return rc == 0, result
 
 ##################################################################################################
 

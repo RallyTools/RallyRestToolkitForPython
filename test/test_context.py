@@ -7,9 +7,10 @@ from pyral import Rally, RallyUrlBuilder
 
 ##################################################################################################
 
-TRIAL      = "server.rallydev.com"
+TRIAL      = "trial.rallydev.com"
 TRIAL_USER = "somebody@somewhere.com"
-TRIAL_PSWD = "BIGS3K^R3T"
+TRIAL_PSWD = "B1G53K^R3T"
+
 
 DEFAULT_WORKSPACE   = 'Some Default Workspace'
 DEFAULT_PROJECT     = 'Your Defaulty Project'

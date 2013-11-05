@@ -9,7 +9,11 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 3)
+__version__ = (0, 9, 4)
+
+import sys
+reload(sys)  # Reload gets a sys module that has the setdefaultencoding before site.py deletes it
+sys.setdefaultencoding('UTF8')
 
 import types
 from pprint import pprint
@@ -115,7 +119,6 @@ class EntityHydrator(object):
             instance.value = item[u'StringValue']
         return instance
 
-
     def _setAppropriateAttrValueForType(self, instance, attrName, attrValue, level=0):
 ##
 ##        print "setting attribute level: %d  attrName |%s|" % (level, attrName)
@@ -162,6 +165,5 @@ class EntityHydrator(object):
             return self._basicInstance(thing)
         else:
             return thing
-
 
 ##################################################################################################

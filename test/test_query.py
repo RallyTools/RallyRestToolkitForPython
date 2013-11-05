@@ -11,10 +11,10 @@ InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
 
 ##################################################################################################
 
-TRIAL = "preview.rallydev.com"
+TRIAL = "trial.rallydev.com"
 
-TRIAL_USER = "usernumbernone@acme.com"
-TRIAL_PSWD = "*******"
+TRIAL_USER = "usernumbernine@acme.com"
+TRIAL_PSWD = "************"
 
 ##################################################################################################
 
@@ -28,7 +28,7 @@ def test_basic_query():
     response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
-    assert response.warnings == []
+    assert len(response.warnings) == 1  # WSAPI deprecation warning
     assert response.resultCount > 0
 
 def test_simple_named_fields_query():
@@ -55,7 +55,8 @@ def test_all_fields_query():
     response = rally.get('Project', fetch=True, limit=10)
     assert response.status_code == 200
     assert len(response.errors) ==   0
-    assert len(response._page)  ==   5
+    #assert len(response._page)  ==   12
+    assert response.resultCount > 12
     for project in response:
         assert project.oid > 0
         assert len(project.Name) > 0
@@ -120,8 +121,8 @@ def test_multiple_entities_query():
         Using a known valid Rally server and known valid access credentials,
         issue a simple query (no qualifying criteria) for a comma
         separated list of known valid Rally entity names.  
-        As of the initial swag at the Python toolkit for Rally REST API, 
-        this is an invalid request; only a single Rally entity can be specified.
+        As of Rally WSAPI 1.x, this is an invalid request; 
+        only a single Rally entity can be specified.
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     multiple_entities = "Project,Workspace"
@@ -158,7 +159,7 @@ def test_defects_revision_history():
         and have their attributes filled out completely (_hydrated == True).
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    response = rally.get('Defect', fetch=True, limit=10)
+    response = rally.get('Defect', fetch=True,  limit=10)
     
     defect1 = response.next()
     defect2 = response.next()
@@ -170,8 +171,8 @@ def test_defects_revision_history():
     assert type(d1_revs) == types.ListType
     assert type(d2_revs) == types.ListType
 
-    d1_rev1 = d1_revs.pop(0)
-    d2_rev1 = d2_revs.pop(0)
+    d1_rev1 = d1_revs.pop()  # now the revs are in stack order, newest first, original the last
+    d2_rev1 = d2_revs.pop()  # ditto
 
     assert d1_rev1.RevisionNumber == 0
     assert d2_rev1.RevisionNumber == 0
@@ -182,7 +183,7 @@ def test_defects_revision_history():
     assert d1_rev1._hydrated == True
     assert d2_rev1._hydrated == True
 
-def test_single_condition_query_reg():
+def test_single_condition_query_plain_expression():
     """
         Using a known valid Rally server and known valid access credentials,
         issue a query with a single qualifying criterion against a Rally entity
@@ -212,26 +213,6 @@ def test_single_condition_query_parenned():
     response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
     assert response.resultCount > 0
 
-def test_single_condition_query_as_dict():
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    qualifier = {'State' : 'Submitted'}
-    response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
-    assert response.resultCount > 0
-
-def test_two_condition_query_in_list():
-    """
-        Using a known valid Rally server and known valid access credentials,
-        issue a query with two qualifying conditions against a Rally entity
-        (Defect) known to exist for which the qualifying criterion should return 
-        one or more Defects. The qualifying criterion is a list that contains
-        two condition strings, each condition string does _not_ have any 
-        surrounding paren chars.
-    """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    qualifiers = ["State = Submitted", "FormattedID != US100"]
-    response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
-    assert response.resultCount > 0
-
 def test_two_condition_query_in_unparenned_string():
     """
         Using a known valid Rally server and known valid access credentials,
@@ -252,14 +233,120 @@ def test_two_condition_query_parenned():
         issue a query with two qualifying conditions against a Rally entity
         (Defect) known to exist for which the qualifying criterion should return 
         one or more Defects. The qualifying criterion is a string that _is_
-        surrounded with paren chars and each cohdition itself is surrounded by
+        surrounded with paren chars and each condition itself is surrounded by
         parens..
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    qualifiers = "((State = Submitted) AND (FormattedID != US100))"
+    qualifiers = "(State = Submitted) AND (FormattedID != US100)"
     response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
     assert response.resultCount > 0
 
+def test_single_condition_query_as_list():
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifier = ['State != Open']
+    response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
+    assert response.resultCount > 0
+
+def test_two_condition_query_in_list():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        issue a query with two qualifying conditions against a Rally entity
+        (Defect) known to exist for which the qualifying criterion should return 
+        one or more Defects. The qualifying criterion is a list that contains
+        two condition strings, each condition string does _not_ have any 
+        surrounding paren chars.
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifiers = ["State = Submitted", "FormattedID != US100"]
+    response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
+    assert response.resultCount > 0
+
+def test_three_condition_query_in_list():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        issue a query with three qualifying conditions against a Rally entity
+        (Defect) known to exist for which the qualifying criterion should return 
+        one or more Defects. The qualifying criterion is a list that contains
+        three condition strings, each condition string does _not_ have any 
+        surrounding paren chars.
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    #qualifiers = ["State = Submitted", "FormattedID != DE100", "Owner.UserName != horsefeathers"]
+    qualifiers = ["State = Submitted", "FormattedID != DE100", "Severity != UltraMegaHurt"]
+    response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
+    assert response.resultCount > 0
+
+def test_five_condition_query_in_list():
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifiers = ["State = Submitted",
+                  "FormattedID < DE6000",
+                  "FormattedID != DE5986",
+                  'Priority = "High Attention"',
+                  "Severity != Cosmetic"
+                 ]
+    response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
+    assert response.resultCount > 0
+    
+def test_single_condition_query_as_dict():
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifier = {'State' : 'Submitted'}
+    response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
+    assert response.resultCount > 0
+
+def test_two_conditions_query_as_dict():
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifiers = {'State' : 'Submitted',
+                  'Ready' : 'False'
+                 }
+    response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
+    assert response.resultCount > 0
+
+def test_three_conditions_query_as_dict():
+    """
+        
+    """
+    # TODO: note that an attribute value containing a '/' char will fail
+    #       have yet to determine how to get this to work with Rally WSAPI ...
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifiers = {"State"    : "Submitted",
+                  "Priority" : "High Attention",
+                  "Ready"    : "False"
+                  #'Severity : "Major Problem"',
+                  #'Severity : "Crash/DataLoss"',
+                 }
+    response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
+    assert response.resultCount > 0
+
+def test_limit_query():
+    """
+        Use a pagesize of 200 and a limit of 80 in the params in the URL
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifier = "State = Submitted"
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=200, limit=80)
+    items = [item for item in response]
+    assert len(items) == 80
+
+def test_start_value_query():
+    """
+        Use a pagesize of 200 and a start index value of 300 in the params in the URL
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifier = "State = Submitted"
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=200, start=300)
+    items = [item for item in response]
+    assert len(items) > 200 
+    assert len(items) < 600
+
+def test_start_and_limit_query():
+    """
+        Use a pagesize of 50 and a start index value of 20 and a limit of 60 in the params in the URL
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    qualifier = "State = Submitted"
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=50, start=20,limit=60)
+    items = [item for item in response]
+    assert len(items) == 60
 
 #test_basic_query()
 #test_simple_named_fields_query()
@@ -269,3 +356,17 @@ def test_two_condition_query_parenned():
 #test_multiple_entities_query()
 #test_multiple_page_response_query()
 #test_defects_revision_history()
+#test_single_condition_query_plain_expression()
+#test_single_condition_query_parenned()
+#test_two_condition_query_in_unparenned_string()
+#test_two_condition_query_parenned()
+#test_single_condition_query_in_list()
+#test_two_condition_query_in_list()
+#test_three_condition_query_in_list()
+#test_five_condition_query_in_list()
+#test_single_condition_query_as_dict()
+#test_two_conditions_query_as_dict()
+#test_three_conditions_query_as_dict()
+#test_limit_query()
+#test_start_value_query()
+#test_start_and_limit_query()

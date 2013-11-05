@@ -31,6 +31,10 @@ Installation
 ````````````
 
 Obtain the requests_ package and install it according to that package's directions.
+As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
+Use of requests-2.x or better is recommended for use with pyral.
+The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
+
 
 Unpack the ``pyral`` distribution file (zip or tar.gz) and then install the pyral_ package. 
 
@@ -51,11 +55,11 @@ relevant packages.
 :: 
 
    $ python
-   Python 2.6.6 [other Python interpreter info elided ...]
+   Python 2.7.5 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (0, 9, 3)
+   (0, 9, 4)
 
 
 
@@ -250,16 +254,27 @@ Prerequisites
 -------------
 
  * Python 2.6 or 2.7
- * The  requests_ package, 0.8.2 or better
+ * The  requests_ package, 0.9.3 or better
+   Recommend using requests 2.0.0 or better. 2.0.0 finally includes support for https proxy.
    Developed using requests 0.9.3.  
    There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL.  You should be able to use the verify_ssl_cert keyword argument when
    obtaining a pyral Rally instance to overcome this issue.
-   If you are using requests >- 0.9.3, you must also have certifi-0.0.8 (available on PyPI)
+   If you are using requests < 1.0.0, you must also have certifi-0.0.8 (available on PyPI)
 
 .. _requests: http://github.com/kennethreitz/requests
 
 Versions
 --------
+   * 0.9.4 -
+            Adjusted Rally __init__ to accommodate using requests 0.x, 1.x, 2.x versions.
+            Factored out query building and fixed constructing multi condition queries.
+            Added internal convenience method to handle a list of refs to turn them into a
+            list of single key (_ref) hashes.
+            Added UserIterationCapacity to known entities.
+            Upped default WSAPI version in config to 1.43
+            Support using of https_proxy / HTTPS_PROXY environment variables.
+            Refactored getAllUsers to include UserProfile information with fewer queries.
+
    * 0.9.3 -
             Fixed Pinger class to use correct ping options on Linux and Windows
             Updated exception catching and exception raising to Python 2.6/2.7 syntax.            
@@ -310,6 +325,8 @@ TODO
 ----
 * Python 3.3 + support
 
+* Support Rally WSAPI 2.0
+
 * Expand the documentation
 
 * Expand the repertoire of example scripts
@@ -317,13 +334,11 @@ TODO
 * Refactor the source code to make use decorators in pyral.restapi, 
   dynamically construct the Rally schema hierarchy economically.
 
-* Monitor requests/urllib3 for release that fully supports HTTPS over HTTP proxy.
-
 
 License
 -------
 
-BSD3-style license. Copyright (c) 2010-2012 Rally Software Development.
+BSD3-style license. Copyright (c) 2010-2013 Rally Software Development.
 
 See the LICENSE file provided with the source distribution for full details.
 

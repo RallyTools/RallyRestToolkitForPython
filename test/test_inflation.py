@@ -7,10 +7,13 @@ from pyral import Rally, RallyRESTAPIError
 
 ##################################################################################################
 
-TRIAL = "preview.rallydev.com"
+TRIAL = "trial.rallydev.com"
 
 TRIAL_USER = "usernumbernine@acme.com"
 TRIAL_PSWD = "************"
+
+DEFAULT_WORKSPACE = "Idle Hands Workspace"
+DEFAULT_PROJECT   = "Angstrom Bundling"
 
 ##################################################################################################
 
@@ -36,7 +39,7 @@ def test_default_workspace_with_named_default_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    project = 'Shopping Team'
+    project = 'Sample Project'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   project=project)
     response = rally.get('Project', fetch=False)
@@ -52,7 +55,7 @@ def test_default_workspace_non_default_valid_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    project = 'Online Store'
+    project = 'My Project'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   project=project)
     response = rally.get('Project', fetch=False)
@@ -68,7 +71,7 @@ def test_default_workspace_non_valid_project():
         An exception should be raised.
     """
     project = 'Halfling Leaf Pipe'
-    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, 'User Story Pattern')
+    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, DEFAULT_WORKSPACE)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       project=project)
@@ -84,14 +87,13 @@ def test_named_default_workspace_use_default_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    workspace = 'User Story Pattern'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
-                  workspace=workspace)
+                  workspace=DEFAULT_WORKSPACE)
     response = rally.get('Project')
     assert response != None
     assert response.status_code == 200
     project = response.next()
-    assert project.Name == 'Shopping Team'
+    assert project.Name == DEFAULT_PROJECT
     assert rally._wpCacheStatus() == 'minimal'
 
 
@@ -103,10 +105,8 @@ def test_named_default_workspace_named_default_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    workspace = 'User Story Pattern'
-    project   = 'Shopping Team'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
-                  workspace=workspace, project=project)
+                  workspace=DEFAULT_WORKSPACE, project=DEFAULT_PROJECT)
     response = rally.get('Project')
     assert response != None
     assert response.status_code == 200
@@ -120,10 +120,9 @@ def test_named_default_workspace_named_valid_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    workspace = 'User Story Pattern'
-    project   = 'Online Store'
+    project   = 'My Project'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
-                  workspace=workspace, project=project)
+                  workspace=DEFAULT_PROJECT, project=project)
     response = rally.get('Project')
     assert response != None
     assert response.status_code == 200
@@ -136,12 +135,11 @@ def test_named_default_workspace_named_invalid_project():
         specifying the name of an invalid project.
         An exception should be raised.
     """
-    workspace = 'User Story Pattern'
     project = 'Sailor Sami'
-    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, workspace)
+    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, DEFAULT_WORKSPACE)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
-                      workspace=workspace, project=project)
+                      workspace=DEFAULT_WORKSPACE, project=project)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'Exception'
     assert actualErrVerbiage == expectedErrMsg
@@ -160,17 +158,16 @@ def test_named_non_default_workspace_use_default_project():
                 in the named non-default workspace
               
     """
-    #default_workspace = 'User Story Pattern'
-    workspace = 'Integrations'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace)
+    workspace = 'Foonman Internationale'
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
     ai_proj = rally.getProject()
-    assert str(ai_proj.Name) == 'Shopping Team'   # is valid on both default and 'Integrations'
+    assert str(ai_proj.Name) == 'Shopaholic'   # is valid on both default and 'Foonman Internationale'
     assert rally._wpCacheStatus() == 'narrow'
 
-    workspace = 'Healthcare Story Pattern 1'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace)
+    workspace = 'Over Regulation Central'
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
     ai_proj = rally.getProject()
-    assert str(ai_proj.Name) == 'Big Healthcare'   # is valid only in 'Healthcare Story Pattern 1'
+    assert str(ai_proj.Name) == 'Picky About Lint'   # is valid only in 'Wonka Factory Inspection'
     assert rally._wpCacheStatus() == 'narrow'
 
 def test_named_non_default_workspace_named_valid_project():
@@ -180,8 +177,8 @@ def test_named_non_default_workspace_named_valid_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    workspace = 'Integrations'
-    project   = 'Consumer Site'
+    workspace = 'Jellystone Quarry'
+    project   = 'Rock of Destruction'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project)
     response = rally.get('Project')
@@ -195,7 +192,7 @@ def test_named_non_default_workspace_named_invalid_project():
         a valid non-default workspace and an invalid project.
         An exception should be raised.
     """
-    workspace = 'Integrations'
+    workspace = 'Wobbly Wheels'
     project   = 'Barney Rubble'
     expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, workspace)
     with py.test.raises(Exception) as excinfo:
