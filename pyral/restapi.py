@@ -21,6 +21,7 @@ import string
 import base64
 from operator import itemgetter, attrgetter
 import logging
+import copy
 
 import requests   
 
@@ -102,14 +103,16 @@ def getResourceByOID(context, entity, oid, **kwargs):
     if not rallyContext:
         # raising an Exception is the only thing we can do, don't see any prospect of recovery...
         raise RallyRESTAPIError('Unable to find Rally instance for context: %s' % context)
-##
-##        print "_rallyCache.keys:"
-##        for key in _rallyCache.keys():
-##            print "    -->%s<--" % key
-##        print ""
-##        print " apparently no key to match: -->%s<--" % context
-##        print " context is a %s" % type(context)
-##
+
+       # print "_rallyCache.keys:"
+       # for key in _rallyCache.keys():
+       #     print "    -->%s<--" % key
+       # print ""
+       # print " apparently no key to match: -->%s<--" % context
+       # print " context is a %s" % type(context)
+
+       
+
     rally = rallyContext.get('rally')
     resp = rally._getResourceByOID(context, entity, oid, **kwargs)
     if 'unwrap' not in kwargs or not kwargs.get('unwrap', False):
@@ -219,6 +222,28 @@ class Rally(object):
         
         self.contextHelper = RallyContextHelper(self, server, user, password)
         self.contextHelper.check(self.server)
+
+        self._finalizeContext(**kwargs)
+        
+    def __getstate__(self):
+        ret=copy.copy(self.__dict__)
+        del ret['_log']
+        del ret['_logAttrGet']
+        return (ret)
+
+    def __setstate__(self,state):
+        self.__dict__=state
+        self._log=logging.getLogger('restapi.Rally')
+        self._logAttrGet = logging.getLogger('restapi.Rally.AttrGet')
+
+        global _rallyCache
+        if self.contextHelper.currentContext() not in _rallyCache:
+            _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
+
+        if self.contextHelper.defaultContext not in _rallyCache:
+            _rallyCache[self.contextHelper.defaultContext]   = {'rally' : self}
+
+    def _finalizeContext(self,**kwargs):
 
         global _rallyCache
         if self.contextHelper.currentContext() not in _rallyCache:
@@ -787,7 +812,7 @@ class Rally(object):
 ##        print "response.status_code is %s" % response.status_code
 ##
         if response.status_code != 200:
-            self._log.debug("%s %s ...",code,verbiage)
+            self._log.debug("Response code: %s",response.status_code)
 ##
 ##            print response
 ##
