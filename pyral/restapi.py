@@ -223,28 +223,6 @@ class Rally(object):
         self.contextHelper = RallyContextHelper(self, server, user, password)
         self.contextHelper.check(self.server)
 
-        self._finalizeContext(**kwargs)
-        
-    def __getstate__(self):
-        ret=copy.copy(self.__dict__)
-        del ret['_log']
-        del ret['_logAttrGet']
-        return (ret)
-
-    def __setstate__(self,state):
-        self.__dict__=state
-        self._log=logging.getLogger('restapi.Rally')
-        self._logAttrGet = logging.getLogger('restapi.Rally.AttrGet')
-
-        global _rallyCache
-        if self.contextHelper.currentContext() not in _rallyCache:
-            _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
-
-        if self.contextHelper.defaultContext not in _rallyCache:
-            _rallyCache[self.contextHelper.defaultContext]   = {'rally' : self}
-
-    def _finalizeContext(self,**kwargs):
-
         global _rallyCache
         if self.contextHelper.currentContext() not in _rallyCache:
             _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
@@ -299,6 +277,31 @@ class Rally(object):
         if __adjust_cache:
             _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
 
+    def __getstate__(self):
+        """
+            Preserve the current state of the rally connection, sans the loggers
+            for pickle support
+        """
+        ret=copy.copy(self.__dict__)
+        del ret['_log']
+        del ret['_logAttrGet']
+        return (ret)
+
+    def __setstate__(self,state):
+        """
+            Restore the current state for pickle support. Including re-creating
+            the loggers and adding the contexts back into the cache, if neccessary
+        """
+        self.__dict__=state
+        self._log=logging.getLogger('restapi.Rally')
+        self._logAttrGet = logging.getLogger('restapi.Rally.AttrGet')
+
+        global _rallyCache
+        if self.contextHelper.currentContext() not in _rallyCache:
+            _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
+
+        if self.contextHelper.defaultContext not in _rallyCache:
+            _rallyCache[self.contextHelper.defaultContext]   = {'rally' : self}
 
     def _wpCacheStatus(self):
         """
