@@ -290,8 +290,6 @@ class Rally(object):
         """
         return self.service_url
 
-
-
     def enableLogging(self, *args, **kwargs):
         ''' enableLogging - now a noop, because logging is configured through
             python logging API
