@@ -43,6 +43,8 @@ class InvalidRallyTypeNameError(Exception):
 import logging
 _logger=logging.getLogger('restapi.Rally')
 
+import copy
+
 ##################################################################################################
 #
 # Classes for each entity in the Rally data model.  Refer to the Rally REST API document
@@ -87,6 +89,8 @@ class Persistable(object):
 ##
 ##        print faultTrigger
 ##        sys.stdout.flush()
+        import logging
+        logging.getLogger('pyral.entity').debug('__getattr__(%s)', name)
 ##
         if name == 'context':
             raise Exception('CRAP!  __getattr__ called for context attribute')
@@ -131,6 +135,14 @@ class Persistable(object):
         else:    
             description = "%s instance has no attribute: '%s'" % (rallyEntityTypeName, name)
             raise AttributeError(description)
+
+    def __getstate__(self):
+        ret=copy.copy(self.__dict__)
+        return (ret)
+
+    def __setstate__(self,state):
+        self.__dict__=state
+
 
 ##################################################################################################
 #
