@@ -417,9 +417,7 @@ class Rally(object):
         hits = [(proj,ref) for proj,ref in projs if str(proj) == str(name)]
         if not hits:
             return None
-        tp = projs[0]
-        tp_ref = tp[1]
-        return _createShellInstance(context, 'Project', name, tp_ref)
+        return _createShellInstance(context, 'Project', name, hits[0][1])
         
 
     def getProjects(self, workspace=None):
