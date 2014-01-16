@@ -550,19 +550,23 @@ class Rally(object):
 
         # do our own brute force "join" operation on User to UserProfile info 
         for user in users:
-            # get any matching user profiles (aka mups), there really should only be 1 matching...
-            mups = [prof for prof in profiles 
-                          if prof._ref == user.UserProfile._ref] 
-            if not mups:
-                problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
-                warning("WARNING: %s\n" % (problem % (user.DisplayName, user.UserProfile)))
-                continue
+
+            if hasattr(user,'UserProfile'):
+                # get any matching user profiles (aka mups), there really should only be 1 matching...
+                mups = [prof for prof in profiles 
+                              if prof._ref == user.UserProfile._ref] 
+                if not mups:
+                    problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
+                    warning("WARNING: %s\n" % (problem % (user.DisplayName, user.UserProfile)))
+                    continue
+                else:
+                    if len(mups) > 1:
+                        anomaly = "Found %d UserProfile items associated with username: %s"
+                        warning("WARNING: %s\n" % (anomaly % (len(mups), user.UserName)))
+                    # now attach the first matching UserProfile to the User
+                    user.UserProfile = mups[0]
             else:
-                if len(mups) > 1:
-                    anomaly = "Found %d UserProfile items associated with username: %s"
-                    warning("WARNING: %s\n" % (anomaly % (len(mups), user.UserName)))
-                # now attach the first matching UserProfile to the User
-                user.UserProfile = mups[0]
+                user.UserProfile=None
             
         self.setWorkspace(saved_workspace_name)
         return users
