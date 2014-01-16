@@ -40,6 +40,11 @@ class InvalidRallyTypeNameError(Exception):
     """
     pass
 
+import logging
+_logger=logging.getLogger('restapi.Rally')
+
+import copy
+
 ##################################################################################################
 #
 # Classes for each entity in the Rally data model.  Refer to the Rally REST API document
@@ -84,6 +89,8 @@ class Persistable(object):
 ##
 ##        print faultTrigger
 ##        sys.stdout.flush()
+        import logging
+        logging.getLogger('pyral.entity').debug('__getattr__(%s)', name)
 ##
         if name == 'context':
             raise Exception('CRAP!  __getattr__ called for context attribute')
@@ -98,7 +105,8 @@ class Persistable(object):
 ##                  (entity, oid, rallyEntityTypeName, self.oid)
 ##            print "Entity: %s context: %s" % (rallyEntityTypeName, self._context) 
 ##            sys.stdout.flush()
-##
+
+            _logger.debug('Persistable.__getattr__ -> getResourceByOid(%s,%s)',entity,self.oid)
             response = getResourceByOID(self._context, entity, self.oid, unwrap=True)
 ##
 ##            print "response is a %s" % type(response)
@@ -127,6 +135,14 @@ class Persistable(object):
         else:    
             description = "%s instance has no attribute: '%s'" % (rallyEntityTypeName, name)
             raise AttributeError(description)
+
+    def __getstate__(self):
+        ret=copy.copy(self.__dict__)
+        return (ret)
+
+    def __setstate__(self,state):
+        self.__dict__=state
+
 
 ##################################################################################################
 #
@@ -304,6 +320,8 @@ class TestFolder            (WorkspaceDomainObject): pass
 class Tag                   (WorkspaceDomainObject): pass
 class TimeEntryItem         (WorkspaceDomainObject): pass
 class TimeEntryValue        (WorkspaceDomainObject): pass
+class PreliminaryEstimate   (WorkspaceDomainObject): pass
+class State                 (WorkspaceDomainObject): pass
 class UserIterationCapacity (WorkspaceDomainObject): pass
 
 class WebLinkDefinition(AttributeDefinition): pass
@@ -414,6 +432,7 @@ classFor = { 'Persistable'             : Persistable,
              'CumulativeFlowData'      : CumulativeFlowData,
              'ReleaseCumulativeFlowData'   : ReleaseCumulativeFlowData,
              'IterationCumulativeFlowData' : IterationCumulativeFlowData,
+             'UserIterationCapacity'    :  UserIterationCapacity,
            }
 
 for entity_name, entity_class in classFor.items():

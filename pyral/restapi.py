@@ -20,6 +20,8 @@ import json
 import string
 import base64
 from operator import itemgetter, attrgetter
+import logging
+import copy
 
 import requests   
 
@@ -101,14 +103,16 @@ def getResourceByOID(context, entity, oid, **kwargs):
     if not rallyContext:
         # raising an Exception is the only thing we can do, don't see any prospect of recovery...
         raise RallyRESTAPIError('Unable to find Rally instance for context: %s' % context)
-##
-##        print "_rallyCache.keys:"
-##        for key in _rallyCache.keys():
-##            print "    -->%s<--" % key
-##        print ""
-##        print " apparently no key to match: -->%s<--" % context
-##        print " context is a %s" % type(context)
-##
+
+       # print "_rallyCache.keys:"
+       # for key in _rallyCache.keys():
+       #     print "    -->%s<--" % key
+       # print ""
+       # print " apparently no key to match: -->%s<--" % context
+       # print " context is a %s" % type(context)
+
+       
+
     rally = rallyContext.get('rally')
     resp = rally._getResourceByOID(context, entity, oid, **kwargs)
     if 'unwrap' not in kwargs or not kwargs.get('unwrap', False):
@@ -176,10 +180,12 @@ class Rally(object):
         self._inflated = False
         self.service_url = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE % self.version)
         self.hydration   = "full"
-        self._log        = False
-        self._logDest    = None
-        self._logAttrGet = False
-        self._warn       = warn
+        
+        # set up logging
+        self._log=logging.getLogger('restapi.Rally')
+        self._logAttrGet = logging.getLogger('restapi.Rally.AttrGet')
+        self._log.info("Following entries record Rally REST API interaction via %s for user: %s'", self.service_url, self.user)
+        
         config = {}
         if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
             config['verbose'] = sys.stdout
@@ -271,6 +277,31 @@ class Rally(object):
         if __adjust_cache:
             _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
 
+    def __getstate__(self):
+        """
+            Preserve the current state of the rally connection, sans the loggers
+            for pickle support
+        """
+        ret=copy.copy(self.__dict__)
+        del ret['_log']
+        del ret['_logAttrGet']
+        return (ret)
+
+    def __setstate__(self,state):
+        """
+            Restore the current state for pickle support. Including re-creating
+            the loggers and adding the contexts back into the cache, if neccessary
+        """
+        self.__dict__=state
+        self._log=logging.getLogger('restapi.Rally')
+        self._logAttrGet = logging.getLogger('restapi.Rally.AttrGet')
+
+        global _rallyCache
+        if self.contextHelper.currentContext() not in _rallyCache:
+            _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
+
+        if self.contextHelper.defaultContext not in _rallyCache:
+            _rallyCache[self.contextHelper.defaultContext]   = {'rally' : self}
 
     def _wpCacheStatus(self):
         """
@@ -287,63 +318,33 @@ class Rally(object):
         """
         return self.service_url
 
-
-    def enableLogging(self, dest=sys.stdout, attrget=False, append=False):
-        """
-            Use this to enable logging. dest can set to the name of a file or an open file/stream (writable). 
-            If attrget is set to true, all Rally REST requests that are executed to obtain attribute information
-            will also be logged. Be careful with that as the volume can get quite large.
-            The append parm controls whether any existing file will be appended to or overwritten.
-        """
-        self._log = True
-        if hasattr(dest, 'write'):
-            self._logDest = dest
-        elif type(dest) == types.StringType:
-            try:
-                mode = 'w'
-                if append:
-                    mode = 'a'
-                self._logDest = open(dest, mode)
-            except IOError as ex:
-                self._log = False
-                self._logDest = None
-        else:
-            self._log = False
-            # emit a warning that logging is disabled due to a faulty dest arg
-            warning('WARNING: Logging dest arg cannot be written to, proceeding with logging disabled.\n')
-        if self._log:     
-            scopeNote = '%s Following entries record Rally REST API interaction via %s for user: %s' % \
-                        (timestamp(), self.service_url, self.user)
-            self._logDest.write('%s\n' % scopeNote)
-            self._logDest.flush()
-            if attrget:
-                self._logAttrGet = True
+    def enableLogging(self, *args, **kwargs):
+        ''' enableLogging - now a noop, because logging is configured through
+            python logging API
+        '''
+        pass
 
 
     def disableLogging(self):
-        """
-            Disable logging. 
-        """
-        if self._log:
-            self._log = False
-            self._logAttrGet = False
-            if self._logDest and self._logDest not in (sys.stdout, sys.stderr):
-                try:
-                    self._logDest.flush()
-                    self._logDest.close()
-                except IOError as ex:
-                    # emit a warning that the logging destination was unable to be closed
-                    pass
-                self._logDest = None
+        ''' disableLogging - now a noop, because logging is configured through
+            python logging API
+        '''
+        pass
 
     def enableWarnings(self):
-        self._warn = True
+        ''' enableWarnings - now a noop, because logging is configured through
+            python logging API
+        '''
+        pass
 
     def disableWarnings(self):
-        self._warn = False
+        ''' disableWarnings - now a noop, because logging is configured through
+            python logging API
+        '''
+        pass
 
     def warningsEnabled(self):
-        return self._warn == True
+        return self._log.getEffectiveLevel()<=logging.WARNING
 
     def subscriptionName(self):
         """
@@ -416,9 +417,7 @@ class Rally(object):
         hits = [(proj,ref) for proj,ref in projs if str(proj) == str(name)]
         if not hits:
             return None
-        tp = projs[0]
-        tp_ref = tp[1]
-        return _createShellInstance(context, 'Project', name, tp_ref)
+        return _createShellInstance(context, 'Project', name, hits[0][1])
         
 
     def getProjects(self, workspace=None):
@@ -551,19 +550,23 @@ class Rally(object):
 
         # do our own brute force "join" operation on User to UserProfile info 
         for user in users:
-            # get any matching user profiles (aka mups), there really should only be 1 matching...
-            mups = [prof for prof in profiles 
-                          if prof._ref == user.UserProfile._ref] 
-            if not mups:
-                problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
-                warning("WARNING: %s\n" % (problem % (user.DisplayName, user.UserProfile)))
-                continue
+
+            if hasattr(user,'UserProfile'):
+                # get any matching user profiles (aka mups), there really should only be 1 matching...
+                mups = [prof for prof in profiles 
+                              if prof._ref == user.UserProfile._ref] 
+                if not mups:
+                    problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
+                    warning("WARNING: %s\n" % (problem % (user.DisplayName, user.UserProfile)))
+                    continue
+                else:
+                    if len(mups) > 1:
+                        anomaly = "Found %d UserProfile items associated with username: %s"
+                        warning("WARNING: %s\n" % (anomaly % (len(mups), user.UserName)))
+                    # now attach the first matching UserProfile to the User
+                    user.UserProfile = mups[0]
             else:
-                if len(mups) > 1:
-                    anomaly = "Found %d UserProfile items associated with username: %s"
-                    warning("WARNING: %s\n" % (anomaly % (len(mups), user.UserName)))
-                # now attach the first matching UserProfile to the User
-                user.UserProfile = mups[0]
+                user.UserProfile=None
             
         self.setWorkspace(saved_workspace_name)
         return users
@@ -611,9 +614,7 @@ class Rally(object):
 ##            sys.stdout.flush()
 ##
         full_resource_url = "%s/%s" % (self.service_url, resource)
-        if self._logAttrGet:
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
-            self._logDest.flush()
+        self._logAttrGet.debug("Attribute-GET %s",resource)
 ##
 ##        print "issuing GET for resource: %s" % full_resource_url
 ##        sys.stdout.flush()
@@ -642,13 +643,9 @@ class Rally(object):
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
             resource += ("?" + "&".join(augments))
-        if self._log:
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
-            self._logDest.flush()
+        self._log.debug("GET %s",resource)
         response = self._getResourceByOID(context, entityName, oid)
-        if self._log:
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, resource))
-            self._logDest.flush()
+        self._log.debug(" ->%s %s",response.status_code, resource)
         if not response or response.status_code != 200:
             problem = "Unreferenceable %s OID: %s" % (entityName, oid)
             raise RallyRESTAPIError('%s %s' % (response.status_code, problem))
@@ -795,9 +792,7 @@ class Rally(object):
 
         # TODO: see if much of above can be pushed into another method
 
-        if self._log: 
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
-            self._logDest.flush()
+        self._log.debug("GET %s",resource)
 
         response = None  # in case an exception gets raised in the session.get call ...
         try:
@@ -814,10 +809,7 @@ class Rally(object):
                 ret_code, content = response.status_code, response.content
             else:
                 ret_code, content = 404, str(ex.args[0])
-            if self._log:
-                self._logDest.write('%s %s\n' % (timestamp(), ret_code))
-                self._logDest.flush()
-
+            self._log.debug("  -> %s", ret_code)
             errorResponse = ErrorResponse(ret_code, content)
             response = RallyRESTResponse(self.session, context, resource, errorResponse, self.hydration, 0)
             return response
@@ -825,10 +817,7 @@ class Rally(object):
 ##        print "response.status_code is %s" % response.status_code
 ##
         if response.status_code != 200:
-            if self._log:
-                code, verbiage = response.status_code, response.content[:56]
-                self._logDest.write('%s %s %s ...\n' % (timestamp(), code, verbiage))
-                self._logDest.flush()
+            self._log.debug("Response code: %s",response.status_code)
 ##
 ##            print response
 ##
@@ -840,13 +829,11 @@ class Rally(object):
             return response
 
         response = RallyRESTResponse(self.session, context, resource, response, self.hydration, limit)
-        if self._log:
-            if response.status_code == 200:
-                desc = '%s TotalResultCount %s' % (entity, response.resultCount)
-            else:
-                desc = response.errors[0]
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
-            self._logDest.flush()
+        if response.status_code == 200:
+            desc = '%s TotalResultCount %s' % (entity, response.resultCount)
+        else:
+            desc = response.errors[0]
+        self._log.debug("%s %s",response.status_code, desc)
         if kwargs and 'instance' in kwargs and kwargs['instance'] == True and response.resultCount == 1:
             return response.next()
         return response
@@ -878,25 +865,19 @@ class Rally(object):
                                                      # any ref lists for COLLECTION attributes
                                                      # into a list of one-key dicts {'_ref' : ref}
         payload = json.dumps(item)
-        if self._log:
-            self._logDest.write('%s PUT %s\n%27.27s %s\n' % (timestamp(), resource, " ", payload))
-            self._logDest.flush()
+        self._log.debug("PUT %s\n%27.27s %s",resource, " ", payload)
         response = self.session.put(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.status_code != 200:
             desc = response.errors[0]
-            if self._log:
-                self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
-                self._logDest.flush()
+            self._log.debug("%s %s",response.status_code, desc)
             raise RallyRESTAPIError('%s %s' % (response.status_code, desc))
 
         item = response.content[u'CreateResult'][u'Object']
         ref  = str(item[u'_ref'])
         item_oid = int(ref.split('/')[-1][:-3])
         desc = "created %s OID: %s" % (entityName, item_oid)
-        if self._log:
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
-            self._logDest.flush()
+        self._log.debug("%s %s",response.status_code, desc)
 
         # now issue a request to get the entity item (mostly so we can get the FormattedID)
         # and return it
@@ -947,9 +928,7 @@ class Rally(object):
 ##
         item = {entityName: self._greased(itemData)}
         payload = json.dumps(item)
-        if self._log:
-            self._logDest.write('%s POST %s\n%27.27s %s\n' % (timestamp(), resource, " ", item))
-            self._logDest.flush()
+        self._log.debug("POST %s\n%27.27s %s",resource, " ", item)
         response = self.session.post(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.status_code != 200:
@@ -998,14 +977,10 @@ class Rally(object):
         if augments:
             resource += ("?" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
-        if self._log:
-            self._logDest.write('%s DELETE %s\n' % (timestamp(), resource))
+        self._log.debug("DELETE %s",resource)
         response = self.session.delete(full_resource_url, headers=RALLY_REST_HEADERS)
         if response and response.status_code != 200:
-            if self._log:
-                self._logDest.write('%s %s %s ...\n' % \
-                       (timestamp(), response.status_code, response.content[:56]))
-                self._logDest.flush()
+            self._log.debug("%s %s ...",response.status_code, response.content[:56])
 ##
 ##            if kwargs.get('debug', False):
 ##                print response.status_code, response.headers, response.content
@@ -1026,9 +1001,7 @@ class Rally(object):
         else:
             status = True
             desc = '%s deleted' % entityName
-        if self._log:
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
-            self._logDest.flush()
+        self._log.debug("%s %s",response.status_code, desc)
 
         return status
 
@@ -1158,9 +1131,7 @@ class Rally(object):
         if augments:
             resource += ("?" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
-        if self._log:
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
-            self._logDest.flush()
+        self._log.debug("GET %s",resource)
         try:
             response = self.session.get(full_resource_url, headers=RALLY_REST_HEADERS)
         except Exception as ex:
@@ -1168,9 +1139,7 @@ class Rally(object):
             warning('%s: %s\n' % (exception_type, value)) 
             sys.exit(9)
 
-        if self._log:
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, resource))
-            self._logDest.flush()
+        self._log.debug("%s %s", response.status_code, resource)
         if not response or response.status_code != 200:
             problem = "AllowedValues unobtainable for %s.%s" % (entityName, attrName)
             raise RallyRESTAPIError('%s %s' % (response.status_code, problem))
