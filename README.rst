@@ -24,7 +24,7 @@ Files are available at the `download page`_ .
 
 .. _download page: http://pypi.python.org/pypi/pyral
 
-The git repository is available at http://github.com/Rallydev/pyral
+The git repository is available at https://github.com/RallyTools/RallyRestToolkitForPython
 
 
 Installation
