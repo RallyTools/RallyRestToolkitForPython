@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (1, 0, 0)
 
 import datetime
 import os
@@ -19,25 +19,30 @@ import glob
 PROTOCOL       = "https"
 SERVER         = "rally1.rallydev.com"
 WEB_SERVICE    = "slm/webservice/%s"
-WS_API_VERSION = "1.30"
-JSON_FORMAT    = ".js"
+SCHEMA_SERVICE = "slm/schema/%s"
+AUTH_ENDPOINT  = "security/authorize"
+WS_API_VERSION = "v2.0"
 
 USER_NAME = "wiley@acme.com"
 PASSWORD  = "G3ronim0!"
 
-PAGESIZE    = 20
-START_INDEX = 1
-MAX_ITEMS   = 1000000  # a million seems an eminently reasonable limit ...
+START_INDEX  =   1
+PAGESIZE     = 100
+MAX_PAGESIZE = 200
+MAX_ITEMS    = 1000000  # a million seems an eminently reasonable limit ...
 
 RALLY_REST_HEADERS = \
     {
-      'X-RallyIntegrationName'     : 'Python toolkit for Rally REST API',
+      #'X-RallyIntegrationName'     : 'Python toolkit for Rally REST API', # although syntactically this is the more correct
+      'X-RallyIntegrationName'     : 'Rally REST API toolkit for Python',  # this matches the format of the other language toolkits
       'X-RallyIntegrationVendor'   : 'Rally Software Development', 
       'X-RallyIntegrationVersion'  :       '%s.%s.%s' % __version__,
       'X-RallyIntegrationLibrary'  : 'pyral-%s.%s.%s' % __version__,
       'X-RallyIntegrationPlatform' : 'Python %s' % platform.python_version(),
       'X-RallyIntegrationOS'       : platform.platform(),
       'User-Agent'                 : 'Pyral Rally WebServices Agent',
+      'Content-Type'               : 'application/json',
+      'Accept-Encoding'            : 'gzip'
     }
 
 ##################################################################################################
@@ -105,7 +110,7 @@ def rallySettings(args):
             cf.close()
             sc = "%s, %s, %s, %s, %s" % tuple(server_creds)
             return server_creds
-        except Exception, msg:
+        except Exception as ex:
             pass
 
     # #5

@@ -1,12 +1,12 @@
-#!/opt/local/bin/python2.6
+#!/usr/bin/env python
 
 #################################################################################################
 #
 # getitem.py -- Get info for a specific instance of a Rally type
-#               identified by a FormattedID value
+#               identified either by an OID or a FormattedID value
 #
 USAGE = """
-Usage: getitem.py <FormattedID>    
+Usage: getitem.py <entity_name> <OID | FormattedID>    
 """
 #################################################################################################
 
@@ -20,6 +20,8 @@ from pyral import Rally, rallySettings
 
 errout = sys.stderr.write
 
+STORY_ALIASES = ['Story', 'UserStory', 'User Story']
+
 ARTIFACT_TYPE = { 'DE' : 'Defect',
                   'TA' : 'Task',
                   'TC' : 'TestCase',
@@ -27,10 +29,10 @@ ARTIFACT_TYPE = { 'DE' : 'Defect',
                   'S'  : 'HierarchicalRequirement',
                 }
 
+OID_PATT          = re.compile(r'^\d+$')
 FORMATTED_ID_PATT = re.compile(r'(?P<prefix>[A-Z]+)\d+')
 
 COMMON_ATTRIBUTES = ['_type', 'oid', '_ref', '_CreatedAt', '_hydrated', 'Name']
-
 
 #################################################################################################
 
@@ -42,20 +44,26 @@ def main(args):
     rally = Rally(server, user, password)      # specify the Rally server and credentials
     rally.enableLogging('rally.hist.item') # name of file you want logging to go to
 
-    if len(args) != 1:
+    if len(args) != 2:
         errout(USAGE)
         sys.exit(2)
-    ident = args[0]
+    entity_name, ident = args
+    if entity_name in STORY_ALIASES:
+        entity_name = 'HierarchicalRequirement'
 
-    mo = FORMATTED_ID_PATT.match(ident)
+    mo = OID_PATT.match(ident)
     if mo:
-        ident_query = 'FormattedID = "%s"' % ident
-        entity_name = ARTIFACT_TYPE[mo.group('prefix')]
+        ident_query = 'ObjectID = %s' % ident
     else:
-        errout('ERROR: Unable to determine ident scheme for %s\n' % ident)
-        sys.exit(3)
+        mo = FORMATTED_ID_PATT.match(ident)
+        if mo:
+            ident_query = 'FormattedID = "%s"' % ident
+        else:
+            errout('ERROR: Unable to determine ident scheme for %s\n' % ident)
+            sys.exit(3)
 
-    response = rally.get(entity_name, fetch=True, query=ident_query)
+    response = rally.get(entity_name, fetch=True, query=ident_query, 
+                         workspace=workspace, project=project)
 
     if response.errors:
         errout("Request could not be successfully serviced, error code: %d\n" % response.status_code)
@@ -67,6 +75,7 @@ def main(args):
         sys.exit(4)
     elif response.resultCount > 1:
         errout('WARNING: more than 1 item returned matching your criteria\n')
+        sys.exit(5)
 
     for item in response:
         for attr in COMMON_ATTRIBUTES:

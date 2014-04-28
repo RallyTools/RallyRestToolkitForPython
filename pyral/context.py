@@ -8,9 +8,11 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (1, 0, 0)
 
 import sys, os
+import platform
+import subprocess
 import time
 import socket
 import json
@@ -19,6 +21,8 @@ from pprint import pprint
 
 # intra-package imports
 from .rallyresp import RallyRESTResponse
+from .entity    import processSchemaInfo, getSchemaItem
+from .entity    import InvalidRallyTypeNameError, UnrecognizedAllowedValuesReference
 
 ###################################################################################################
 
@@ -26,10 +30,12 @@ __all__ = ["RallyContext", "RallyContextHelper"]
 
 ###################################################################################################
 
-REQUEST_TIME_LIMIT = 5  # in seconds
+INITIAL_REQUEST_TIME_LIMIT =   5 # in seconds
+SERVICE_REQUEST_TIME_LIMIT = 120 # in seconds
 
-IPV4_ADDRESS_PATT = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
-FORMATTED_ID_PATT = re.compile(r'^[A-Z]{1,2}\d+$')
+IPV4_ADDRESS_PATT  = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
+FORMATTED_ID_PATT  = re.compile(r'^[A-Z]{1,2}\d+$')
+SCHEME_PREFIX_PATT = re.compile(r'^https?://')
 
 ##################################################################################################
 
@@ -94,6 +100,7 @@ class RallyContextHelper(object):
         self._subs_workspaces  = []  # a list of Workspace "shell" objects
         self._workspaces       = []
         self._workspace_ref    = {}
+        self._workspace_inflated = {}
         self._defaultWorkspace = None
         self._currentWorkspace = None
         self._inflated         = False
@@ -121,7 +128,7 @@ class RallyContextHelper(object):
 ##        print " RallyContextHelper.check starting ..."
 ##        sys.stdout.flush()
 ##
-        socket.setdefaulttimeout(REQUEST_TIME_LIMIT)
+        socket.setdefaulttimeout(INITIAL_REQUEST_TIME_LIMIT)
         target_host = server
 
         big_proxy   = os.environ.get('HTTPS_PROXY', False)
@@ -129,38 +136,50 @@ class RallyContextHelper(object):
         proxy = big_proxy if big_proxy else small_proxy if small_proxy else False
         proxy_host = False
         if proxy:
+            if proxy.startswith('http'):
+                proxy = SCHEME_PREFIX_PATT.sub('', proxy)
             proxy_host, proxy_port = proxy.split(':')
         target_host = proxy_host or server
 
-        if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
-            try:
-                info = socket.gethostbyaddr(target_host)
-            except socket.herror, msg:
-                problem = "IP v4 address '%s' not valid or unreachable" % target_host
-                raise RallyRESTAPIError(problem)
-            except Exception, msg:
-                print "Exception detected: %s" % msg
-                problem = "Exception detected trying to obtain host info for: %s" % target_host
-                raise RallyRESTAPIError(problem)
+        reachable, problem = Pinger.ping(target_host)
+        if not reachable:
+             if not problem:
+                 problem = "host: '%s' non-existent or unreachable"  % target_host
+             raise RallyRESTAPIError(problem)
+
+        #if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
+        #    try:
+        #        info = socket.gethostbyaddr(target_host)
+        #    except socket.herror as ex:
+        #        pass
+        #        problem = "IP v4 address '%s' not valid or unreachable" % target_host
+        #        raise RallyRESTAPIError(problem)
+        #    except Exception as ex:
+        #        print "Exception detected: %s" % ex.args[0]
+        #        problem = "Exception detected trying to obtain host info for: %s" % target_host
+        #        raise RallyRESTAPIError(problem)
 
         # TODO: look for IPV6 type address also?
 
-        else:
-            try:
-                target_host = socket.gethostbyname(target_host)
-            except socket.gaierror, msg:
-                problem = "hostname: '%s' non-existent or unreachable"  % target_host
-                raise RallyRESTAPIError(problem)
+        #else:
+        #    try:
+        #        target_host = socket.gethostbyname(target_host)
+        #    except socket.gaierror as ex:
+        #        problem = "hostname: '%s' non-existent or unreachable"  % target_host
+        #        raise RallyRESTAPIError(problem)
 
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
         try:
             timer_start = time.time()
-            response = self.agent.get('User', fetch=True, query=user_name_query, 
-                                      _disableAugments=True)
+            response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
             timer_stop = time.time()
-        except Exception, msg:
-            if str(msg).startswith('404 Service unavailable'):
+        except Exception as ex:
+##
+            print "-----"
+            print str(ex)
+##
+            if str(ex.args[0]).startswith('404 Service unavailable'):
                 # TODO: discern whether we should mention server or target_host as the culprit
                 raise RallyRESTAPIError("hostname: '%s' non-existent or unreachable" % server)
             else:
@@ -168,26 +187,30 @@ class RallyContextHelper(object):
         elapsed = timer_stop - timer_start
         if response.status_code != 200:
 ##
-##            print "context check response: %s" % response
+##            print "context check response:\n%s\n" % response
 ##            print "request attempt elapsed time: %6.2f" % elapsed
 ##
             if response.status_code == 404:
-                if elapsed >= float(REQUEST_TIME_LIMIT):
+                if elapsed >= float(INITIAL_REQUEST_TIME_LIMIT):
                     problem = "Request timed out on attempt to reach %s" % server
+                elif response.errors and 'certificate verify failed' in response.errors[0]:
+                    problem = "SSL certificate verification failed"
                 elif response.errors and 'Max retries exceeded with url' in response.errors[0]:
                     problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 elif response.errors and 'NoneType' in response.errors[0]:
                     problem = "Target Rally host: '%s' non-existent or unreachable" % server
                 else:
-                    #sys.stderr.write("404 Response for request\n")
-                    #sys.stderr.write("\n".join(response.errors + "\n")
-                    #sys.stderr.write("\n".join(response.warnings + "\n")
-                    #sys.stderr.flush()
+                    sys.stderr.write("404 Response for request\n")
+                    sys.stderr.write("\n".join(response.errors) + "\n")
+                    if response.warnings:
+                        sys.stderr.write("\n".join(response.warnings) + "\n")
+                    sys.stderr.flush()
                     problem = "404 Target host: '%s' doesn't support the Rally WSAPI" % server
             else:  # might be a 401 No Authentication or 401 The username or password you entered is incorrect.
 ##
 ##                print response.status_code
 ##                print response.headers
+##                print response.errors
 ##
                 if 'The username or password you entered is incorrect.' in response.errors[0]:
                     problem = "%s The username or password you entered is incorrect." % response.status_code
@@ -202,6 +225,9 @@ class RallyContextHelper(object):
         self._loadSubscription()
         self._getDefaults(response)
         self._getWorkspacesAndProjects(workspace=self._defaultWorkspace, project=self._defaultProject)
+        # TODO: slurp in all schema for the default workspace and get this into the entity.py 
+        schema_info = self.agent.getSchemaInfo(self._defaultWorkspace)
+        processSchemaInfo(self.getWorkspace(), schema_info)
         self.inflated = 'minimal'
 
     def _loadSubscription(self):
@@ -209,10 +235,11 @@ class RallyContextHelper(object):
         if sub.errors:
             raise Exception(sub.errors[0])
         subscription = sub.next()
-        self._subs_name       = subscription.Name
-        self._subs_workspaces = subscription.Workspaces
-        if subscription.Workspaces:
-            self._defaultWorkspace = subscription.Workspaces[0]
+        self._subs_name = subscription.Name
+        # TODO: is the assumption that len(subscription.Workspaces) > 0 always valid?
+        num_wksps = len(subscription.Workspaces)
+        self._subs_workspaces  = subscription.Workspaces
+        self._defaultWorkspace = subscription.Workspaces[0]
 
     def _getDefaults(self, response):
         """
@@ -221,6 +248,10 @@ class RallyContextHelper(object):
             User.UserProfile.OID value and issue a GET for that using _getResourceByOID
             and handling the response (wrapped in a RallyRESTResponse).
         """
+##
+##        print "in RallyContextHelper._getDefaults, response arg has:"
+##        pprint(response.data[u'Results'])
+##
         user = response.next()
         self.user_oid = user.oid
 ##
@@ -260,6 +291,9 @@ class RallyContextHelper(object):
             self._currentProject  = ""
             proj_ref = ""
             projects = self.agent.get('Project', fetch="Name", workspace=self._defaultWorkspace)
+##
+##            print projects.content
+##
             if projects:
                 proj = projects.next()
                 proj_ref = proj._ref
@@ -275,13 +309,9 @@ class RallyContextHelper(object):
         if not self._projects:
             self._projects      = {self._defaultWorkspace : [self._defaultProject]}
         if not self._workspace_ref:
-            if wkspace_ref.endswith('.js'):
-                wkspace_ref = wkspace_ref[:-3]
             short_ref = "/".join(wkspace_ref.split('/')[-2:])  # we only need the 'workspace/<oid>' part to be a valid ref
             self._workspace_ref = {self._defaultWorkspace : short_ref}
         if not self._project_ref:
-            if proj_ref.endswith('.js'):
-                proj_ref = proj_ref[:-3]
             short_ref = "/".join(proj_ref.split('/')[-2:])  # we only need the 'project/<oid>' part to be a valid ref
             self._project_ref   = {self._defaultWorkspace : {self._defaultProject : short_ref}}
         self.defaultContext = RallyContext(self.server, 
@@ -300,11 +330,29 @@ class RallyContextHelper(object):
         return self.context
 
     def setWorkspace(self, workspace_name):
+##
+##        print "in setWorkspace, exising workspace: %s  OID: %s" % (self._currentWorkspace, self.currentWorkspaceRef())
+##
         if self.isAccessibleWorkspaceName(workspace_name):
             if workspace_name not in self._workspaces:
                 self._getWorkspacesAndProjects(workspace=workspace_name)
+                # TODO: also nab the schema info for this if it hasn't already been snarfed
             self._currentWorkspace = workspace_name
             self.context.workspace = workspace_name
+##
+##            print "  current workspace set to: %s  OID: %s" % (workspace_name, self.currentWorkspaceRef())
+##
+            self.resetDefaultProject()
+##
+##            print "  context project set to: %s" % self._currentProject
+##
+            try:
+                # make sure that entity._rally_schema gets filled for this workspace
+                # this will fault and be caught if getSchemaItem raises an Exception
+                getSchemaItem(self.getWorkspace(), 'Defect')
+            except Exception, msg:
+                schema_info = self.agent.getSchemaInfo(self.getWorkspace())
+                processSchemaInfo(self.getWorkspace(), schema_info)
         else:
             raise Exception("Attempt to set workspace to an invalid setting: %s" % workspace_name)
 
@@ -318,7 +366,10 @@ class RallyContextHelper(object):
     def isAccessibleWorkspaceName(self, workspace_name):
         """
         """
-        hits = [sub.Name for sub in self._subs_workspaces if workspace_name == sub.Name]
+        hits = [wksp.Name for wksp in self._subs_workspaces 
+                           if workspace_name == wksp.Name
+                          and str(wksp.State) != 'Closed'
+               ] 
         accessible = True if hits else False
         return accessible
 
@@ -335,7 +386,9 @@ class RallyContextHelper(object):
         workspaceInfo = []
         for workspace in self._workspaces:
             if workspace in self._workspace_ref:
-                workspaceInfo.append((workspace, self._workspace_ref[workspace]))
+                wksp = [wksp for wksp in self._subs_workspaces if wksp.Name == workspace][0]
+                if wksp.State != 'Closed':
+                    workspaceInfo.append((workspace, self._workspace_ref[workspace]))
         return workspaceInfo
 
     def getCurrentWorkspace(self):
@@ -380,9 +433,6 @@ class RallyContextHelper(object):
         """
             Return a list of (projectName, projectRef) tuples
         """
-##
-##        print "getAccessibleProjects(workspace=%s)" % workspace
-##
         projectInfo = []
         if workspace == 'default' or not workspace:
             workspace = self._defaultWorkspace
@@ -392,9 +442,6 @@ class RallyContextHelper(object):
         if workspace not in self._workspaces:  # can't return anything meaningful then...
             if self._inflated == 'wide':  # can't return anything meaningful then...
                return projectInfo
-##
-##            print "    calling _getWorkspacesAndProjects(workspace='%s')..." % workspace
-##
             self._getWorkspacesAndProjects(workspace=workspace)
             # check self._workspaces again...
             if workspace not in self._workspaces:
@@ -509,8 +556,6 @@ class RallyContextHelper(object):
                 self._inflated = 'narrow'
 
             wks_ref = self._workspace_ref[workspace]
-            if wks_ref.endswith('.js'):
-                wks_ref = wks_ref[:-3]
             augments.append("workspace=%s" % wks_ref)
             self.context.workspace = workspace
 
@@ -528,8 +573,6 @@ class RallyContextHelper(object):
                 raise RallyRESTAPIError(problem)
 
             prj_ref = self._project_ref[wks][project]
-            if prj_ref.endswith('.js'):
-                prj_ref = prj_ref[:-3]
             augments.append("project=%s" % prj_ref)
             self.context.project = project
 
@@ -569,38 +612,37 @@ class RallyContextHelper(object):
 ##        print "_getWorkspacesAndProjects, self._defaultWorkspace: %s" % self._defaultWorkspace
 ##    
             
-        # fill out self._workspaces and self._workspace_ref
-
         for workspace in self._subs_workspaces:
+            # short-circuit issuing any WS calls if we don't need to 
             if target_workspace and workspace.Name != target_workspace:
-                # short-circuit issuing a WS call if we don't need to 
                 continue  
+            if self._workspace_inflated.get(workspace.Name, False) == True:
+                continue
 ##
 ##            print workspace.Name, workspace.oid
 ##
+            # fill out self._workspaces and self._workspace_ref
             if workspace.Name not in self._workspaces:
                 self._workspaces.append(workspace.Name)
-                #self._workspace_ref[workspace.Name] = workspace._ref
-                # we only need the 'workspace/<oid>' fragment to qualify as a valid ref
-                wksp_ref = workspace._ref[:-3] if workspace._ref.endswith('.js') else workspace._ref
-                self._workspace_ref[workspace.Name] = '/'.join(wksp_ref.split('/')[-2:])
-            if workspace.Name not in self._projects:
-                self._projects[   workspace.Name] = []
-                self._project_ref[workspace.Name] = {}
-            # TODO: cache results of next WS call and bypass if we aleady have info for workspace.Name...
+            # we only need the 'workspace/<oid>' fragment to qualify as a valid ref
+            self._workspace_ref[workspace.Name] = '/'.join(workspace._ref.split('/')[-2:])
+            self._projects[     workspace.Name] = []
+            self._project_ref[  workspace.Name] = {}
             resp = self.agent._getResourceByOID( self.context, 'workspace', workspace.oid, _disableAugments=True)
             response = json.loads(resp.content)
             # If SLM gave back consistent responses, we could use RallyRESTResponse, but no joy...
             # Carefully weasel into the response to get to the guts of what we need
-            projects = response['Workspace']['Projects']
-            for project in projects:
-                projName = project['_refObjectName']
-                #projRef  = project['_ref']
+            # and note we specify only the necessary fetch fields or this query takes a *lot* longer...
+            projects_collection_url = '%s?fetch="ObjectID,Name,State"' % response['Workspace']['Projects'][u'_ref']
+            response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
+            for project in response:
+                projName = project.Name
                 # we only need the project/123534 section to qualify as a valid ref
-                projRef = '/'.join(project['_ref'][:-3].split('/')[-2:])
+                projRef = '/'.join(project.ref.split('/')[-2:])
                 if projName not in self._projects[workspace.Name]:
                     self._projects[   workspace.Name].append(projName)
                     self._project_ref[workspace.Name][projName] = projRef
+            self._workspace_inflated[workspace.Name] = True
 
             if target_workspace != self._defaultWorkspace:
                 if 'workspace' in kwargs and kwargs['workspace']:
@@ -614,6 +656,9 @@ class RallyContextHelper(object):
 ##                    print "setting _inflated to 'wide'"
 ##
 
+    def getSchemaItem(self, entity_name):
+        return getSchemaItem(self.getWorkspace(), entity_name)
+        
 
     def __repr__(self):
         items = []
@@ -633,4 +678,37 @@ class RallyContextHelper(object):
 
 ##################################################################################################
 
+class Pinger(object):
+    """
+        An instance of this class attempts a single ping against a given target.
+        Response to the ping command results in the ping method returning True,
+        otherwise a False is returned
+    """
+    PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "2", "-t", "2"],
+                    'Unix'    : ["ping",       "-c", "2", "-w", "2"],
+                    'Linux'   : ["ping",       "-c", "2", "-w", "2"],
+                    'Windows' : ["ping",       "-n", "2", "-w", "2"]
+                   }
+
+    @classmethod
+    def ping(self, target):
+        plat_ident = platform.system()
+        vector = Pinger.PING_COMMAND[plat_ident][:]
+        vector.append(target)
+        bucket = ".ping-bucket"
+        result = ""
+        try:
+            with open(bucket, 'w') as sink:
+                rc = subprocess.call(vector, stdout=sink, stderr=sink)
+        except:
+            stuff = sys.exc_info()
+            result = stuff[1]
+        finally:
+            with open(bucket, 'r') as of:
+                result = of.read()
+            os.unlink(bucket)
+
+        return rc == 0, result
+
+##################################################################################################
 

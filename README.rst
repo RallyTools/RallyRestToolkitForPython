@@ -2,7 +2,7 @@ pyral - A Python toolkit for the Rally REST API
 ===============================================
 
 
-The `pyral <http://github.com/Rallydev/pyral>`_ package enables you to push, pull
+The `pyral <http://github.com/RallyTools/RallyRestToolkitForPython>`_ package enables you to push, pull
 and otherwise wrangle the data in your Rally subscription using the popular
 and productive Python language.
 The ``pyral`` package provides a smooth and easy to use veneer on top
@@ -24,13 +24,17 @@ Files are available at the `download page`_ .
 
 .. _download page: http://pypi.python.org/pypi/pyral
 
-The git repository is available at http://github.com/Rallydev/pyral
+The git repository is available at https://github.com/RallyTools/RallyRestToolkitForPython
 
 
 Installation
 ````````````
 
 Obtain the requests_ package and install it according to that package's directions.
+As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
+Use of requests-2.x or better is recommended for use with pyral.
+The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
+
 
 Unpack the ``pyral`` distribution file (zip or tar.gz) and then install the pyral_ package. 
 
@@ -51,11 +55,11 @@ relevant packages.
 :: 
 
    $ python
-   Python 2.6.5 [other Python interpreter info elided ...]
+   Python 2.7.5 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (0, 9, 1)
+   (1, 0, 0)
 
 
 
@@ -224,7 +228,6 @@ create an instance of the Rally class.
   PASSWORD                             password for the Rally subscription UserName
   WORKSPACE                            Rally Workspace
   PROJECT                              Rally Project
-  VERSION                              Rally REST Web Services API version
 ====================================== =========================================
 
 The item names in config files **are** case sensitive.
@@ -242,39 +245,77 @@ The item names in config files **are** case sensitive.
   --rallyPassword=<bar>                 password associated with the Rally UserName
   --rallyWorkspace=<bar>                Workspace in Rally you want to interact with
   --rallyProject=<bar>                  Project in Rally you want to interact with
-  --rallyVersion=<bar>                  Rally REST Web Services API version
 ====================================== =========================================
 
 
 Prerequisites
 -------------
 
- * Python 2.6 or 2.7
- * The most excellent requests_ package, 0.8.2 or better
-   Developed using requests 0.9.3.  
-   There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL.
-   If you are using requests >- 0.9.3, you must also have certifi-0.0.8 (available on PyPI)
+ * Python 2.6 or 2.7 (2.7 is preferred)
+ * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy)
+
 .. _requests: http://github.com/kennethreitz/requests
 
 Versions
 --------
-   * 0.9.1 -  Upped default WSAPI version in config.py to 1.30
-              All entities that are subclasses of WorkspaceDomainObject now have a details method
-              that show the attribute values in an easy to read multiline format.
-              Dropped attempted discrimination of server value to determine if it is a name or an IPv4 address    No longer look for http_proxy in environment, only https_proxy.
-              Introduced convenience methods dealing with attachments.
-              Corrected resource URL construction for the major ops (GET, PUT, POST, DEL)
-              when project=None specified (useful for Workspace spanning activities).
+
+   * 1.0.0 - 
+            Default WSAPI version in config is v2.0. This version is not compatible 
+            with Rally WSAPI version 1.x.  
+            Adjusted the RallyUrlBuilder (via RallyQueryFormatter) to be more resilient
+            with respect to many more "special" characters (non-alphanumeric).
+            Retrieving the meta data uses the v2.0 schema endpoint.
+            No longer support a version keyword argument when obtaining a Rally instance.
+
+   * 0.9.4 -
+            Adjusted Rally __init__ to accommodate using requests 0.x, 1.x, 2.x versions.
+            Factored out query building and fixed constructing multi condition queries.
+            Added internal convenience method to handle a list of refs to turn them into a
+            list of single key (_ref) hashes.
+            Added UserIterationCapacity to known entities.
+            Upped default WSAPI version in config to 1.43
+            Support using of https_proxy / HTTPS_PROXY environment variables.
+            Refactored getAllUsers to include UserProfile information with fewer queries.
+
+   * 0.9.3 -
+            Fixed Pinger class to use correct ping options on Linux and Windows
+            Updated exception catching and exception raising to Python 2.6/2.7 syntax.            
+
+   * 0.9.2 -  
+            Fixed getProject to take optional project name argument.
+            Added HTTP header item in config.py to set Content-TYpe to 'application/json'.
+            Added recognition of verify_ssl_cert=True/False as keyword argment to
+            Rally constructor.  Explicit specification results in passing a
+            verify=True/False to the underlying requests package. This can be
+            useful when dealing with an expired SSL certificate.
+            Upped default WSAPI version in config.py to 1.37 to support dyna-types
+            (specifically PortfolioItem and sub-types)..
+            Modified addAttachment to conform with non-backward compatible change in Rally WSAPI 
+            involving how an attachment is related to an artifact.
+            Fixed defect in calculating an Attachment file size (use pre-encoded rather than post-encoded size).
+
+            This release is intended as the final beta before a 1.0 release.
+
+   * 0.9.1 -  
+            Upped default WSAPI version in config.py to 1.30
+            All entities that are subclasses of WorkspaceDomainObject now have a details method
+            that show the attribute values in an easy to read multiline format.
+            Dropped attempted discrimination of server value to determine if it is a name or an IPv4 address    No longer look for http_proxy in environment, only https_proxy.
+            Introduced convenience methods dealing with attachments.
+            Corrected resource URL construction for the major ops (GET, PUT, POST, DEL)
+            when project=None specified (useful for Workspace spanning activities).
 
    * 0.8.12 - Fixed premature exercise of iterator in initial response
     
-   * 0.8.11 - Fixed inappropriate error message when initial connect attempt timed out.
-              Message had stated that the target server did not speak the Rally WSAPI.
-              Improved context handling with respect to workspace and project settings.
+   * 0.8.11 -
+            Fixed inappropriate error message when initial connect attempt timed out. 
+            Message had stated that the target server did not speak the Rally WSAPI.  
+            Improved context handling with respect to workspace and project settings.
     
-   * 0.8.10 - Attempted to bolster proxy handling. 
-              Limited success as there is an outstanding issue in
-              requests (urllib3) not implementing CONNECT for https over http.
+   * 0.8.10 - 
+            Attempted to bolster proxy handling.  
+            Limited success as there is an outstanding issue in equests (urllib3) not 
+            implementing CONNECT for https over http.
 
    * 0.8.9 -  initial attempt at providing proxy support
 
@@ -284,21 +325,15 @@ Versions
 
 TODO
 ----
+* Python 3.3+ support
 
-* Python 3.2 + support
-
-* Create (better) documentation
-
-* Expand the repertoire of example scripts
-
-* Refactor the source code to make use decorators in pyral.restapi, 
-  dynamically construct the Rally schema hierarchy economically.
+* Dynamically construct the Rally schema hierarchy economically.
 
 
 License
 -------
 
-BSD3-style license. Copyright (c) 2010-2012 Rally Software Development.
+BSD3-style license. Copyright (c) 2010-2014 Rally Software Development.
 
 See the LICENSE file provided with the source distribution for full details.
 

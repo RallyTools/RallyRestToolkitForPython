@@ -9,7 +9,11 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 1)
+__version__ = (1, 0, 0)
+
+import sys
+reload(sys)  # Reload gets a sys module that has the setdefaultencoding before site.py deletes it
+sys.setdefaultencoding('UTF8')
 
 import types
 from pprint import pprint
@@ -32,6 +36,18 @@ class EntityHydrator(object):
         self.context   = context
         self.hydration = hydration
 
+
+    def _attributes(self, item):
+##
+##        print "in hydrateInstance, item contents:"
+##        pprint(item)
+##        print ""
+##
+        return [attr for attr in item.keys() 
+                      if attr not in MINIMAL_ATTRIBUTES
+                     and attr not in VERSION_ATTRIBUTES]
+
+
     def hydrateInstance(self, item, existingInstance=None):
         """
             Given a dict representing an item in a result set returned from a query (GET),
@@ -39,86 +55,138 @@ class EntityHydrator(object):
             the instance attributes with values from the dict item.
             The OID value is embedded in the value for the '_ref' key
             Use this OID and the name in the call to instantiate the object of the desired type.
-        """
-        def basicInstance(item):
-            """
-                All native Rally entities have '_type', '_ref', '_refObjectName' in the item dict.
-                However, there are entities with attributes that are non-scalar and do not have a '_type' entry.
-                So, we cheat and make an instance of a CustomField class and return that. 
+        """ 
 
-                For now we are not using try/except as in development we want any Exception to be 
-                raised to see what sort of problems might be encountered
-            """
-            itemType = item.get(u'_type',          "CustomField")
-##
-##            print "in hydrateInstance, basicInstance to create a %s" % itemType
-##
-            name     = item.get(u'_refObjectName', "Unknown")
-            if itemType == 'AllowedQueryOperator':
-                name = item[u'OperatorName']
-            #elif not item.get(u'_refObjectName', None):
-            #    print "item has no _refObjectName, has the following info..."
-            #    pprint(item)
-            oid = 0
-            resource_url = item.get(u'_ref', "") 
-            if resource_url:
-                oid = resource_url.split('/')[-1].replace('.js', '')
-            try:
-                instance = classFor[itemType](oid, name, resource_url, self.context)
-            except KeyError, e:
-                print "No classFor item for |%s|" % itemType
-                raise KeyError(itemType)
-            instance = classFor[itemType](oid, name, resource_url, self.context)
-            instance._type = itemType  # although, this info is also available via instance.__class__.__name__
-            if itemType == 'AllowedAttributeValue':
-                instance.Name  = 'AllowedValue'
-                instance.value = item[u'StringValue']
-            return instance
-
-
-        def _attributes(item):
-            return [attr for attr in item.keys() 
-                          if attr not in MINIMAL_ATTRIBUTES
-                         and attr not in VERSION_ATTRIBUTES]
-            
-##
-##        print "in hydrateInstance, item contents:\n    %s" % repr(item)
-##
         if not existingInstance:
-            instance = basicInstance(item)
+            instance = self._basicInstance(item)
         else:
             instance = existingInstance
-        attributeNames = _attributes(item)
+
+        attributeNames = self._attributes(item)
         for attrName in attributeNames:
             attrValue = item.get(attrName)
-            if attrValue == None:
-                setattr(instance, attrName, attrValue)
-            elif type(attrValue) == types.ListType:
-                def unravel(thing):
-                    if type(thing) == types.DictType and thing.get(u'_type', None):
-                        return basicInstance(thing)
-                    else:
-                        return thing
-                elements = [unravel(element) for element in attrValue]
-                setattr(instance, attrName, elements)
-            elif type(attrValue) != types.DictType:  
-                setattr(instance, attrName, attrValue)
-            else:  #  type(attrValue) == types.DictType
-                # for now only go 1 level deep
-##
-##                print "instance.%s value : |%s|  (is a %s)" % (attrName, attrValue, type(attrValue))
-##
-                attrInstance = basicInstance(attrValue)
-                setattr(instance, attrName, attrInstance)
-                subAttrNames = _attributes(attrValue)
-                for subAttrName in subAttrNames:
-                    subAttrValue = attrValue.get(subAttrName)
-                    if type(subAttrValue) != types.DictType:
-                        setattr(attrInstance, subAttrName, subAttrValue)
+            self._setAppropriateAttrValueForType(instance, attrName, attrValue, 1)
 
         if self.hydration == "full":
             instance._hydrated = True
-
+##
+##        print "hydrated %s has these attributes: %s, hydration setting: %s" % \
+##              (instance._type, instance.attributes(), self.hydration)
+##
         return instance
+
+
+    def _basicInstance(self, item):
+        """
+            All native Rally entities have '_type', '_ref', '_refObjectName' in the item dict.
+            However, there are entities with attributes that are non-scalar and do not have a '_type' entry.
+            So, we cheat and make an instance of a CustomField class and return that. 
+            
+            For now we are not using try/except as in development we want any Exception to be 
+            raised to see what sort of problems might be encountered.
+        """
+        itemType = item.get(u'_type', "CustomField")
+##
+##        print "in EntityHydrator.hydrateInstance, _basicInstance to create a %s" % itemType
+##
+        name = item.get(u'_refObjectName', "Unknown")
+        if itemType == 'AllowedQueryOperator':
+            name = item[u'OperatorName']
+        oid = 0
+        resource_url = item.get(u'_ref', "") 
+        if resource_url:
+            oid = resource_url.split('/')[-1]
+        try:
+            instance = classFor[str(itemType)](oid, name, resource_url, self.context)
+        except KeyError, e:
+            bonked = True
+            if '/' in itemType:  # valid after intro of dyna-types in 1.37
+                try:
+                    type_name, type_subdivision = itemType.split('/')
+                    instance = classFor[str(type_name)](oid, name, resource_url, self.context)
+                    itemType = type_name
+                    bonked = False
+                except KeyError, e:
+                    raise
+            if bonked:    
+                print "No classFor item for |%s|" % itemType
+                raise KeyError(itemType)
+
+        instance._type = itemType  # although, this info is also available via instance.__class__.__name__
+        if itemType == 'AllowedAttributeValue':
+            instance.Name  = 'AllowedValue'
+            instance.value = item[u'StringValue']
+##
+##        print "in EntityHydrator.hydrateInstance, _basicInstance returning a %s" % instance._type
+##
+        return instance
+
+    def _setAppropriateAttrValueForType(self, instance, attrName, attrValue, level=0):
+##
+##        indent = "  " * level
+##        print "%s attr level: %d  attrName |%s| attrValue: |%s|" % (indent, level, attrName, attrValue)
+##
+        if attrValue == None:
+            setattr(instance, attrName, attrValue)
+            return 
+
+        if type(attrValue) == types.ListType:
+            elements = [self._unravel(element) for element in attrValue]
+            setattr(instance, attrName, elements)
+            return
+
+        if type(attrValue) != types.DictType:
+            setattr(instance, attrName, attrValue)
+            return 
+
+        # if we're here, then  type(attrValue) == types.DictType
+        # for now, only attempt to populate fully to the third level, after that, short-circuit
+        if attrValue.has_key(u'_rallyAPIMajor'):
+            del attrValue[u'_rallyAPIMajor']
+        if attrValue.has_key(u'_rallyAPIMinor'):
+            del attrValue[u'_rallyAPIMinor']
+
+        if level > 3:
+            setattr(instance, attrName, attrValue)
+            return
+
+        # if the attrValue contains a Count key and a _ref key and the Count is > 0, then 
+        # yank the collection ref at _ref and rename the attrName to __collection_ref_for_<attrName>
+        if attrValue.has_key(u'_ref') and attrValue.has_key(u'Count'):
+            if attrValue[u'Count'] == 0:
+                setattr(instance, attrName, [])
+            else:
+                collection_ref = attrValue[u'_ref']
+                setattr(instance, "__collection_ref_for_%s" % attrName, collection_ref)
+            return
+
+        if attrName == 'RevisionHistory':  # this gets treated as a collection ref also at this point
+            collection_ref = attrValue[u'_ref']
+            setattr(instance, "__collection_ref_for_%s" % attrName, collection_ref)
+            return
+            
+        attrInstance = self._basicInstance(attrValue)
+        setattr(instance, attrName, attrInstance)
+        subAttrNames = self._attributes(attrValue)
+        for subAttrName in subAttrNames:
+            subAttrValue = attrValue.get(subAttrName)
+            self._setAppropriateAttrValueForType(attrInstance, subAttrName, subAttrValue, level+1)
+
+        # the following left over from refactoring.
+        # commented out as it led to entities being set as being fully hydrated when
+        # in fact, they weren't.  May want to determine if the commenting out has a
+        # an impact in terms of unnecessary requests back to Rally to get 
+        # attribute.sub-attr values when they might actually be hydrated.
+        # 
+        #if self.hydration == 'full':
+        #    attrInstance._hydrated = True
+        return
+
+
+    def _unravel(self, thing):
+        if type(thing) == types.DictType and thing.get(u'_type', None):
+            return self._basicInstance(thing)
+        else:
+            return thing
 
 ##################################################################################################

@@ -3,17 +3,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Primary pyral classes and functions &mdash; pyral v0.9.1 documentation</title>
+    <title>Primary pyral classes and functions &mdash; pyral 1.0.0 documentation</title>
+    
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.1',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral v0.9.1 documentation" href="index.html" />
+    <link rel="top" title="pyral 1.0.0 documentation" href="index.html" />
     <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
   </head>
   <body>
@@ -35,7 +38,7 @@
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral v0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -76,7 +79,6 @@ returned to the caller.</p>
 <dt>override with any environment variables present from this list:</dt>
 <dd><ul class="first last simple">
 <li>RALLY_SERVER</li>
-<li>RALLY_VERSION</li>
 <li>RALLY_USER</li>
 <li>RALLY_PASSWORD</li>
 <li>RALLY_WORKSPACE</li>
@@ -87,7 +89,7 @@ returned to the caller.</p>
 </li>
 <li><p class="first">if present, use information from a rally-&lt;version&gt;.cfg file in the current directory,
 where &lt;version&gt; matches the Rally WSAPI version defined in the pyral.config module.
-Currently, that version is defined as 1.29.</p>
+Currently, that version is defined as v2.0.</p>
 </li>
 <li><p class="first">if present, use the contents of a file named in the RALLY_CONFIG environment variable.</p>
 </li>
@@ -113,7 +115,6 @@ options via the &#8211;&lt;option&gt;=&lt;value&gt;.</p>
 <dt>Valid entries are:</dt>
 <dd><ul class="first last simple">
 <li>SERVER    = &lt;RallyServer&gt;</li>
-<li>VERSION   = &lt;RallyWebServicesVersion&gt;</li>
 <li>USER      = &lt;validUserName&gt;</li>
 <li>PASSWORD  = &lt;validPassword&gt;</li>
 <li>WORKSPACE = &lt;validWorkspaceName&gt;</li>
@@ -132,15 +133,13 @@ options via the &#8211;&lt;option&gt;=&lt;value&gt;.</p>
 <p class="attribution">&mdash;rallyServer=&lt;serverName&gt;</p>
 </div></blockquote>
 <blockquote>
-<div><p>&#8211;rallyVersion=&lt;ws_version&gt;</p>
-<p class="attribution">&mdash;rallyUser=&lt;validRallyUserName&gt;</p>
+<div><p>&#8211;rallyUser=&lt;validRallyUserName&gt;</p>
+<p class="attribution">&mdash;rallyPassword=&lt;validRallyPassword&gt;</p>
 </div></blockquote>
 <blockquote>
-<div><p>&#8211;rallyPassword=&lt;validRallyPassword&gt;</p>
-<p class="attribution">&mdash;workspace=&lt;validWorkspaceName&gt;</p>
+<div><p>&#8211;workspace=&lt;validWorkspaceName&gt;</p>
+<p class="attribution">&mdash;project=&lt;validProjectName&gt;</p>
 </div></blockquote>
-<blockquote>
-<div>&#8211;project=&lt;validProjectName&gt;</div></blockquote>
 </div></blockquote>
 <p>This mechanism provides the ability to centrally locate a configuration file that can
 be used by many members of a team where server, workspace, project are common to all members
@@ -197,13 +196,11 @@ interacting with the Rally server.</p>
 <dl class="docutils">
 <dt>You can optionally specify the following as keyword arguments.</dt>
 <dd><ul class="first last">
-<li><p class="first">version</p>
-</li>
 <li><p class="first">workspace</p>
 </li>
 <li><p class="first">project</p>
 </li>
-<li><p class="first">version  (specify the Rally WSAPI version, default is 1.29)</p>
+<li><p class="first">verify_ssl_cert  (True or False, default is True)</p>
 </li>
 <li><dl class="first docutils">
 <dt>warn     (True or False, default is True)</dt>
@@ -220,7 +217,7 @@ Under those conditions, the project is changed to the first project
 </div></blockquote>
 <dl class="class">
 <dt id="Rally">
-<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user</em>, <em>password</em>, <em>version=1.29</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user</em>, <em>password</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Examples:</p>
@@ -230,7 +227,7 @@ Under those conditions, the project is changed to the first project
 
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;Division #1 Products&#39;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s">&#39;ABC&#39;</span><span class="p">)</span>
 
-<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;Brontoville&#39;</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;Brontoville&#39;</span><span class="p">,</span> <span class="n">verify_ssl_cert</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="core-rest-methods-and-crud-aliases">
@@ -265,7 +262,7 @@ members of each returned entity record.</p>
 <dt>keyword arguments:</dt>
 <dd><ul class="first last simple">
 <li>fetch = True/False or &#8220;List,Of,Attributes,We,Are,Interested,In&#8221;</li>
-<li>query = &#8216;FieldName = &#8220;some value&#8221;&#8217; or [&#8216;EstimatedHours = 10&#8217;, &#8216;MiddleName != &#8220;Shamu&#8221;&#8217;, etc.]</li>
+<li>query = &#8216;FieldName = &#8220;some value&#8221;&#8217; or [&#8216;EstimatedHours = 10&#8217;, &#8216;MiddleName != &#8220;Shamu&#8221;&#8217;, &#8216;Name contains &#8220;foogelhorn pop-tarts&#8221;&#8217;,  etc.]</li>
 <li>instance = True/False (defaults to False)</li>
 <li>pagesize = n  (defaults to 200)</li>
 <li>start = n  (defaults to 1)</li>
@@ -284,6 +281,10 @@ The Response object supports the iteration protocol so that the results of the
 <p>If the instance keyword value is True, then an instance of a Rally entity
 will be returned instead of a RallyRESTResponse.  This can be useful when
 retrieving an item you know exists and is uniquely identified by your query argument.</p>
+<p>The query keyword argument can consist of a String, a List of Strings as <em>&lt;name&gt; &lt;relation&gt; &lt;value&gt;</em>
+conditions
+or as a Dictionary where the key-value pairs have an implicit equality relationship and
+all the resulting conditions are AND&#8217;ed together.</p>
 </dd></dl>
 
 <div class="admonition note">
@@ -297,6 +298,18 @@ Rally REST API.</p>
 toolkit takes a hands-off policy and lets you take the responsibility for specifying
 the query in a form suitable for the Rally REST WSAPI. (See the Help page for
 for the Rally REST WSAPI in the Rally web-based product).</p>
+<p>If you need to have any OR&#8217;ing of conditions, you&#8217;ll have to construct the entire
+query yourself in the form of a single String with paren characters in the correct
+locations to make the query syntactically conformant with the Rally REST WSAPI.
+Example: query=((Name contains &#8220;ABC&#8221;) OR ((Priority = &#8220;1-Critical&#8221;) AND (Severity != &#8220;3-Minor&#8221;)))
+Yes, it&#8217;s kind of a pain in the ...</p>
+<p>Using the characters of &#8216;<strong>~</strong>&#8216; or &#8216;<strong>&amp;</strong>&#8216; or &#8216;<strong>|</strong>&#8216; or a backslash &#8216;<strong>\</strong>&#8216;
+within a query expression (eg. &#8216;Name contains &#8220;|&#8221;&#8217;) are problematic with the use of this
+toolkit.  A REST request will be issued, but even if there are actual qualifying
+items that you could observe by using the Rally web GUI, the Rally WSAPI response will
+not have the correct count or content of the qualifying items.  Other workarounds are
+recommended to deal with this; one way is to post-process the results of a less
+restrictive criteria to filter or qualify the results to your specific criteria.</p>
 <p class="last">Use the instance keyword with <strong>caution</strong>, as an exception will be generated
 if the query produces no qualifying results.
 If the query produces more than one qualifying result, you&#8217;ll only get
@@ -395,9 +408,14 @@ that project in subsequent interractions with Rally.</p>
 
 <dl class="method">
 <dt id="getProject">
-<tt class="descname">getProject</tt><big>(</big><em>projectName</em><big>)</big><a class="headerlink" href="#getProject" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an instance of a Project entity with information about the project
-in the currently active context.</p>
+<tt class="descname">getProject</tt><big>(</big><em>name=None</em><big>)</big><a class="headerlink" href="#getProject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a minimally hydrated Project entity instance with the Name and ref
+of the project in the currently active context if the name keyword arg
+is not supplied or the Name and ref of the project identified by the value of
+the name parameter as long as the name identifies a valid project in the currently
+selected workspace.
+Returns None if a name parameter is supplied that does not identify a valid project
+in the currently selected workspace.</p>
 </dd></dl>
 
 <dl class="method">
@@ -438,6 +456,40 @@ whose ref and collection attributes will be lazy eval&#8217;ed upon access.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="typedef">
+<tt class="descname">typedef</tt><big>(</big><em>entityName</em><big>)</big><a class="headerlink" href="#typedef" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns a TypeDefinition instance for the given entityName.
+The is handy for occasions where you need identify a specific entity
+for something like &#8216;Feature&#8217; or &#8216;Theme&#8217; when creating or updating a
+PortfolioItem subclass.  Intended usage is to use the return <em>.ref</em> attribute.
+For example, within an info dict, &#8220;PortfolioItemType&#8221; : rally.typedef(&#8216;Feature&#8217;).ref .</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getState">
+<tt class="descname">getState</tt><big>(</big><em>entityName</em>, <em>stateName</em><big>)</big><a class="headerlink" href="#getState" title="Permalink to this definition">¶</a></dt>
+<dd><p>As of Rally WSAPI 1.37 (Sep 2012), the State attribute is no longer a String value for
+many entities, it is itself an entity (aka Rally Type). To be able to create (or update)
+an Artifact&#8217;s State attribute, you must provide a reference (_ref or ref) in the information
+dictionary used to populate the Artifact&#8217;s attributes.  This method provides an
+easy means of obtaining the appropriate entity for the particular entity and state Name
+you want.  Typically the usage would be along the lines of this example:</p>
+</dd></dl>
+
+<div class="highlight-python"><pre>info = { ...., "State" : rally.getState('Feature', 'Discovering').ref, ... })</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This method only works with PortfolioItem subclasses at this time.  (Theme, Initiative, Feature)</p>
+</div>
+<dl class="method">
+<dt id="getStates">
+<tt class="descname">getStates</tt><big>(</big><em>entityName</em><big>)</big><a class="headerlink" href="#getStates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an entityName, returns a list of State instances populated with information
+about each state value permitted for the entityName.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="getAllowedValues">
 <tt class="descname">getAllowedValues</tt><big>(</big><em>entityName</em>, <em>attributeName</em><span class="optional">[</span>, <em>workspace=None</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#getAllowedValues" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given an entityName and and attributeName (assumed to be valid for the entityName)
@@ -450,7 +502,8 @@ issue a request to obtain a list of allowed values for the attribute.</p>
 <dd><p>Given an artifact (actual or FormattedID for an artifact), validate that
 it exists and then attempt to add an Attachment with the name and
 contents of filename into Rally and associate that Attachment with the
-Artifact.</p>
+Artifact.
+Returns the Attachment item.</p>
 </dd></dl>
 
 <dl class="method">
@@ -576,6 +629,54 @@ To access these tasks, you&#8217;d iterate over them as in:</p>
             <span class="k">print</span> <span class="n">task</span><span class="o">.</span><span class="n">oid</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">ActualHours</span>
 </pre></div>
 </div>
+<dl class="method">
+<dt id="details">
+<tt class="descname">details</tt><big>(</big><big>)</big><a class="headerlink" href="#details" title="Permalink to this definition">¶</a></dt>
+<dd><p>This convenience method is available on all <em>WorkspaceDomain</em>
+subclass instances and provides an organized and easy to read multiline string
+with the content of the instance.</p>
+</dd></dl>
+
+<p>Example:</p>
+<div class="highlight-python"><pre>response = rally.get('UserStory', fetch=True, query='FormattedID = S321')
+story1 = response.next()
+print story1.details()
+
+HierarchicalRequirement
+    oid               : 12345678
+    ref               : hierarchicalrequirement/12345678
+    ObjectID          : 12345678
+    _ref              : https://rallydev.rallydev.com/slm/webservice/1.30/hierarchicalrequirement/12345678.js
+    _CreatedAt        : today at 3:14 am
+    _hydrated         : True
+    Name              : Filbert nuts should be added to all energy bars
+    Subscription      : Subscription.ref   (OID  400060  Name: Company 1)
+    Workspace         : Workspace.ref      (OID  722746  Name: Prime Cuts Workspace)
+    FormattedID       : S321
+
+    AcceptedDate      : None
+    AccountingProjec  : None
+    AccountingTask    : None
+    AffectedCustomer  :
+    Attachments       : []
+    Blocked           : False
+    Blocker           : None
+    Capitalizable     : None
+    Changesets        : []
+    Children          : []
+    CreationDate      : 2012-07-12T09:14:35.852Z
+    DefectStatus      : NONE
+    Defects           : []
+    Description       : As a health conscious PO, I want better nutritional content in all bars
+    Discussion        : []
+    IdeaURL           : &lt;pyral.entity.CustomField object at 0x101931290&gt;
+    IdeaVotes         : None
+    InProgressDate    : 2012-07-12T09:14:36.098Z
+    Iteration         : Iteration.ref               (OID  1242381  Name Iteration 5 (Summer))
+    KanbanState       : Accepted
+    LastUpdateDate    : 2012-07-12T09:14:36.237Z
+    ...</pre>
+</div>
 </div>
 
 
@@ -608,7 +709,7 @@ To access these tasks, you&#8217;d iterate over them as in:</p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -631,12 +732,12 @@ To access these tasks, you&#8217;d iterate over them as in:</p>
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              >previous</a> |</li>
-        <li><a href="index.html">pyral v0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Rally Software Development 2010-2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

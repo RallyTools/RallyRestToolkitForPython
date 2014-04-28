@@ -16,18 +16,18 @@ from pyral import Rally, rallySettings
 ##################################################################################################
 
 # BUILD_DEFINITION
-#Creation Date         DATE        Required  ReadOnly  BakedIn   Visible
-#Object ID             INTEGER     Required  ReadOnly  BakedIn   Visible
-#Name                  STRING      Required  Settable  BakedIn   Visible
-#Project               OBJECT      Required  Settable  BakedIn   Visible
-#Subscription          OBJECT      Optional  ReadOnly  BakedIn   Visible
-#Workspace             OBJECT      Optional  Settable  BakedIn   Visible
-#Description           STRING      Optional  Settable  BakedIn   Visible
-#Builds                COLLECTION  Optional  ReadOnly  BakedIn   Visible
-#LastBuild             OBJECT      Optional  ReadOnly  BakedIn   Visible
-#LastStatus            STRING      Optional  ReadOnly  BakedIn   Visible
-#Projects              COLLECTION  Optional  Settable  BakedIn   Visible
-#Uri                   STRING      Optional  Settable  BakedIn   Visible
+#Creation Date         DATE        Required  ReadOnly
+#Object ID             INTEGER     Required  ReadOnly
+#Name                  STRING      Required  Settable
+#Project               OBJECT      Required  Settable
+#Subscription          OBJECT      Optional  ReadOnly
+#Workspace             OBJECT      Optional  Settable
+#Description           STRING      Optional  Settable
+#Builds                COLLECTION  Optional  ReadOnly
+#LastBuild             OBJECT      Optional  ReadOnly
+#LastStatus            STRING      Optional  ReadOnly
+#Projects              COLLECTION  Optional  Settable
+#Uri                   STRING      Optional  Settable
 
 
 # load up with Workspace / Project combinations appropriate for your environment
@@ -48,31 +48,30 @@ def main(args):
     rally.enableLogging("rally.history.blddefs")
 
     for workspace, project in wps:
-        print "workspace: %s  project: %s" % (workspace, project)
         rally.setWorkspace(workspace)
+        print "workspace: %s  project: %s\n" % (workspace, project)
         response = rally.get('BuildDefinition', fetch=True, 
-                             order='Name',
-                             workspace=workspace, 
-                             project=project)
+                             query='Project.Name = "%s"' % project, 
+                             order='Name', workspace=workspace, project=project)
         if response.errors:
             print response.errors
             sys.exit(9)
 
+        print "%-12.12s   %-10.10s  %-36.36s %12s  %-20.20s  %s" % \
+              ('BuildDef OID', 'CreateDate', 'BuildDefinition.Name', 'LastStatus', 'LastBuildDateTime', 'NumBuilds')
+        print "%-12.12s   %-10.10s  %-36.36s   %10s  %-19.19s   %s" % \
+              ('-' * 12, '-' * 10, '-' * 36, '-' * 10, '-' * 19, '-' * 9)
         for builddef in response:
-            if builddef.Project.Name != project:
-                continue
             if builddef.LastStatus == "NO BUILDS":
-                print "NO BUILDS"
+                print "%s %s %-24.24s NO BUILDS" % \
+                      (builddef.oid, builddef.CreationDate[:10], builddef.Name)
                 continue
-            #print builddef.oid, builddef.Name, builddef.LastStatus
             lbt = builddef.LastBuild.CreationDate.split('T')
-            last_build_time = "%s %s" % (lbt[0], lbt[1][:5] )
-            bd_name = "%-24.24s" % builddef.Name
-            status  = "%-10.10s" % builddef.LastStatus
-            print builddef.oid, builddef.CreationDate[:10], \
-                  bd_name, status, last_build_time, len(builddef.Builds)
-
-        print "\n"
+            last_build_time = "%s %s" % (lbt[0], lbt[1][:8] )
+            bdf = "%12.12s   %-10.10s  %-36.36s %12s  %-20.20s    %4s"
+            print bdf % (builddef.oid, builddef.CreationDate[:10], 
+                  builddef.Name, builddef.LastStatus, last_build_time,
+                  len(builddef.Builds))
 
 ##################################################################################################
 ##################################################################################################
