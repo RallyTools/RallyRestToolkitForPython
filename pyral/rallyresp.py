@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 4)
+__version__ = (1, 0, 0)
 
 import sys
 import re
@@ -72,10 +72,20 @@ class RallyRESTResponse(object):
         self.context  = context
         self.resource = request
         self.data     = None
-        self.target   = request.split('?')[0].split('.')[0]
+        request_path_elements = request.split('?')[0].split('/')
+##
+##        print "RRR.init request: =  %s " % request
+##        print "RRR.init request_path_elements =  %s " % repr(request_path_elements)
+##
+        self.target = request_path_elements[-1]
+        if re.match('^\d+$', self.target):
+            self.target = request_path_elements[-2] # this happens on request for RevisionHistory
+            if self.target.lower() == 'revisionhistory':
+                self.target = 'RevisionHistory'
+
         self.errors   = []
         self.warnings = []
-        self._item_type  = None
+        self._item_type  = self.target
 ##
 ##        print "+" * 85
 ##        print "resource: ", self.resource
@@ -90,6 +100,7 @@ class RallyRESTResponse(object):
 ##
 ##        print "RallyRESTResponse.status_code is %s" % self.status_code
 ##        print "RallyRESTResponse.headers: %s" % repr(self.headers)
+##        # response has these keys: url, status_code, headers, raw, _content, encoding, reason, elapsed, history, connection
 ##
 ##        if self.status_code == 405:
 ##            print "RallyRESTResponse.status_code is %s" % self.status_code
@@ -106,25 +117,29 @@ class RallyRESTResponse(object):
         self.content     = json.loads(response.content)
         self.request_type, self.data = self._determineRequestResponseType(request)
 ##
-##        print "RallyRESTResponse request_type: %s" % self.request_type
+##        print "RallyRESTResponse request_type: %s for %s" % (self.request_type, self._item_type)
 ##
 
         if self.request_type == 'ImpliedQuery':
             # the request is against a Rally Type name, ie. 'Subscription', 'Workspace', 'UserProfile', etc.
             # or a Rally "sub-type" like PortfolioItem/Feature
             # which is context dependent and has a singleton result
-            target = request.split('.')[0]  # request is either like Subscription.js?fetch=xxx, or just UserProfile
-            if '/' in target:
-                target = target.split('/')[1]
+            target = self.target 
+            if target.endswith('.x'):
+                target = target[:-2]
+##
+##            print "ImpliedQuery presumed target: |%s|" % target
+##            print ""
+##
             if target not in self.content.keys():
                 # check to see if there is a case-insensitive match before upchucking...
                 ckls = [k.lower() for k in self.content.keys()]
-                if target not in ckls:
-                    errout("%s\n" % response.status_code)
-                    errout("%s\n" % response.content)
-                    raise RallyResponseError('missing _Xx_Result specifier for target %s' % target)
+                if target.lower() not in ckls:
+                    forensic_info = "%s\n%s\n" % (response.status_code, response.content)
+                    problem = 'missing _Xx_Result specifier for target %s in following:' % target
+                    raise RallyResponseError('%s\n%s' % (problem, forensic_info))
                 else:
-                    matching_item_ix = ckls.index(target)
+                    matching_item_ix = ckls.index(target.lower())
                     target = self.content.keys()[matching_item_ix]
                     self.target = target
             self._stdFormat = False
@@ -258,7 +273,8 @@ class RallyRESTResponse(object):
                 raise IndexError("RallyRESTResponse._page[%d]" % self._curIndex)
         else:  # the Response had a non-std format
 ##
-##            print "RallyRESTResponse.next: item from page is a %s, but Response was not in std-format" % self._item_type
+##            blurb = "item from page is a %s, but Response was not in std-format" % self._item_type
+##            print "RallyRESTResponse.next: %s" % blurb
 ##
             #
             # have to stuff the item type into the item dict like it is for the _stdFormat responses
@@ -267,16 +283,22 @@ class RallyRESTResponse(object):
             item_type_key = u'_type'
             if item_type_key not in item:
                 item[item_type_key] = unicode(self._item_type) 
+
+        del item[u'_rallyAPIMajor']
+        del item[u'_rallyAPIMinor']
 ##
 ##        print " next item served is a %s" % self._item_type
 ##        print "RallyRESTResponse.next, item before call to to hydrator.hydrateInstance"
 ##        for key in sorted(item.keys()):
-##            print "    %16.16s: %s" % (key, item[key])
-##        print "+" * 48
+##            print "    %20.20s: %s" % (key, item[key])
+##        print "+ " * 30
 ##
         entityInstance = self.hydrator.hydrateInstance(item)
         self._curIndex += 1
         self._served   += 1
+##
+##        print " next item served is a %s" % entityInstance._type
+##
         return entityInstance
 
         
@@ -286,12 +308,15 @@ class RallyRESTResponse(object):
         """
         self.startIndex += self.pageSize
         nextPageUrl = re.sub('&start=\d+', '&start=%s' % self.startIndex, self.resource)
+        if not nextPageUrl.startswith('http'):
+            nextPageUrl = '%s/%s' % (self.context.serviceURL(), nextPageUrl)
+##
+##        print ""
+##        print "full URL for next page of data:\n    %s" % nextPageUrl
+##        print ""
+##
         try:
-            full_resource_url = '%s/%s' % (self.context.serviceURL(), nextPageUrl)
-##
-##            print "full URL for next page of data:\n    %s" % full_resource_url
-##
-            response = self.session.get(full_resource_url)
+            response = self.session.get(nextPageUrl)
         except Exception as ex:
             exception_type, value, traceback = sys.exc_info()
             sys.stderr.write('%s: %s\n' % (exception_type, value)) 

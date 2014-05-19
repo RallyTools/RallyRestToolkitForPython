@@ -1,4 +1,4 @@
-#!/opt/local/bin/python2.6
+#!/usr/bin/env python
 
 #############################################################################
 #
@@ -11,7 +11,7 @@ import tarfile
 import zipfile
 
 PACKAGE_NAME = "pyral"
-VERSION      = "0.9.4"
+VERSION      = "1.0.0"
 
 AUX_FILES  = ['MANIFEST.in', 
               'LICENSE', 
@@ -28,11 +28,13 @@ EXAMPLES   = ['getitem.py',
               'uptask.py',
               'statecounts.py',
               'repoitems.py',
-              'typedefs.py',
+              'get_schema.py',
+              'typedef.py',
               'wkspcounts.py',
               'builddefs.py',
               'creattach.py',
               'get_attachments.py',
+              'add_tcrs.py'
              ]
 DOC_FILES  = ['doc/Makefile',
               'doc/source/conf.py',
@@ -53,10 +55,12 @@ DOC_FILES  = ['doc/Makefile',
 #
 # The TEST_FILES are **NOT** placed into the distribution packages
 #
-TEST_FILES = ['test/test_conn.py',
+TEST_FILES = ['test/rally_targets.py', 
+              'test/test_conn.py',
               'test/test_context.py',
               'test/test_convenience.py',
               'test/test_inflation.py',
+              'test/test_field_access.py',
               'test/test_query.py',
               'test/test_wksprj_setting.py',
               'test/test_attachments.py',

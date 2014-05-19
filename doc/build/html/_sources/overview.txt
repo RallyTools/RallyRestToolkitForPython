@@ -17,6 +17,12 @@ For more information on how workspaces and projects in Rally are set up and conf
 the Rally documentation available via the 'Help' link from the Rally landing page 
 displayed after your initial login.
 
+.. warning::
+
+   As of the 1.0.0 version of **pyral** (the Python toolkit for the Rally REST API),
+   the implementation works with Rally WSAPI 2.0 and is **not** backward compatible 
+   with Rally WSAPI 1.x.
+
 .. _Rally: http://www.rallydev.com
 
 Simple Use
@@ -60,11 +66,11 @@ Rally Entities and Artifacts
 In the Rally vernacular, a logical entity is  called a *type*.  Some examples of Rally
 *types* are UserStory, Defect, Release, UserProfile.  There is a subset of 
 *types* that are usually what a user of **pyral** will be interested in called *artifacts*.
-An *artifact* is either a UserStory, Defect, Task, DefectSuite, TestSet or TestCaseResult.
+An *artifact* is either a UserStory, Defect, Task, DefectSuite, TestCase or TestSet.
 The Python toolkit for the Rally REST API (**pyral**) is primarily oriented towards operations with artifacts.
 But, it is not limited to those as it is very possible view/operate on other Rally 
-entities such as Workspace, Project, UserProfile, Release, Iteration, TestFolder, Tag and
-others.
+entities such as Workspace, Project, UserProfile, Release, Iteration, TestCaseResult, 
+TestFolder, Tag and others.
 
 Full CRUD capability
 ====================
@@ -86,7 +92,8 @@ list of values.
 Queries and Results
 ===================
 
-The Rally REST API has two interesting characteristics that the Python toolkit for the Rally REST API insulates the scriptwriter from having to deal with.  The first is that the Rally REST API
+The Rally REST API has two interesting characteristics that the Python toolkit for the Rally REST API 
+insulates the scriptwriter from having to deal with.  The first is that the Rally REST API
 has a maximum "pagesize" of 200 records to limit volume and prevent unwarranted hijacking of the
 Rally SaaS servers.  But, having script writers deal with this directly to obtain further 
 "pages" would be burdensome and out of character with the mainstream of Python interfaces
@@ -110,16 +117,25 @@ to obtain the value.  There are two significant advantages to this, one being li
 the load on the server with the reduction of data returned and the other being easy and 
 intuitive attribute access syntax.
 
+Custom Fields
+=============
+
+Most Artifact types in Rally can be augmented with custom fields.  As of Rally WSAPI v2.0, the 
+ElementName for a custom field is prefixed with 'c_'.  The **pyral** toolkit allows you to
+reference these fields without having to use the 'c_' prefix.  For example, if your custom field
+has a DisplayName of 'Burnt Offerings Index' you can use the String of 'BurntOfferingsIndex' in
+a fetch clause or a query clause or refer to the field directly on an artifact 
+as artifact.BurntOfferingsIndex.
+
 Introduction of Dyna-Types
 ==========================
 
 As of Rally WebServices API 1.37, Rally has introduced a modification of their data model, which
 is termed dyna-types.  This modification offers a means of establishing and using a parent type
 and defining sub-types of that parent.  The PortfolioItem type is now an "abstract" type from which
-there are some pre-defined sub-types (Initiative, Theme, Feature).  For the user of the pyral package,
-the change manifests in two ways.  First, you'll only be able to work with PortfolioItem sub-types
-when specifying WSAPI version 1.37 or greater.  Second, by convention the preferred way to identify
-a PortfolioItem sub-type is via slashed naming, eg. 'PortfolioItem/Feature'.  While it is possible
+there are some pre-defined sub-types (Initiative, Theme, Feature).  
+By convention the preferred way to identify a PortfolioItem sub-type is via slashed 
+naming, eg. 'PortfolioItem/Feature'.  While it is possible
 to identify a PortfolioItem sub-type by the sub-type name, eg, (Theme), this is not the preferred
 means.  The reason for the latter statement is that with dyna-types it is possible to define new
 "abstract" types and define sub-types therefrom that may have names identical to a sub-type whose
@@ -128,13 +144,12 @@ parent differs from your newly defined "abstract" type.
 An example of this is a fictional "abstract" parent type named "Bogutrunk" (for a type that 
 encompasses stories about requests for things you'll never implement and aren't bugs, but you want
 to track them anyway).  Additionally, let's say you define some sub-types whose parent type is
-"Bogutrunk" named "Outlandish", "NonScalable", "Theme" and "Feature".  Now, identifying a specific
-NonScalable Bogutrunk item is unambiguous, you'd just specify the entity in any pyral 
-get/put/post/delete as a "NonScalable".  But, you cannot use that convention for a "Feature".  You'd need 
-to specify one as a "Bogutrunk/Feature" to disambiguate from a "PortfolioItem/Feature".  The main take-away
-here is that if you don't use PortfolioItem instances with pyral, you can use any version of Rally WSAPI
-past version 1.20.  If you use PortfolioItem instances with pyral or you've defined your own "abstract" 
-parent types and specific sub-types thereof, you must use version 1.37 or greater and you are strongly
-encouraged to use the slashed specification to uniquely identify which Rally entity type you are 
-working with.
+"Bogutrunk" and are named "Outlandish", "NonScalable", "Theme" and "Feature".  Now, identifying a specific
+NonScalable Bogutrunk item is unambiguous; you'd just specify the entity in any pyral get/put/post/delete 
+as a "NonScalable".  But, you cannot use that convention for a "Feature".  You'd need to specify
+one as a "Bogutrunk/Feature" to disambiguate from a "PortfolioItem/Feature".  The main take-away
+here is that if you don't use PortfolioItem instances with pyral, you don't have worry about this.
+If you use PortfolioItem instances with pyral or you've defined your own "abstract" 
+parent types and specific sub-types thereof, you are strongly encouraged to use the slashed specification 
+to avoid ambiguity in identifying the Rally entity type.
   

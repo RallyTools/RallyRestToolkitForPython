@@ -11,10 +11,7 @@ RallyRESTAPIError = pyral.context.RallyRESTAPIError
 
 ##################################################################################################
 
-TRIAL = "trial.rallydev.com"
-
-TRIAL_USER = "usernumbernine@acme.com"
-TRIAL_PSWD = "************"
+from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
 
 EXAMPLE_ATTACHMENT_CONTENT = "The quck brown fox eluded the lumbering sloth\n"
 

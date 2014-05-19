@@ -6,15 +6,13 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 4)
+__version__ = (1, 0, 0)
 
 import re
 import types
 import urllib
 
 ###################################################################################################
-
-JSON_FORMAT = ".js"
 
 class RallyUrlBuilder(object):
     """
@@ -51,12 +49,13 @@ class RallyUrlBuilder(object):
         if pretty:
             self.pretty = True
         
-        resource = "%s%s?" % (self.entity, JSON_FORMAT)
+        resource = "{0}?".format(self.entity)
 
         qualifiers = ['fetch=%s' % self.fetch]
         if self.query:
-            #encodedQuery = self._prepQuery(self.query)
-            #qualifiers.append('%s=%s' % ('query', encodedQuery if encodedQuery else ""))
+##
+##            print "RallyQueryFormatter raw query: %s" % self.query
+##
             query_string = RallyQueryFormatter.parenGroups(self.query)
 ##
 ##            print "query_string: |query=(%s)|" % query_string
@@ -113,6 +112,10 @@ class RallyUrlBuilder(object):
 class RallyQueryFormatter(object):
     CONJUNCTIONS = ['and', 'AND', 'or', 'OR']
     CONJUNCTION_PATT = re.compile('\s+(AND|OR)\s+', re.I | re.M)
+    ATTR_IDENTIFIER = r'[\w\.]+[a-zA-Z0-9]'
+    RELATIONSHIP    = r'=|!=|>|<|>=|<=|contains|!contains'
+    ATTR_VALUE      = r'"[^"]+"|[^ ]+'
+    QUERY_CRITERIA_PATTERN = re.compile('^(%s) (%s) (%s)$' % (ATTR_IDENTIFIER, RELATIONSHIP, ATTR_VALUE), re.M)
 
     @staticmethod
     def parenGroups(criteria):
@@ -147,7 +150,7 @@ class RallyQueryFormatter(object):
             readable_encoded = readable_encoded.replace("%21", '!')
             return readable_encoded
 ##
-##        print "RQF.parenGroups criteria parm: |%s|" % repr(criteria)
+##        print "RallyQueryFormatter.parenGroups criteria parm: |%s|" % repr(criteria)
 ##
         
         if type(criteria) in [types.ListType, types.TupleType]:
@@ -164,13 +167,13 @@ class RallyQueryFormatter(object):
             for field, value in criteria.items():
                 # have to enclose string value in double quotes, otherwise turn whatever the value is into a string
                 tval = '"%s"' % value if type(value) == types.StringType else '%s' % value
-                expression = ('%s = %s' % (field, tval)).replace(' ', '%20')
+                expression = ('%s = %s' % (field, tval))
                 if len(criteria) == 1:
-                    return expression
+                    return expression.replace(' ', '%20')
                 expressions.append(expression)
             criteria = " AND ".join(expressions)
 
-        # if the caller has a simple query in the form "(something = a_value)"
+        # if the caller has a simple query in the form "(something relation a_value)"
         # then return the query as is (after stripping off the surrounding parens)
         if     criteria.count('(')  == 1    and criteria.count(')')  == 1    and \
                criteria.strip()[0]  == '('  and criteria.strip()[-1] == ')':
@@ -183,41 +186,64 @@ class RallyQueryFormatter(object):
         if criteria.count('(') > 1:
             return criteria.strip().replace(' ', '%20')
 
+        criteria = criteria.replace('&', '%26')        
         parts = RallyQueryFormatter.CONJUNCTION_PATT.split(criteria.strip())
 ##
-##        print "RQF parts: %s" % repr(parts)
+##        print "RallyQueryFormatter parts: %s" % repr(parts)
 ##
         
         # if no CONJUNCTION is in parts, use the condition as is (simple case)
         conjunctions = [p for p in parts if p in RallyQueryFormatter.CONJUNCTIONS]
         if not conjunctions:
-            expression = criteria.strip().replace(' ', '%20')
-            #expression = urllib.quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
+            expression = urllib.quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
 ##
-##            print "RQF.no_conjunctions: |%s|" % expression
+##            print "RallyQueryFormatter.no_conjunctions: |%s|" % expression
 ##
             return expression
 
+        parts = RallyQueryFormatter.validatePartsSyntax(parts)
         binary_expression = parts.pop()
         while parts:
             item = parts.pop()
             if item in RallyQueryFormatter.CONJUNCTIONS:
                 conj = item
                 binary_expression = "%s (%s)" % (conj, binary_expression)
-                #binary_expression = "%s%%20(%s)" % (conj, binary_expression)
             else:
-                cond = item
+                cond = urllib.quote(item)
                 binary_expression = "(%s) %s" % (cond, binary_expression)
-                #binary_expression = "%s%%20(%s)" % (conj, binary_expression)
 
-        #final_expression = urllib.quote(binary_expression).replace('%28', '(').replace('%29', ')')
         final_expression = binary_expression.replace('%28', '(')
         final_expression =  final_expression.replace('%29', ')')
 ##
-##        print "RQF.final_expression: |%s|" % final_expression
+##        print "RallyQueryFormatter.final_expression: |%s|" % final_expression
 ##        print "=============================================="
 ##
         final_expression = final_expression.replace(' ', '%20')
         return final_expression
 
+    @staticmethod
+    def validatePartsSyntax(parts):
+        attr_ident   = r'[\w\.]+[a-zA-Z0-9]'
+        relationship = r'=|!=|>|<|>=|<=|contains|!contains'
+        attr_value   = r'"[^"]+"|[^" ]+'
+        criteria_pattern = re.compile('^(%s) (%s) (%s)$' % (attr_ident, relationship, attr_value))
+
+        valid_parts = []
+        front = ""
+        while parts:
+            part = "%s%s" % (front, parts.pop(0))
+            mo = criteria_pattern.match(part)
+            if mo:
+                valid_parts.append(part)
+            else:
+                if re.match(r'^(AND|OR)$', part, re.I):
+                    valid_parts.append(part)
+                else:
+                    front = part + " "
+
+        if not valid_parts:
+            raise Exception, "Invalid query expression syntax in: %s" % (" ".join(parts))
+        
+        return valid_parts
+    
 ##################################################################################################

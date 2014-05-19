@@ -1,20 +1,19 @@
-#!/opt/local/bin/python2.6
+#!/usr/bin/env python
 
 import sys, os
 import types
+import urllib
 import py
 
 from pyral import Rally
 import pyral
 
 InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
+from pyral.query_builder import RallyUrlBuilder, RallyQueryFormatter
 
 ##################################################################################################
 
-TRIAL = "trial.rallydev.com"
-
-TRIAL_USER = "usernumbernine@acme.com"
-TRIAL_PSWD = "************"
+from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
 
 ##################################################################################################
 
@@ -28,7 +27,7 @@ def test_basic_query():
     response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
-    assert len(response.warnings) == 1  # WSAPI deprecation warning
+    assert response.warnings == []
     assert response.resultCount > 0
 
 def test_simple_named_fields_query():
@@ -153,7 +152,7 @@ def test_defects_revision_history():
         Using a known valid Rally server and known valid access credentials,
         issue a simple query (no qualifying criteria) against a Rally entity
         (Defect) known to have an attribute (RevisionHistory) that has an
-        attribute (Revisions) that is a sequence type (list).
+        attribute (Revisions) that is a Rally collections reference.
         This test demonstrates the lazy-evaluation of non first-level attributes.
         Ultimately, the attributes deeper than the first level must be obtained
         and have their attributes filled out completely (_hydrated == True).
@@ -348,6 +347,83 @@ def test_start_and_limit_query():
     items = [item for item in response]
     assert len(items) == 60
 
+def test_query_target_value_with_ampersand():
+    """
+        Query for a Project.Name = 'R&D'
+    """
+    criteria = ['Project.Name = R&D']
+    result = RallyQueryFormatter.parenGroups(criteria)
+    assert urllib.unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
+
+    criteria = ['Project.Name = "R&D"']
+    result = RallyQueryFormatter.parenGroups(criteria)
+    assert urllib.unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
+
+    criteria = ['Project.Name contains "R&D"']
+    result = RallyQueryFormatter.parenGroups(criteria)
+    assert urllib.unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
+
+    criteria = 'Railhead.Company.Name != "Atchison Topeka & Santa Fe & Cunard Lines"'
+    result = RallyQueryFormatter.parenGroups(criteria)
+    assert urllib.unquote(result) == criteria.replace('&', '%26')
+
+
+def test_query_target_value_with_and():
+    """
+        Query for a Project.Name = 'Operations and Support Group'
+    """
+    criteria = 'Project.Name = "Operations and Support Group"'
+    result = RallyQueryFormatter.parenGroups(criteria)
+    assert result == 'Project.Name = "Operations and Support Group"'.replace(' ', '%20')
+
+    criteria = ['State != Open', 'Name !contains "Henry Hudson and Company"']
+    result = RallyQueryFormatter.parenGroups(criteria)
+    assert result.replace('%21%3D', '!=') == '(State != Open) AND (Name !contains "Henry Hudson and Company")'.replace(' ', '%20')
+
+def test_query_with_special_chars_in_criteria():
+    """
+       DE3228 in 'Yeti Manual Test Workspace' / 'Sample Project' has Name = Special chars:/!@#$%^&*()-=+[]{};:./<>?/ 
+       query for it by looking for it by the name value
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    rally.setWorkspace('Yeti Manual Test Workspace')
+    rally.setProject('Sample Project')
+    rally.enableLogging('spec_char_query')
+    criteria = 'Name = "distinctive criteria of -32% degradation in rust protection"'
+    response = rally.get('Defect', fetch=True, query=criteria, limit=10)
+    assert response.__class__.__name__ == 'RallyRESTResponse'
+    assert response.status_code == 200
+    assert response.errors   == []
+    assert response.warnings == []
+    assert response.resultCount == 1
+
+    criteria = 'Name = "Looking for the #blowback hashtag"'
+    response = rally.get('Defect', fetch=True, query=criteria, limit=10)
+    assert response.status_code == 200
+    assert response.errors   == []
+    assert response.warnings == []
+    assert response.resultCount == 1
+
+    special_chars = "/!@#$%^*_-+=?{}[]:;,<>"
+    # characters that break the RallyQueryFormatter and/or WSAPI: ( ) ~ & | backslash
+    for character in special_chars:
+        criteria = 'Name contains "%s"' % character
+        response = rally.get('Defect', fetch=True, query=criteria, limit=10)
+        assert response.__class__.__name__ == 'RallyRESTResponse'
+        assert response.status_code == 200
+        assert response.errors   == []
+        assert response.warnings == []
+        assert response.resultCount >= 1
+
+    criteria = 'Name = "Special chars:/!@#$%^*-=+[]{};:.<>? in the name field"'
+    response = rally.get('Defect', fetch=True, query=criteria, limit=10)
+    assert response.__class__.__name__ == 'RallyRESTResponse'
+    assert response.status_code == 200
+    assert response.errors   == []
+    assert response.warnings == []
+    assert response.resultCount >= 1
+
+
 #test_basic_query()
 #test_simple_named_fields_query()
 #test_all_fields_query()
@@ -370,3 +446,6 @@ def test_start_and_limit_query():
 #test_limit_query()
 #test_start_value_query()
 #test_start_and_limit_query()
+#test_query_target_value_with_ampersand()
+#test_query_target_value_with_and()
+#test_query_with_special_chars_in_criteria

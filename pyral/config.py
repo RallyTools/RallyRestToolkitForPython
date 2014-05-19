@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 4)
+__version__ = (1, 0, 0)
 
 import datetime
 import os
@@ -19,14 +19,17 @@ import glob
 PROTOCOL       = "https"
 SERVER         = "rally1.rallydev.com"
 WEB_SERVICE    = "slm/webservice/%s"
-WS_API_VERSION = "1.43"
+SCHEMA_SERVICE = "slm/schema/%s"
+AUTH_ENDPOINT  = "security/authorize"
+WS_API_VERSION = "v2.0"
 
 USER_NAME = "wiley@acme.com"
 PASSWORD  = "G3ronim0!"
 
-PAGESIZE    = 20
-START_INDEX = 1
-MAX_ITEMS   = 1000000  # a million seems an eminently reasonable limit ...
+START_INDEX  =   1
+PAGESIZE     = 100
+MAX_PAGESIZE = 200
+MAX_ITEMS    = 1000000  # a million seems an eminently reasonable limit ...
 
 RALLY_REST_HEADERS = \
     {

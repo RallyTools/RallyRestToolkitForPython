@@ -1,4 +1,4 @@
-#!/opt/local/bin/python2.6
+#!/usr/bin/env python
 
 #################################################################################################
 #
@@ -29,12 +29,13 @@ __doc__ = """
 #################################################################################################
 
 import sys, os
+import time
 
 from pyral import Rally, rallySettings
 
 #################################################################################################
 
-ITEM_LIMIT = 100
+ITEM_LIMIT = 1000
 
 errout = sys.stderr.write
 
@@ -55,20 +56,35 @@ def main(args):
     rally = Rally(server, user=username, password=password, workspace=workspace, warn=False)
     rally.enableLogging('rally.hist.chgsets')  # name of file you want the logging to go to
 
-    repo_name = args.pop()
+    repo_name = args.pop(0)
+    since = None
+    if args:
+        since = args.pop(0)
+        try:
+            days = int(since)
+            now = time.time()
+            since_ts = now - (days * 86400)
+            since = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime(since_ts))
+        except:
+            since = None
 
-    showRepoItems(rally, repo_name, workspace=workspace, limit=ITEM_LIMIT)
+    showRepoItems(rally, repo_name, workspace=workspace, limit=ITEM_LIMIT, since_date=since)
 
 #################################################################################################
 
-def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC"):
+def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC", since_date=None):
     
     by_repo = 'SCMRepository.Name = "%s"' % repo_name
+    criteria = by_repo
+    if since_date:
+        date_cond = "CommitTimestamp >= %s" % since_date
+        criteria = "((%s) and (%s))" % (by_repo, date_cond)
+
 
     try:
         response = rally.get('Changeset', fetch=True, 
                              order="CommitTimestamp %s" % order,
-                             query=by_repo,
+                             query=criteria,
                              workspace=workspace, project=None, 
                              pagesize=200, limit=limit)
     except Exception, msg:
@@ -89,15 +105,26 @@ def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC"):
         print "%-12.12s  %-42.42s %-19.19s Z %s  %s" % \
               (cs.SCMRepository.Name, cs.Revision, committed, author, cs.oid)
         print "         |%s|" % cs.Message
-        for change in cs.Changes:
-            print "      %s  %s" % (change.Action, change.PathAndFilename)
+
+        # If we iterate over change items via cs.Changes, then we later have to do lazy load
+        # for the change attributes on a per Change basis, which is relatively slow
+
+        # So, instead we go get all Change items associated with the Changeset
+        # and get the Change attributes populated, so we don't do a lazy load
+#        changes = rally.get('Change', fetch='Action,PathAndFilename,Changeset', 
+#                             query="Changeset = %s" % cs.ref,
+#                             workspace=workspace, project=None, 
+#                             pagesize=200, limit=limit)
+#        for change in changes:
+#            print "      %s  %s" % (change.Action, change.PathAndFilename)
+
         if len(cs.Artifacts) == 0:
             #print "changeset %s - %s has no artifacts"  % (cs.SCMRepository.Name, cs.Revision)
             continue
 
         artifact_idents = []
         for shell_artifact in cs.Artifacts:
-            entity = shell_artifact.__class__.__name__  # the shell artifact has the oid, not the FormattedID
+            entity = shell_artifact._type # the shell artifact has the oid, not the FormattedID
             if shell_artifact.oid not in oid_cache:
                 by_oid = "ObjectID = %s" % shell_artifact.oid
                 art_response = rally.get(entity, fetch="FormattedID", query=by_oid)

@@ -1,15 +1,16 @@
+#!/usr/local/bin/python2.7
 
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 10 version with better RallyQueryBuilder
+#          round 11 incorporating support for Rally WSAPI 2.0,
+#             no explicit support for Rally WSAPI 1.x
 #          notable dependencies:
-#               requests v2.x or greater now recommended
-#                  must use Python 2.6, 2.7 now with requests >= 2.x
+#               requests v2.0.0 or better
 #
 ###################################################################################################
 
-__version__ = (0, 9, 4)
+__version__ = (1, 0, 0)
 
 import sys, os
 import re
@@ -20,18 +21,18 @@ import json
 import string
 import base64
 from operator import itemgetter, attrgetter
+from pprint   import pprint
 
 import requests   
 
 # intra-package imports
-from .config  import PROTOCOL, SERVER, WS_API_VERSION, WEB_SERVICE, RALLY_REST_HEADERS
+from .config  import PROTOCOL, SERVER, WS_API_VERSION, WEB_SERVICE, SCHEMA_SERVICE, AUTH_ENDPOINT
+from .config  import RALLY_REST_HEADERS
 from .config  import USER_NAME, PASSWORD 
-from .config  import PAGESIZE, START_INDEX, MAX_ITEMS
+from .config  import START_INDEX, PAGESIZE, MAX_PAGESIZE, MAX_ITEMS
 from .config  import timestamp
 
 ###################################################################################################
-
-CONJUNCTION_PATT = re.compile(' (AND|OR) ', re.I) # to allow 'and', 'or', 'AND', 'OR'
 
 # 
 # define a module global that should be set up/known before a few more module imports
@@ -41,27 +42,17 @@ _rallyCache = {}  # keyed by a context tuple (server, user, password, workspace,
                   # a key of 'rally'    whose value there is a Rally instance  and
                   # a key of 'hydrator' whose value there is an EntityHydrator instance
 
-#
-# another module global for TypeDefinition info
-#  it's intended to be able to access a TypeDefinition.ref , .ElementName, and .Name attrs only
-#
-_type_definition_cache = {} # keyed by a type of context info and type definition ElementName
-                            # value is a minimally hydrated TypeDefinition instance
+def warning(message):
+    sys.stderr.write("WARNING: %s\n" % message)
 
-#
-# Yo! another module global here...
-#
-_allowedValueAlias = {}  # a dict keyed by entity name
-                         # Project|Release|Iteration : { OID: Name value, ... }
-                         # User & Owner are conspicuously not covered...
-
-warning = sys.stderr.write
-
-SERVICE_REQUEST_TIMEOUT = 120
+SERVICE_REQUEST_TIMEOUT   = 120
+HTTP_REQUEST_SUCCESS_CODE = 200
+PAGE_NOT_FOUND_CODE       = 404
 
 ###################################################################################################
 
 class RallyRESTAPIError(Exception): pass
+class RallyAttributeNameError(Exception): pass
 
 #
 # define a couple of entry point functions for use by other pkg modules and import the modules
@@ -116,6 +107,26 @@ def getResourceByOID(context, entity, oid, **kwargs):
     response = RallyRESTResponse(rally.session, context, "%s.x" % entity, resp, "full", 1)
     return response
 
+def getCollection(context, collection_url, **kwargs):
+    """
+        Retrieves a reference in _rallyCache to a Rally instance and uses that to 
+        call its getCollection method.
+        Returns a RallyRESTResponse instance that has status_code, headers and content attributes.
+    """
+    global _rallyCache
+    rallyContext = _rallyCache.get(context, None)
+    if not rallyContext:
+        ck_matches = [rck for rck in _rallyCache.keys() if rck.identity() == context.identity()]
+        if ck_matches:
+            rck = ck_matches.pop()
+            rallyContext = _rallyCache[rck]
+        else:
+            # raising an Exception is the only thing we can do, don't see any prospect of recovery...
+            raise RallyRESTAPIError('Unable to find Rally instance for context: %s' % context)
+    rally = rallyContext.get('rally')
+    response = rally.getCollection(collection_url, **kwargs)
+    return response
+
 
 #  these imports have to take place after the prior class and function defs 
 from .rallyresp import RallyRESTResponse, ErrorResponse
@@ -124,14 +135,11 @@ from .context   import RallyContext, RallyContextHelper
 from .entity    import validRallyType
 from .query_builder import RallyUrlBuilder
 
-__all__ = ["Rally", "getResourceByOID", "hydrateAnInstance", "RallyUrlBuilder"]
+__all__ = ["Rally", "getResourceByOID", "getCollection", "hydrateAnInstance", "RallyUrlBuilder"]
 
 
 def _createShellInstance(context, entity_name, item_name, item_ref):
-    if item_ref.endswith('.js'):
-        oid = item_ref[:-3].split('/').pop()
-    else:
-        oid = item_ref.split('/').pop()
+    oid = item_ref.split('/').pop()
     item = {
             'ObjectID' : oid, 
             'Name'     : item_name, 
@@ -162,20 +170,20 @@ class Rally(object):
                      'TS' : 'TestSet',
                      'PI' : 'PortfolioItem'
                     }
-    FORMATTED_ID_PATTERN = re.compile(r'^[A-Z]{1,2}\d+$')
-                                      #S|US|DE|DS|TA|TC|TS|PI
+    FORMATTED_ID_PATTERN = re.compile(r'^[A-Z]{1,2}\d+$') #S|US|DE|DS|TA|TC|TS|PI
     MAX_ATTACHMENT_SIZE = 5000000  # approx 5MB 
-
 
     def __init__(self, server=SERVER, user=USER_NAME, password=PASSWORD, 
                        version=WS_API_VERSION, warn=True, **kwargs):
-        self.server    = server
-        self.user      = user
-        self.password  = password
-        self.version   = version
-        self._inflated = False
-        self.service_url = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE % self.version)
+        self.server   = server
+        self.user     = user
+        self.password = password
+        self.version  = WS_API_VERSION  # we only support v2.0 now
+        self._inflated   = False
+        self.service_url = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE    % self.version)
+        self.schema_url  = "%s://%s/%s" % (PROTOCOL, self.server, SCHEMA_SERVICE % self.version)
         self.hydration   = "full"
+        self._sec_token  = None
         self._log        = False
         self._logDest    = None
         self._logAttrGet = False
@@ -193,31 +201,27 @@ class Rally(object):
                 os.environ['https_proxy'] = https_proxy
                 os.environ['HTTPS_PROXY'] = https_proxy
             proxy_dict['https'] = https_proxy
-
+        
         verify_ssl_cert = True
         if kwargs and 'verify_ssl_cert' in kwargs:
             vsc = kwargs.get('verify_ssl_cert')
             if vsc in [False, True]:
                 verify_ssl_cert = vsc
 
-        requests_version_major = int(requests.__version__.split('.').pop(0))
-        if requests_version_major == 0: # requests 0.x.y syntax for getting a session
-            self.session = requests.session(headers=RALLY_REST_HEADERS, auth=credentials,
-                                            timeout=10.0, proxies=proxy_dict, 
-                                            verify=verify_ssl_cert, config=config)
-        else:  # requests 1.x and greater syntax for getting a session
-            self.session = requests.Session()
-            self.session.headers = RALLY_REST_HEADERS
-            self.session.auth = credentials
-            self.session.timeout = 10.0
-            self.session.proxies = proxy_dict
-            self.session.verify = verify_ssl_cert
-            self.session.config = config
+        self.session = requests.Session()
+        self.session.headers = RALLY_REST_HEADERS
+        self.session.auth    = credentials
+        self.session.timeout = 10.0
+        self.session.proxies = proxy_dict
+        self.session.verify  = verify_ssl_cert
+        self.session.config  = config
         
+        global _rallyCache
+
         self.contextHelper = RallyContextHelper(self, server, user, password)
+        _rallyCache[self.contextHelper.context] = {'rally' : self }
         self.contextHelper.check(self.server)
 
-        global _rallyCache
         if self.contextHelper.currentContext() not in _rallyCache:
             _rallyCache[self.contextHelper.currentContext()] = {'rally' : self}
 
@@ -232,7 +236,7 @@ class Rally(object):
                 self.contextHelper.setWorkspace(kwargs['workspace'])
                 __adjust_cache = True
             else:
-                 warning("WARNING: Unable to use your workspace specification, that value is not listed in your subscription\n")
+                 warning("Unable to use your workspace specification, that value is not listed in your subscription")
                   
         if 'project' in kwargs and kwargs['project'] != self.contextHelper.currentContext().project \
            and kwargs['project'] != 'default':
@@ -261,10 +265,10 @@ class Rally(object):
                 ndp_name, ndp_ref = ndp
                 # but we'll only issue a warning if the project names are different
                 if self.warningsEnabled() and ndp_name != cdp_name:
-                    prob = "WARNING: Default project changed to '%s' (%s).\n" + \
+                    prob = "Default project changed to '%s' (%s).\n" + \
                            "         Your normal default project: '%s' is not valid for\n" +\
-                           "         the current workspace setting of: '%s'\n"
-                    short_proj_ref = "/".join(ndp_ref.split('/')[-2:])[:-3]
+                           "         the current workspace setting of: '%s'"
+                    short_proj_ref = "/".join(ndp_ref.split('/')[-2:])
                     wksp_name, wksp_ref = self.contextHelper.getWorkspace()
                     warning(prob % (ndp_name, short_proj_ref, cdp_name, wksp_name))
 
@@ -286,6 +290,15 @@ class Rally(object):
             of a RallyContext instance.
         """
         return self.service_url
+
+    def obtainSecurityToken(self):
+        if not self._sec_token:
+            security_service_url = "%s/%s" % (self.service_url, AUTH_ENDPOINT)
+            response = self.session.get(security_service_url)
+            doc = json.loads(response.content)
+            self._sec_token = str(doc[u'OperationResult'][u'SecurityToken'])
+
+        return self._sec_token
 
 
     def enableLogging(self, dest=sys.stdout, attrget=False, append=False):
@@ -310,7 +323,7 @@ class Rally(object):
         else:
             self._log = False
             # emit a warning that logging is disabled due to a faulty dest arg
-            warning('WARNING: Logging dest arg cannot be written to, proceeding with logging disabled.\n')
+            warning('Logging dest arg cannot be written to, proceeding with logging disabled.')
         if self._log:     
             scopeNote = '%s Following entries record Rally REST API interaction via %s for user: %s' % \
                         (timestamp(), self.service_url, self.user)
@@ -357,11 +370,8 @@ class Rally(object):
             that workspace in subsequent interactions with Rally.
         """
         if not self.contextHelper.isAccessibleWorkspaceName(workspaceName):
-            raise Exception('Specified workspace not valid for your credentials')
+            raise Exception('Specified workspace not valid for your credentials or is in a Closed state')
         self.contextHelper.setWorkspace(workspaceName)
-##
-##        print self.contextHelper.currentContext()
-##
 
     def getWorkspace(self):
         """
@@ -475,7 +485,6 @@ class Rally(object):
                 Role
 
             Returns either a single User instance or a list of User instances                
-                
         """
         context  = self.contextHelper.currentContext()
         item, response = None, None
@@ -503,7 +512,7 @@ class Rally(object):
             If no workspace is specified, then the current context's workspace is used.
 
             Return a list of User instances (fully hydrated for scalar attributes)
-            whose ref and collection attributes will be lazy eval'ed upon access.
+            whose ref and collection attributes will be resolved upon initial access.
         """
         saved_workspace_name, saved_workspace_ref = self.contextHelper.getWorkspace()
         if not workspace:
@@ -530,24 +539,23 @@ class Rally(object):
                       # and other UserProfile attributes
                      ]
 
-        users_resource = 'users.js?fetch=true&query=&pagesize=200&start=1&workspace=%s' % (workspace_ref)
+        users_resource = 'users?fetch=true&query=&pagesize=%s&start=1&workspace=%s' % (MAX_PAGESIZE, workspace_ref)
         full_resource_url = '%s/%s' % (self.service_url, users_resource)
         response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
-        if response.status_code != 200:
+        if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             return []
         response = RallyRESTResponse(self.session, context, users_resource, response, "full", 0)
         users = [user for user in response]
 
-        user_profile_resource = 'userprofile.js?fetch=true&query=&pagesize=200&start=1&workspace=%s' % (workspace_ref)
+        user_profile_resource = 'userprofile?fetch=true&query=&pagesize=%s&start=1&workspace=%s' % (MAX_PAGESIZE, workspace_ref)
         response = self.session.get('%s/%s' % (self.service_url, user_profile_resource), 
                                     timeout=SERVICE_REQUEST_TIMEOUT)
-        if response.status_code != 200:
-            warning("WARNING: Unable to retrieve UserProfile information for users\n")
+        if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
+            warning("Unable to retrieve UserProfile information for users")
             profiles = []
         else:
             response = RallyRESTResponse(self.session, context, user_profile_resource, response, "full", 0)
-
-            profiles = [prof for prof in response]
+            profiles = [profile for profile in response]
 
         # do our own brute force "join" operation on User to UserProfile info 
         for user in users:
@@ -556,15 +564,15 @@ class Rally(object):
                           if prof._ref == user.UserProfile._ref] 
             if not mups:
                 problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
-                warning("WARNING: %s\n" % (problem % (user.DisplayName, user.UserProfile)))
+                warning("%s" % (problem % (user.DisplayName, user.UserProfile)))
                 continue
             else:
                 if len(mups) > 1:
                     anomaly = "Found %d UserProfile items associated with username: %s"
-                    warning("WARNING: %s\n" % (anomaly % (len(mups), user.UserName)))
+                    warning("%s" % (anomaly % (len(mups), user.UserName)))
                 # now attach the first matching UserProfile to the User
                 user.UserProfile = mups[0]
-            
+
         self.setWorkspace(saved_workspace_name)
         return users
 
@@ -578,7 +586,7 @@ class Rally(object):
         # An Exception is raised if not.
         # If supplied_name resolves in some way to a valid Rally entity,
         # this returns either a simple name or a TypePath string (like PortfolioItem/Feature)
-        official_name = validRallyType(self, supplied_name)
+        official_name = validRallyType(supplied_name)
         return official_name
 
 
@@ -595,8 +603,6 @@ class Rally(object):
 ##        sys.stdout.flush()
 ##
         resource = '%s/%s' % (entity, oid)
-        if not resource.endswith('.js'):
-            resource += '.js'
         if '_disableAugments' not in kwargs:
             contextDict = context.asDict()
 ##
@@ -622,10 +628,10 @@ class Rally(object):
             raw_response = self.session.get(full_resource_url)
         except Exception as ex:
             exctype, value, tb = sys.exc_info()
-            warning('%s: %s\n' % (exctype, value)) 
+            warning("%s: %s" % (exctype, value)) 
             return None
 ##
-##        print raw_response: %s" % raw_response
+##        print "_getResourceByOID(%s, %s) raw_response: %s" % (entity, oid, raw_response)
 ##        sys.stdout.flush()
 ##
         return raw_response
@@ -649,7 +655,7 @@ class Rally(object):
         if self._log:
             self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, resource))
             self._logDest.flush()
-        if not response or response.status_code != 200:
+        if not response or response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             problem = "Unreferenceable %s OID: %s" % (entityName, oid)
             raise RallyRESTAPIError('%s %s' % (response.status_code, problem))
 
@@ -766,7 +772,8 @@ class Rally(object):
         elif type(fetch) == types.StringType and fetch.lower() != 'false':
             self.hydration = "full"
         elif type(fetch) in [types.ListType, types.TupleType]:
-            fetch = ",".join(fetch)
+            attr_info = self.validateAttributeNames(entity, dict([(attr_name,True) for attr_name in fetch])) 
+            fetch = ",".join(k for k in attr_info.keys())
             self.hydration = "full"
 
         entity = self._officialRallyEntityName(entity)
@@ -779,10 +786,6 @@ class Rally(object):
             context, augments = self.contextHelper.identifyContext(**kwargs)
             workspace_ref = self.contextHelper.currentWorkspaceRef()
             project_ref   = self.contextHelper.currentProjectRef()
-##
-##            print "   workspace_ref: %s"   % workspace_ref
-##            print "     project_ref:   %s" %   project_ref
-##
             if workspace_ref:   # TODO: would we ever _not_ have a workspace_ref?
                 if 'workspace' not in kwargs or ('workspace' in kwargs and kwargs['workspace'] is not None):
                     resource.augmentWorkspace(augments, workspace_ref)
@@ -796,7 +799,8 @@ class Rally(object):
         # TODO: see if much of above can be pushed into another method
 
         if self._log: 
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
+            #urllib.unquote the resource for enhanced readability
+            self._logDest.write('%s GET %s\n' % (timestamp(), urllib.unquote(resource)))
             self._logDest.flush()
 
         response = None  # in case an exception gets raised in the session.get call ...
@@ -813,7 +817,7 @@ class Rally(object):
 ##
                 ret_code, content = response.status_code, response.content
             else:
-                ret_code, content = 404, str(ex.args[0])
+                ret_code, content = PAGE_NOT_FOUND_CODE, str(ex.args[0])
             if self._log:
                 self._logDest.write('%s %s\n' % (timestamp(), ret_code))
                 self._logDest.flush()
@@ -824,7 +828,7 @@ class Rally(object):
 ##
 ##        print "response.status_code is %s" % response.status_code
 ##
-        if response.status_code != 200:
+        if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             if self._log:
                 code, verbiage = response.status_code, response.content[:56]
                 self._logDest.write('%s %s %s ...\n' % (timestamp(), code, verbiage))
@@ -832,7 +836,7 @@ class Rally(object):
 ##
 ##            print response
 ##
-            #if response.status_code == 404:
+            #if response.status_code == PAGE_NOT_FOUND_CODE:
             #    problem = "%s Service unavailable from %s, check for proper hostname" % (response.status_code, self.service_url)
             #    raise Exception(problem)
             errorResponse = ErrorResponse(response.status_code, response.content)
@@ -841,7 +845,7 @@ class Rally(object):
 
         response = RallyRESTResponse(self.session, context, resource, response, self.hydration, limit)
         if self._log:
-            if response.status_code == 200:
+            if response.status_code == HTTP_REQUEST_SUCCESS_CODE:
                 desc = '%s TotalResultCount %s' % (entity, response.resultCount)
             else:
                 desc = response.errors[0]
@@ -853,12 +857,79 @@ class Rally(object):
 
     find = get # offer interface approximately matching Ruby Rally REST API, App SDK Javascript RallyDataSource
 
+    def _getRequestResponse(self, context, request_url, **kwargs):
+        response = None  # in case an exception gets raised in the session.get call ...
+        try:
+            # a response has status_code, content and data attributes
+            # the data attribute is a dict that has a single entry for the key 'QueryResult' 
+            # or 'OperationResult' whose value is in turn a dict with values of 
+            # 'Errors', 'Warnings', 'Results'
+            response = self.session.get(request_url, timeout=SERVICE_REQUEST_TIMEOUT)
+        except Exception as ex:
+            if response:
+##
+##                print "Exception detected for session.get requests, response status code: %s" % response.status_code
+##
+                ret_code, content = response.status_code, response.content
+            else:
+                ret_code, content = PAGE_NOT_FOUND_CODE, str(ex.args[0])
+            if self._log:
+                self._logDest.write('%s %s\n' % (timestamp(), ret_code))
+                self._logDest.flush()
+
+            errorResponse = ErrorResponse(ret_code, content)
+            response = RallyRESTResponse(self.session, context, request_url, errorResponse, self.hydration, 0)
+            return response
+
+        num_items = kwargs.get('limit', 0)
+        response = RallyRESTResponse(self.session, context, request_url, response, self.hydration, num_items)
+        if self._log:
+            if response.status_code == HTTP_REQUEST_SUCCESS_CODE:
+                req_target = "/".join(request_url.split('/'))
+                desc = '%s TotalResultCount %s' % (req_target, response.resultCount)
+            else:
+                desc = response.errors[0]
+            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
+            self._logDest.flush()
+        return response
+
+
+    def getCollection(self, collection_url, **kwargs):
+        """
+            Given a collection_url of the form:
+                http(s)://<server>(:<port>)/slm/webservice/v2.0/<entity>/OID/<attribute>
+            issue a request for the url and return back a list of hydrated instances for each item 
+            in the collection.
+        """
+        context = self.contextHelper.currentContext()
+        collection_url = "%s?pagesize=%d&start=1" % (collection_url, MAX_PAGESIZE)
+##
+##        print "Collection URL: %s" % collection_url
+##
+        resource = collection_url
+
+        #disabled_augments = kwargs.get('_disableAugments', False)
+        #if disabled_augments:
+        #    workspace_ref = self.contextHelper.currentWorkspaceRef()
+        #    project_ref   = self.contextHelper.currentProjectRef()
+        #    resource = "%s&workspace=%s&project=%s" % (resource, workspace_ref, project_ref)
+##
+##        print "Collection resource URL: %s" % resource
+##
+        if self._log: 
+            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
+            self._logDest.flush()
+        rally_rest_response = self._getRequestResponse(context, resource)
+        return rally_rest_response
+
 
     def put(self, entityName, itemData, workspace='current', project='current', **kwargs):
         """
             Given a Rally entityName, a dict with data that the newly created entity should contain,
             issue the REST call and return the newly created target entity item.
         """
+        auth_token = self.obtainSecurityToken()
+        # raises a RallyAttributeNameError if any attribute names in itemData are invalid
         # see if we need to transform workspace / project values of 'current' to actual
         if workspace == 'current':
             workspace = self.getWorkspace().Name  # just need the Name here
@@ -867,12 +938,13 @@ class Rally(object):
 
         entityName = self._officialRallyEntityName(entityName)
 
-        resource = "%s/create.js" % entityName.lower()
+        resource = "%s/create?key=%s" % (entityName.lower(), auth_token)
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
-            resource += ("?" + "&".join(augments))
+            resource += ("&" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
 
+        itemData = self.validateAttributeNames(entityName, itemData) 
         item = {entityName: self._greased(itemData)} # where _greased is a convenience
                                                      # method that will transform
                                                      # any ref lists for COLLECTION attributes
@@ -883,7 +955,7 @@ class Rally(object):
             self._logDest.flush()
         response = self.session.put(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
-        if response.status_code != 200:
+        if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             desc = response.errors[0]
             if self._log:
                 self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
@@ -892,7 +964,7 @@ class Rally(object):
 
         item = response.content[u'CreateResult'][u'Object']
         ref  = str(item[u'_ref'])
-        item_oid = int(ref.split('/')[-1][:-3])
+        item_oid = int(ref.split('/')[-1])
         desc = "created %s OID: %s" % (entityName, item_oid)
         if self._log:
             self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
@@ -911,6 +983,7 @@ class Rally(object):
             Given a Rally entityName, a dict with data that the entity should be updated with,
             issue the REST call and return a representation of updated target entity item.
         """
+        auth_token = self.obtainSecurityToken()
         # see if we need to transform workspace / project values of 'current' to actual
         if workspace == 'current':
             workspace = self.getWorkspace().Name  # just need the Name here
@@ -927,7 +1000,7 @@ class Rally(object):
             fmtIdQuery = 'FormattedID = "%s"' % formattedID
             response = self.get(entityName, fetch="ObjectID", query=fmtIdQuery, 
                                 workspace=workspace, project=project)
-            if response.status_code != 200 or response.resultCount == 0:
+            if response.status_code != HTTP_REQUEST_SUCCESS_CODE or response.resultCount == 0:
                 raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, formattedID))
                 
             target = response.next()
@@ -937,14 +1010,15 @@ class Rally(object):
 ##
             itemData['ObjectID'] = oid
 
-        resource = '%s/%s.js' % (entityName.lower(), oid) 
+        resource = '%s/%s?key=%s' % (entityName.lower(), oid, auth_token) 
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
-            resource += ("?" + "&".join(augments))
+            resource += ("&" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
 ##
 ##        print "resource: %s" % resource
 ##
+        itemData = self.validateAttributeNames(entityName, itemData) 
         item = {entityName: self._greased(itemData)}
         payload = json.dumps(item)
         if self._log:
@@ -952,7 +1026,7 @@ class Rally(object):
             self._logDest.flush()
         response = self.session.post(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
-        if response.status_code != 200:
+        if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             raise RallyRESTAPIError('Unable to update the %s' % entityName)
 
         # now issue a request to get the entity item (mostly so we can get the FormattedID)
@@ -969,6 +1043,7 @@ class Rally(object):
             entity (in either OID or FormattedID format), issue the REST DELETE call and 
             return an indication of whether the delete operation was successful.
         """
+        auth_token = self.obtainSecurityToken()
         # see if we need to transform workspace / project values of 'current' to actual
         if workspace == 'current':
             workspace = self.getWorkspace().Name  # just need the Name here
@@ -984,7 +1059,7 @@ class Rally(object):
             fmtIdQuery = 'FormattedID = "%s"' % itemIdent
             response = self.get(entityName, fetch="ObjectID", query=fmtIdQuery, 
                                 workspace=workspace, project=project)
-            if response.status_code != 200:
+            if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
                 raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, itemIdent))
                 
             target = response.next()
@@ -993,15 +1068,15 @@ class Rally(object):
 ##            if kwargs.get('debug', False):
 ##               print "DEBUG: target OID -> %s" % objectID
 ##
-        resource = "%s/%s.js" % (entityName.lower(), objectID)
+        resource = "%s/%s?key=%s" % (entityName.lower(), objectID, auth_token)
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
-            resource += ("?" + "&".join(augments))
+            resource += ("&" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
         if self._log:
             self._logDest.write('%s DELETE %s\n' % (timestamp(), resource))
         response = self.session.delete(full_resource_url, headers=RALLY_REST_HEADERS)
-        if response and response.status_code != 200:
+        if response and response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             if self._log:
                 self._logDest.write('%s %s %s ...\n' % \
                        (timestamp(), response.status_code, response.content[:56]))
@@ -1032,45 +1107,101 @@ class Rally(object):
 
         return status
 
+
+    def getSchemaInfo(self, workspace, project=None):
+        """
+            Hit the schema endpoint for the given workspace name and return a dict
+            based on the content[u'QueryResult'][u'Results'] chunk.
+            Intended to be called out of context.py which hands this off to entity.py
+            to store this off in SchemaItem instances.
+        """
+        # punt for now on the workspace, project parms
+        # grab the OID for the currentContext workspace instead
+        wksp_ref = self.contextHelper.currentWorkspaceRef()
+        schema_endpoint = "%s/workspace/%s" % (self.schema_url, wksp_ref.split('/').pop())
+        response = self.session.get(schema_endpoint, timeout=30)
+        poorly_explained_schema_url_hash = response.request.url.split('/').pop()
+        #print response.content
+        return json.loads(response.content)[u'QueryResult'][u'Results']
+
+
     def typedef(self, target_type):
         """
-            Given the name of a target Rally type definition return an instance 
-            of a TypeDefinition class matching the target.  Cache the TypeDefinition
-            for the context so that repeated calls to the same target_type only result
-            in one call to Rally.
+            Given the name of a target Rally type (aka entity name), return an instance
+            of a SchemaItem class whose ElementName or TypePath matches the target_type value.
+            NB:  The first call of this method for a valid specific target_type value results in 
+                 the SchemaItem poking all of its SchemaAttribute items to retrieve their AllowedValues.
         """
-        ctx  = self.contextHelper.currentContext()
-        td_key = (ctx.server, ctx.subs_name, ctx.workspace, ctx.project, target_type)
+        schema_item = self.contextHelper.getSchemaItem(target_type)
+        if not schema_item:
+            # TODO: should we actually raise an exception here?
+            return None
+        if not schema_item.completed:
+            schema_item.complete(self.contextHelper.currentContext(), getCollection)
+        return schema_item
+        
 
-        if td_key not in _type_definition_cache:
-            td = self.get('TypeDefinition', fetch='ElementName,Name,Parent,TypePath')
+    def validateAttributeNames(self, entity_name, itemData):
+        """
+            Given an entity_name and an itemData dict with attribute names and values,
+            determine if any of the names are outright incorrect or if any need to be
+            altered for correct case or if any are custom field Names that need
+            to be altered to have the "c_" prefix.
+        """
+        entity_def = self.typedef(entity_name)
+        entity_attributes = entity_def.Attributes 
+##
+##        print "%s attributes:"
+##        for attr in entity_attributes:
+##            print "  |%s|" % attr.ElementName
+##        print ""
+##
+        attr_forms = [(attr.ElementName, attr.ElementName.lower(), attr.Name.lower().replace(' ', '')) 
+                      for attr in entity_attributes]
+        #             ElementName, lower case ElementName, lower case Name
+        txfmed_item_data = {}
+        invalid_attrs = []
+        for item_attr_name, item_attr_value in itemData.items():
+            eln_hits = [eln for eln, ell, anl in attr_forms if item_attr_name == eln]
+            if eln_hits:  # is the item_attr_name an exact match for an Attribute.ElementName ?
+                txfmed_item_data[item_attr_name] = item_attr_value
+                continue
 
-            if not td:
-                raise Exception("Unable to obtain Rally TypeDefinition information")
+            c_eln_hits = [eln for eln, ell, anl in attr_forms if "c_%s" % item_attr_name == eln]
+            if c_eln_hits:  # is  "c_" + item_attr_name an exact match for an Attribute.ElementName ?
+                eln = c_eln_hits[0]
+                txfmed_item_data[eln] = item_attr_value
+                continue
 
-            tds = [item for item in td]
-            if not tds:
-                raise Exception("Invalid Rally entity name: %s" % target_type)
+            ell_hits = [eln for eln, ell, anl in attr_forms if item_attr_name.lower() == ell]
+            if ell_hits:  # is the item_attr_name.lower() a match for Attribute.ElementName.lower() ?
+                eln = ell_hits[0]
+                txfmed_item_data[eln] = item_attr_value
+                continue
 
-            for td in tds:
-                type_name = '%s' % td.ElementName
-                parent = td.Parent.ElementName
-                if parent == "PortfolioItem":
-                    type_name = "%s/%s" % (parent, td.ElementName)
-                td_cache_key = (ctx.server, ctx.subs_name, ctx.workspace, ctx.project, type_name)
-                _type_definition_cache[td_cache_key] = td
+            c_ell_hits = [eln for eln, ell, anl in attr_forms if "c_%s" % item_attr_name.lower() == ell]
+            if c_ell_hits:  # is  "c_" + item_attr_name.lower() an exact match for an Attribute.ElementName ?
+                eln = c_ell_hits[0]
+                txfmed_item_data[eln] = item_attr_value
+                continue
 
-        if td_key in _type_definition_cache:
-            return _type_definition_cache[td_key]
-        alt_keys = [quint_key[-1] for quint_key in _type_definition_cache.keys if quint_key[-1] == target_type]
-        if alt_keys and len(alt_keys) == 1: # good, there's only one possible match
-            return _type_definition_cache[alt_keys[0]]
+            anl_hits = [eln for eln, ell, anl in attr_forms if item_attr_name.lower().replace(' ','') == anl]
+            if anl_hits:  # is the item_attr_name.lower().noSpaces() a match for Attribute.Name.lower() ? 
+                eln = anl_hits[0]
+                txfmed_item_data[eln] = item_attr_value
+                continue
 
-        return None
+            invalid_attrs.append(item_attr_name) 
+
+        if invalid_attrs:
+            raise RallyAttributeNameError(", ".join(invalid_attrs))
+
+        return txfmed_item_data
+        
 
     def getState(self, entity, state_name):
         """
-            State is now (Sep 2012) a Rally type (aka entity) not a String.
+            State, (as of Sep 2012) is a Rally type (aka entity) not a String.
             In order to somewhat insulate pyral package users from the increased complexity 
             of that approach, this is a convenience method that given a target entity (like
             Defect, PortfolioItem/<subtype>, etc.) and a state name, an inquiry to the Rally
@@ -1093,7 +1224,9 @@ class Rally(object):
             but with differing ObjectID and CreationDate values.  We arbitrarily take the last State
             for each OrderIndex, Name pair and return the resulting list.
         """
-        response = self.get('State', query='TypeDef.Name = "%s"' % entity, order="OrderIndex,ObjectID", project=None)
+        criteria        = 'TypeDef.Name = "%s"' % entity
+        ordering_fields = 'OrderIndex,ObjectID'
+        response = self.get('State', fetch=True, query=criteria, order=ordering_fields, project=None)
         state_ix = {}
         for state in [item for item in response]:
             state_ix[(state.OrderIndex, state.Name)] = state
@@ -1101,87 +1234,20 @@ class Rally(object):
         states = [state_ix[key] for key in state_keys]
         return states
 
-    def allowedValueAlias(self, entity, refUrl):
-        """
-            Use the _allowedValueAlias as a cache. A cache hit results from 
-            having an entity key in _allowedValueAlias AND and entry for the OID 
-            contained in the refUrl, the return is the OID and the alias value.
-            If there is no cache hit for the entity, issue a GET against
-            self.service_url/<entity>.js?fetch=ObjectID,Name (or UserName,DisplayName)
-        """
-        urlFields = refUrl.split('/')
-        oid = urlFields.pop()
-        result = (oid, "--UNKNOWN OID--")
-        actualEntity = urlFields.pop().lower()  # this may be different from entity, eg.
-                                                # entity=SubmittedBy, actualEntity=User
-        if actualEntity == 'user':    # special case processing for user follows...
-            if actualEntity not in _allowedValueAlias:
-                _allowedValueAlias[actualEntity] = {}
-            cache = _allowedValueAlias[actualEntity]
-            if oid in cache:
-                result = (oid, cache[oid])
-            else:
-                item = self._itemQuery(actualEntity, oid)   # query against 'User' for item
-                cache[oid] = (item.DisplayName, item.UserName)
-                result = (oid, (item.DisplayName, item.UserName))
-        else:   # normal case, entity == actualEntity (or at least no functional difference)
-            hydrationSetting = self.hydration
-            self.hydrate = "shell"
-
-            if entity not in _allowedValueAlias:
-                _allowedValueAlias[entity] = {}
-            cache = _allowedValueAlias[entity]
-            if oid in cache:
-               result = (oid, cache[oid])
-            else:
-                fields = "ObjectID,Name"
-                response = self.get(entity, fetch=fields, pagesize=200) # query for all items in entity
-                for item in response:
-                    cache[item.oid] = item.Name
-                if oid in cache:
-                    result = (oid, cache[oid])
-
-            self.hydration = hydrationSetting
-
-        return result
-
 
     def getAllowedValues(self, entityName, attributeName, **kwargs):
-        """
-            Given an entityName and and attributeName (assumed to be valid for the entityName)
-            issue a request to obtain a list of allowed values for the attribute.
-        """
-        # get rid of any pesky spaces in the attributeName
-        attrName = attributeName.replace(' ', '')
-        resource = '%s/%s/allowedValues.js' % (entityName, attrName)
-        context, augments = self.contextHelper.identifyContext(**kwargs)
-        if augments:
-            resource += ("?" + "&".join(augments))
-        full_resource_url = "%s/%s" % (self.service_url, resource)
-        if self._log:
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
-            self._logDest.flush()
-        try:
-            response = self.session.get(full_resource_url, headers=RALLY_REST_HEADERS)
-        except Exception as ex:
-            exception_type, value, traceback = sys.exc_info()
-            warning('%s: %s\n' % (exception_type, value)) 
-            sys.exit(9)
-
-        if self._log:
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, resource))
-            self._logDest.flush()
-        if not response or response.status_code != 200:
-            problem = "AllowedValues unobtainable for %s.%s" % (entityName, attrName)
-            raise RallyRESTAPIError('%s %s' % (response.status_code, problem))
-
-        try:
-            allowed_values_dict = json.loads(response.content)
-            return allowed_values_dict
-        except Exception as ex:
-            print "Unable to decode the json.loads target"
-            print ex.args[0]
+        schema_item = self.contextHelper.getSchemaItem(entityName)
+        if not schema_item:
+            # TODO: should we actually raise an exception here?
             return None
+        if not schema_item.completed:
+            schema_item.complete(self.contextHelper.currentContext(), getCollection)
+        matching_attrs = [attr for attr in schema_item.Attributes 
+                                if attr.ElementName == attributeName]
+        if not matching_attrs:
+            return None
+        attribute = matching_attrs[0]
+        return [av.value for av in attribute.AllowedValues]
 
 
     def addAttachment(self, artifact, filename, mime_type='text/plain'):
@@ -1200,12 +1266,12 @@ class Rally(object):
         """
         # determine if artifact exists, if not short-circuit False
         # determine if attachment already exists for filename (with same size and content)
-        #   if so, and already attached to artifact, short-circuit True
-        #   if so, but not attached to artifact, save attachment
+        #   if so, and already attached to artifact (or other entity), short-circuit True
+        #   if so, but not attached to artifact (or other entity), save attachment
         #   if not, create the AttachmentContent with filename content, 
         #           create the Attachment with basename for filename and ref the AttachmentContent 
-        #              and supply the ref for the artifact in the Artifact field for Attachment
-        #
+        #              and supply the ref for the artifact (or other object) in the Artifact field for Attachment
+        #          
         if not os.path.exists(filename):
             raise Exception('Named attachment filename: %s not found' % filename)
         if not os.path.isfile(filename):
@@ -1232,12 +1298,12 @@ class Rally(object):
         contents = ''
         with open(filename, 'r') as af:
             contents = base64.encodestring(af.read())
-
+            
         # create an AttachmentContent item
         ac = self.create('AttachmentContent', {"Content" : contents}, project=None)
         if not ac:
             raise RallyRESTAPIError('Unable to create AttachmentContent for %s' % attachment_file_name)
-          
+
         attachment_info = { "Name"        :  attachment_file_name,
                             "Content"     :  ac.ref,       # ref to AttachmentContent
                             "ContentType" :  mime_type,    
@@ -1247,9 +1313,15 @@ class Rally(object):
                           }
         # While it's actually possible to have an Attachment not linked to an Artifact,
         # in most cases, it'll be far more useful to have the linkage to an Artifact than not.
+        # A special case is where the "Artifact" is actually a TestCaseResult, which is not a
+        # subclass of Artifact in the Rally data model, but the WSAPI has been adjusted to permit
+        # us to associate an Attachment with a TestCaseResult instance.
         if artifact:  
             attachment_info["Artifact"] = artifact.ref
-
+            if artifact._type == 'TestCaseResult':
+                del attachment_info["Artifact"]
+                attachment_info["TestCaseResult"] = artifact.ref    
+        
         # and finally, create the Attachment
         attachment = self.create('Attachment', attachment_info, project=None)
         if not attachment:
@@ -1399,7 +1471,7 @@ class Rally(object):
             of a Rally entity, then all that needs to be done is deduce the art_type
             from the class name.  If the artifact argument given is neither of those 
             two conditions, return back a 2 tuple of (False, None).
-            Once you have an Rally instance of the artifact, return back a 
+            Once you have a Rally instance of the artifact, return back a 
             2 tuple of (art_type, artifact)
         """
         art_type = False
