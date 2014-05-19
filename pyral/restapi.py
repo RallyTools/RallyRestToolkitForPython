@@ -1266,11 +1266,11 @@ class Rally(object):
         """
         # determine if artifact exists, if not short-circuit False
         # determine if attachment already exists for filename (with same size and content)
-        #   if so, and already attached to artifact, short-circuit True
-        #   if so, but not attached to artifact, save attachment
+        #   if so, and already attached to artifact (or other entity), short-circuit True
+        #   if so, but not attached to artifact (or other entity), save attachment
         #   if not, create the AttachmentContent with filename content, 
         #           create the Attachment with basename for filename and ref the AttachmentContent 
-        #              and supply the ref for the artifact in the Artifact field for Attachment
+        #              and supply the ref for the artifact (or other object) in the Artifact field for Attachment
         #          
         if not os.path.exists(filename):
             raise Exception('Named attachment filename: %s not found' % filename)
