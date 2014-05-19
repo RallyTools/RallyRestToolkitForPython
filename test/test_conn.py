@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python
 
 import sys, os
 import types
@@ -12,13 +12,7 @@ RallyRESTAPIError = pyral.context.RallyRESTAPIError
 
 ##################################################################################################
 
-TRIAL = "trial.rallydev.com"
-PROD  = "us1.rallydev.com"
-
-TRIAL_USER = "usernumbernine@acme.com"
-TRIAL_PSWD = "********"
-
-HTTPS_PROXY = "127.0.0.1:9654"
+from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD, HTTPS_PROXY
 
 ##################################################################################################
 
@@ -33,21 +27,21 @@ def test_basic_connection():
     assert response.status_code == 200
     time.sleep(1)
 
-def test_basic_proxied_connection():
-    """
-        Using a known valid Rally server and access credentials, issue a simple query 
-        request against a known valid Rally entity via use of https_proxy.
-    """
-    os.environ['https_proxy'] = "http://%s" % HTTPS_PROXY
-
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    response = rally.get('Project', fetch=False, limit=10)
-    assert response != None
-    assert response.status_code == 200
-
-    os.environ['https_proxy'] = ""
-    del os.environ['https_proxy']
-    time.sleep(1)
+#def test_basic_proxied_connection():
+#    """
+#        Using a known valid Rally server and access credentials, issue a simple query 
+#        request against a known valid Rally entity via use of https_proxy.
+#    """
+#    os.environ['https_proxy'] = "http://%s" % HTTPS_PROXY
+#
+#    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+#    response = rally.get('Project', fetch=False, limit=10)
+#    assert response != None
+#    assert response.status_code == 200
+#
+#    os.environ['https_proxy'] = ""
+#    del os.environ['https_proxy']
+#    time.sleep(1)
 
 def test_nonexistent_server():
     """
@@ -60,14 +54,13 @@ def test_nonexistent_server():
     bogus_server = "bogus.notreally.bug"
     expectedErrMsg = "ping: cannot resolve %s: Unknown host" % bogus_server
     #print expectedErrMsg
-    winExpectedErrMsg = "Ping request could not find host %s" % bogus_server
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bogus_server)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     #print actualErrVerbiage
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     #assert actualErrVerbiage == expectedErrMsg
-    assert (expectedErrMsg in actualErrVerbiage or winExpectedErrMsg in actualErrVerbiage)
+    assert expectedErrMsg in actualErrVerbiage
     time.sleep(1)
 
 
@@ -131,13 +124,12 @@ def test_bad_server_spec():
     """
     bad_server = "ww!w.\fo,o\r\n.c%om"
     expectedErrMsg = "Unknown host"
-    winExpectedErrMsg = "could not find host"
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bad_server, timeout=3)
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    assert (expectedErrMsg in actualErrVerbiage or winExpectedErrMsg in actualErrVerbiage)
+    assert 'cannot resolve' in actualErrVerbiage and 'Unknown host' in actualErrVerbiage
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
@@ -147,7 +139,7 @@ def test_bad_server_spec():
         response = rally.get('Project', fetch=False, limit=5)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    assert (expectedErrMsg in actualErrVerbiage or winExpectedErrMsg in actualErrVerbiage)
+    assert 'cannot resolve' in actualErrVerbiage and 'Unknown host' in actualErrVerbiage
     time.sleep(1)
 
 def test_insuff_credentials():

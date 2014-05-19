@@ -2,7 +2,7 @@ pyral - A Python toolkit for the Rally REST API
 ===============================================
 
 
-The `pyral <http://github.com/Rallydev/pyral>`_ package enables you to push, pull
+The `pyral <http://github.com/RallyTools/RallyRestToolkitForPython>`_ package enables you to push, pull
 and otherwise wrangle the data in your Rally subscription using the popular
 and productive Python language.
 The ``pyral`` package provides a smooth and easy to use veneer on top
@@ -59,7 +59,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (0, 9, 4)
+   (1, 0, 0)
 
 
 
@@ -228,7 +228,6 @@ create an instance of the Rally class.
   PASSWORD                             password for the Rally subscription UserName
   WORKSPACE                            Rally Workspace
   PROJECT                              Rally Project
-  VERSION                              Rally REST Web Services API version
 ====================================== =========================================
 
 The item names in config files **are** case sensitive.
@@ -246,25 +245,28 @@ The item names in config files **are** case sensitive.
   --rallyPassword=<bar>                 password associated with the Rally UserName
   --rallyWorkspace=<bar>                Workspace in Rally you want to interact with
   --rallyProject=<bar>                  Project in Rally you want to interact with
-  --rallyVersion=<bar>                  Rally REST Web Services API version
 ====================================== =========================================
 
 
 Prerequisites
 -------------
 
- * Python 2.6 or 2.7
- * The  requests_ package, 0.9.3 or better
-   Recommend using requests 2.0.0 or better. 2.0.0 finally includes support for https proxy.
-   Developed using requests 0.9.3.  
-   There are reports where requests > 0.9.3 resulted in connection problems (as in not being able to connect) that may be related to SSL.  You should be able to use the verify_ssl_cert keyword argument when
-   obtaining a pyral Rally instance to overcome this issue.
-   If you are using requests < 1.0.0, you must also have certifi-0.0.8 (available on PyPI)
+ * Python 2.6 or 2.7 (2.7 is preferred)
+ * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy)
 
 .. _requests: http://github.com/kennethreitz/requests
 
 Versions
 --------
+
+   * 1.0.0 - 
+            Default WSAPI version in config is v2.0. This version is not compatible 
+            with Rally WSAPI version 1.x.  
+            Adjusted the RallyUrlBuilder (via RallyQueryFormatter) to be more resilient
+            with respect to many more "special" characters (non-alphanumeric).
+            Retrieving the meta data uses the v2.0 schema endpoint.
+            No longer support a version keyword argument when obtaining a Rally instance.
+
    * 0.9.4 -
             Adjusted Rally __init__ to accommodate using requests 0.x, 1.x, 2.x versions.
             Factored out query building and fixed constructing multi condition queries.
@@ -323,22 +325,15 @@ Versions
 
 TODO
 ----
-* Python 3.3 + support
+* Python 3.3+ support
 
-* Support Rally WSAPI 2.0
-
-* Expand the documentation
-
-* Expand the repertoire of example scripts
-
-* Refactor the source code to make use decorators in pyral.restapi, 
-  dynamically construct the Rally schema hierarchy economically.
+* Dynamically construct the Rally schema hierarchy economically.
 
 
 License
 -------
 
-BSD3-style license. Copyright (c) 2010-2013 Rally Software Development.
+BSD3-style license. Copyright (c) 2010-2014 Rally Software Development.
 
 See the LICENSE file provided with the source distribution for full details.
 

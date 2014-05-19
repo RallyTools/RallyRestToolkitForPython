@@ -23,3 +23,5 @@ examples/wkspcounts.py
 examples/builddefs.py
 examples/creattach.py
 examples/get_attachments.py
+examples/get_schema.py
+examples/add_tcrs.py

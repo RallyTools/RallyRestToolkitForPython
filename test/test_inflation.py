@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys, os
 import time
 import types
@@ -7,13 +9,7 @@ from pyral import Rally, RallyRESTAPIError
 
 ##################################################################################################
 
-TRIAL = "trial.rallydev.com"
-
-TRIAL_USER = "usernumbernine@acme.com"
-TRIAL_PSWD = "************"
-
-DEFAULT_WORKSPACE = "Idle Hands Workspace"
-DEFAULT_PROJECT   = "Angstrom Bundling"
+from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD, DEFAULT_WORKSPACE, DEFAULT_PROJECT
 
 ##################################################################################################
 
@@ -84,17 +80,13 @@ def test_named_default_workspace_use_default_project():
         Using valid Rally access credentials, connect
         specifying the workspace name (which is the default value), 
         without specifying the name of project.
-        Return status should be OK, the Rally instance's RallyContextHelper
-        _inflated value should be 'minimal'
+        Inquire after connecting as to what the current project is.
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=DEFAULT_WORKSPACE)
-    response = rally.get('Project')
-    assert response != None
-    assert response.status_code == 200
-    project = response.next()
+    project = rally.getProject()
+    assert project != None
     assert project.Name == DEFAULT_PROJECT
-    assert rally._wpCacheStatus() == 'minimal'
 
 
 def test_named_default_workspace_named_default_project():
@@ -158,16 +150,16 @@ def test_named_non_default_workspace_use_default_project():
                 in the named non-default workspace
               
     """
-    workspace = 'Foonman Internationale'
+    workspace = 'SCM Workspace'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
     ai_proj = rally.getProject()
-    assert str(ai_proj.Name) == 'Shopaholic'   # is valid on both default and 'Foonman Internationale'
+    assert str(ai_proj.Name) == 'Sample Project'  
     assert rally._wpCacheStatus() == 'narrow'
 
-    workspace = 'Over Regulation Central'
+    workspace = 'JIRA Testing'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
     ai_proj = rally.getProject()
-    assert str(ai_proj.Name) == 'Picky About Lint'   # is valid only in 'Wonka Factory Inspection'
+    assert str(ai_proj.Name) == 'GData Testing'   # is valid only in 'JIRA Testing'
     assert rally._wpCacheStatus() == 'narrow'
 
 def test_named_non_default_workspace_named_valid_project():
@@ -177,8 +169,8 @@ def test_named_non_default_workspace_named_valid_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    workspace = 'Jellystone Quarry'
-    project   = 'Rock of Destruction'
+    workspace = 'JIRA Manual Testing'
+    project   = 'Another Sample Project'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project)
     response = rally.get('Project')
@@ -192,7 +184,7 @@ def test_named_non_default_workspace_named_invalid_project():
         a valid non-default workspace and an invalid project.
         An exception should be raised.
     """
-    workspace = 'Wobbly Wheels'
+    workspace = 'JIRA Manual Testing'
     project   = 'Barney Rubble'
     expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, workspace)
     with py.test.raises(Exception) as excinfo:

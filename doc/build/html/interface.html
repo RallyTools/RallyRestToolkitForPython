@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Primary pyral classes and functions &mdash; pyral 0.9.4 documentation</title>
+    <title>Primary pyral classes and functions &mdash; pyral 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.4',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral 0.9.4 documentation" href="index.html" />
+    <link rel="top" title="pyral 1.0.0 documentation" href="index.html" />
     <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
   </head>
   <body>
@@ -38,7 +38,7 @@
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral 0.9.4 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -79,7 +79,6 @@ returned to the caller.</p>
 <dt>override with any environment variables present from this list:</dt>
 <dd><ul class="first last simple">
 <li>RALLY_SERVER</li>
-<li>RALLY_VERSION</li>
 <li>RALLY_USER</li>
 <li>RALLY_PASSWORD</li>
 <li>RALLY_WORKSPACE</li>
@@ -90,7 +89,7 @@ returned to the caller.</p>
 </li>
 <li><p class="first">if present, use information from a rally-&lt;version&gt;.cfg file in the current directory,
 where &lt;version&gt; matches the Rally WSAPI version defined in the pyral.config module.
-Currently, that version is defined as 1.43.</p>
+Currently, that version is defined as v2.0.</p>
 </li>
 <li><p class="first">if present, use the contents of a file named in the RALLY_CONFIG environment variable.</p>
 </li>
@@ -116,7 +115,6 @@ options via the &#8211;&lt;option&gt;=&lt;value&gt;.</p>
 <dt>Valid entries are:</dt>
 <dd><ul class="first last simple">
 <li>SERVER    = &lt;RallyServer&gt;</li>
-<li>VERSION   = &lt;RallyWebServicesVersion&gt;</li>
 <li>USER      = &lt;validUserName&gt;</li>
 <li>PASSWORD  = &lt;validPassword&gt;</li>
 <li>WORKSPACE = &lt;validWorkspaceName&gt;</li>
@@ -135,15 +133,13 @@ options via the &#8211;&lt;option&gt;=&lt;value&gt;.</p>
 <p class="attribution">&mdash;rallyServer=&lt;serverName&gt;</p>
 </div></blockquote>
 <blockquote>
-<div><p>&#8211;rallyVersion=&lt;ws_version&gt;</p>
-<p class="attribution">&mdash;rallyUser=&lt;validRallyUserName&gt;</p>
+<div><p>&#8211;rallyUser=&lt;validRallyUserName&gt;</p>
+<p class="attribution">&mdash;rallyPassword=&lt;validRallyPassword&gt;</p>
 </div></blockquote>
 <blockquote>
-<div><p>&#8211;rallyPassword=&lt;validRallyPassword&gt;</p>
-<p class="attribution">&mdash;workspace=&lt;validWorkspaceName&gt;</p>
+<div><p>&#8211;workspace=&lt;validWorkspaceName&gt;</p>
+<p class="attribution">&mdash;project=&lt;validProjectName&gt;</p>
 </div></blockquote>
-<blockquote>
-<div>&#8211;project=&lt;validProjectName&gt;</div></blockquote>
 </div></blockquote>
 <p>This mechanism provides the ability to centrally locate a configuration file that can
 be used by many members of a team where server, workspace, project are common to all members
@@ -204,8 +200,6 @@ interacting with the Rally server.</p>
 </li>
 <li><p class="first">project</p>
 </li>
-<li><p class="first">version  (specify the Rally WSAPI version, default is 1.43)</p>
-</li>
 <li><p class="first">verify_ssl_cert  (True or False, default is True)</p>
 </li>
 <li><dl class="first docutils">
@@ -223,7 +217,7 @@ Under those conditions, the project is changed to the first project
 </div></blockquote>
 <dl class="class">
 <dt id="Rally">
-<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user</em>, <em>password</em>, <em>version=1.43</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user</em>, <em>password</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Examples:</p>
@@ -268,7 +262,7 @@ members of each returned entity record.</p>
 <dt>keyword arguments:</dt>
 <dd><ul class="first last simple">
 <li>fetch = True/False or &#8220;List,Of,Attributes,We,Are,Interested,In&#8221;</li>
-<li>query = &#8216;FieldName = &#8220;some value&#8221;&#8217; or [&#8216;EstimatedHours = 10&#8217;, &#8216;MiddleName != &#8220;Shamu&#8221;&#8217;, etc.]</li>
+<li>query = &#8216;FieldName = &#8220;some value&#8221;&#8217; or [&#8216;EstimatedHours = 10&#8217;, &#8216;MiddleName != &#8220;Shamu&#8221;&#8217;, &#8216;Name contains &#8220;foogelhorn pop-tarts&#8221;&#8217;,  etc.]</li>
 <li>instance = True/False (defaults to False)</li>
 <li>pagesize = n  (defaults to 200)</li>
 <li>start = n  (defaults to 1)</li>
@@ -287,6 +281,10 @@ The Response object supports the iteration protocol so that the results of the
 <p>If the instance keyword value is True, then an instance of a Rally entity
 will be returned instead of a RallyRESTResponse.  This can be useful when
 retrieving an item you know exists and is uniquely identified by your query argument.</p>
+<p>The query keyword argument can consist of a String, a List of Strings as <em>&lt;name&gt; &lt;relation&gt; &lt;value&gt;</em>
+conditions
+or as a Dictionary where the key-value pairs have an implicit equality relationship and
+all the resulting conditions are AND&#8217;ed together.</p>
 </dd></dl>
 
 <div class="admonition note">
@@ -300,6 +298,18 @@ Rally REST API.</p>
 toolkit takes a hands-off policy and lets you take the responsibility for specifying
 the query in a form suitable for the Rally REST WSAPI. (See the Help page for
 for the Rally REST WSAPI in the Rally web-based product).</p>
+<p>If you need to have any OR&#8217;ing of conditions, you&#8217;ll have to construct the entire
+query yourself in the form of a single String with paren characters in the correct
+locations to make the query syntactically conformant with the Rally REST WSAPI.
+Example: query=((Name contains &#8220;ABC&#8221;) OR ((Priority = &#8220;1-Critical&#8221;) AND (Severity != &#8220;3-Minor&#8221;)))
+Yes, it&#8217;s kind of a pain in the ...</p>
+<p>Using the characters of &#8216;<strong>~</strong>&#8216; or &#8216;<strong>&amp;</strong>&#8216; or &#8216;<strong>|</strong>&#8216; or a backslash &#8216;<strong>\</strong>&#8216;
+within a query expression (eg. &#8216;Name contains &#8220;|&#8221;&#8217;) are problematic with the use of this
+toolkit.  A REST request will be issued, but even if there are actual qualifying
+items that you could observe by using the Rally web GUI, the Rally WSAPI response will
+not have the correct count or content of the qualifying items.  Other workarounds are
+recommended to deal with this; one way is to post-process the results of a less
+restrictive criteria to filter or qualify the results to your specific criteria.</p>
 <p class="last">Use the instance keyword with <strong>caution</strong>, as an exception will be generated
 if the query produces no qualifying results.
 If the query produces more than one qualifying result, you&#8217;ll only get
@@ -464,14 +474,14 @@ an Artifact&#8217;s State attribute, you must provide a reference (_ref or ref) 
 dictionary used to populate the Artifact&#8217;s attributes.  This method provides an
 easy means of obtaining the appropriate entity for the particular entity and state Name
 you want.  Typically the usage would be along the lines of this example:</p>
-<blockquote>
-<div>info = { ...., &#8220;State&#8221; : rally.getState(&#8216;Feature&#8217;, &#8216;Discovering&#8217;).ref, ... })</div></blockquote>
-<dl class="docutils">
-<dt>WARNING: This method only works with PortfolioItem subclasses at this time.</dt>
-<dd>(Theme, Initiative, Feature)</dd>
-</dl>
 </dd></dl>
 
+<div class="highlight-python"><pre>info = { ...., "State" : rally.getState('Feature', 'Discovering').ref, ... })</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This method only works with PortfolioItem subclasses at this time.  (Theme, Initiative, Feature)</p>
+</div>
 <dl class="method">
 <dt id="getStates">
 <tt class="descname">getStates</tt><big>(</big><em>entityName</em><big>)</big><a class="headerlink" href="#getStates" title="Permalink to this definition">¶</a></dt>
@@ -722,7 +732,7 @@ HierarchicalRequirement
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              >previous</a> |</li>
-        <li><a href="index.html">pyral 0.9.4 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

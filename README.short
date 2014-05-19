@@ -17,10 +17,8 @@ that may be references or collections via the familiar dot '.' notation.
 Requirements
 ------------
 
-The pyral package requires the use of Kenneth Reitz's requests package.
-The pyral package was originally developed and tested using requests-0.9.3.
-As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
-Use of requests-2.x or better is recommended for use with pyral.
+The pyral package requires the use of Kenneth Reitz's requests package using version 2.0.0 or better.
+As of requests version 2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
 
 

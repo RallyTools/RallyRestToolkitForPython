@@ -3,11 +3,12 @@
 ###################################################################################################
 #
 # wkspcounts - get per artifact type counts in a workspace (optionally broken out by project)
+#              note that only 'Open' Workspaces can be interrogated for artifact counts
 #
 ###################################################################################################
 
 USAGE = """
-Usage: python wkspcounts.py [-byproject] [art_type]
+Usage: python wkspcounts.py {workspace | all} [-byproject] [art_type]
 """
 ###################################################################################################
 
@@ -32,34 +33,65 @@ def main(args):
     server, user, password, workspace, project = rallySettings(options)
     #print " ".join(["|%s|" % item for item in [server, user, '********', workspace, project]])
     rally = Rally(server, user, password, workspace=workspace, warn=False)
+    target_workspace, byproject, art_types = processCommandLineArguments(args)
     rally.enableLogging('rally.hist.articount')  # name of file you want logging to go to
-    prog_opts = [opt for opt in args if opt.startswith('-')]
-    byproject = False
-    if '-byproject' in prog_opts:
-        byproject = True
     
-    #if not args:
-    #    errout(USAGE)
-    #    sys.exit(1)
-
-    print ""
     workspaces = rally.getWorkspaces()
+    if target_workspace != 'all':
+        hits = [wksp for wksp in workspaces if wksp.Name == target_workspace]
+        if not hits:
+            problem = "The specified target workspace: '%s' either does not exist or is not accessible"
+            errout("ERROR: %s\n" % (problem % target_workspace))
+            sys.exit(2)
+        workspaces = hits
+
     for wksp in workspaces:
-        rally.setWorkspace(wksp.Name)
         print wksp.Name
         print "=" * len(wksp.Name)
+        rally.setWorkspace(wksp.Name)
         projects = [None]
         if byproject:
             projects = rally.getProjects(workspace=wksp.Name)
         for project in projects:
             if project:
                 print ""
-                print project.Name
+                print "    %s" % project.Name
                 print "    %s" % ('-' * len(project.Name))
-            for artifact_type in COUNTABLE_ARTIFACT_TYPES:
+            for artifact_type in art_types:
                 count = getArtifactCount(rally, artifact_type, project=project)
                 print "       %-16.16s : %4d items" % (artifact_type, count)
         print ""
+
+###################################################################################################
+
+def processCommandLineArguments(args):
+    workspaces = 'all'
+    byproject  = False
+    art_types  = COUNTABLE_ARTIFACT_TYPES
+
+    prog_opts = [opt for opt in args if opt.startswith('-')]
+    byproject = False
+    if '-byproject' in prog_opts:
+        byproject = True
+        del args[args.index('-byproject')]
+
+    if not args:
+        errout(USAGE)
+        sys.exit(1)
+
+    workspaces = args.pop(0)  # valid is 'all' or the name of an Open workspace in the Subscription 
+
+    if args:
+        art_type = args[0]
+        if art_type not in COUNTABLE_ARTIFACT_TYPES:
+            errout("ERROR: The art_type given: '%s', is not in the list of valid artifact types below:\n")
+            errout(", ".join(COUNTABLE_ARTIFACT_TYPES) + "\n")
+            errout("\n")
+            errout(USAGE)
+            sys.exit(1)
+        art_types = [art_type]
+
+    return workspaces, byproject, art_types
 
 ###################################################################################################
 

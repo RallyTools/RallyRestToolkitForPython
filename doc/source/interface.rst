@@ -32,14 +32,13 @@ The priority chain consists of these steps:
     * establish baseline values from values defined in the module containing the rallySettings
     * override with any environment variables present from this list:
         - RALLY_SERVER
-        - RALLY_VERSION
         - RALLY_USER
         - RALLY_PASSWORD
         - RALLY_WORKSPACE
         - RALLY_PROJECT
     * if present, use information from a rally-<version>.cfg file in the current directory,
       where <version> matches the Rally WSAPI version defined in the pyral.config module.
-      Currently, that version is defined as 1.43.
+      Currently, that version is defined as v2.0.
     * if present, use the contents of a file named in the RALLY_CONFIG environment variable.
     * if present, use the contents of a config named on the command line via the --config-<filename>
       option
@@ -54,7 +53,6 @@ The specific syntax available for these levels is detailed below.
             - CAP_NAME  = value
         Valid entries are:
             - SERVER    = <RallyServer>
-            - VERSION   = <RallyWebServicesVersion>
             - USER      = <validUserName>
             - PASSWORD  = <validPassword>
             - WORKSPACE = <validWorkspaceName>
@@ -71,8 +69,6 @@ The specific syntax available for these levels is detailed below.
         or --cfg=<configFileName>
 
         --rallyServer=<serverName>
-
-        --rallyVersion=<ws_version>
 
         --rallyUser=<validRallyUserName>
 
@@ -138,7 +134,6 @@ Rally
     You can optionally specify the following as keyword arguments.
         * workspace
         * project
-        * version  (specify the Rally WSAPI version, default is 1.43)
         * verify_ssl_cert  (True or False, default is True)
         * warn     (True or False, default is True) 
                     Controls whether a warning is issued if no project is specified
@@ -146,7 +141,7 @@ Rally
                     Under those conditions, the project is changed to the first project
                     (alphabetic ordering) in the list of projects for the specified workspace.
 
-.. py:class:: Rally (server, user, password, version=1.43, workspace=None, project=None, warn=True)
+.. py:class:: Rally (server, user, password, workspace=None, project=None, warn=True)
 
 Examples::
 
@@ -189,7 +184,7 @@ Core REST methods and CRUD aliases
 
         keyword arguments:
             - fetch = True/False or "List,Of,Attributes,We,Are,Interested,In"
-            - query = 'FieldName = "some value"' or ['EstimatedHours = 10', 'MiddleName != "Shamu"', etc.]
+            - query = 'FieldName = "some value"' or ['EstimatedHours = 10', 'MiddleName != "Shamu"', 'Name contains "foogelhorn pop-tarts"',  etc.]
             - instance = True/False (defaults to False)
             - pagesize = n  (defaults to 200)
             - start = n  (defaults to 1)
@@ -208,6 +203,11 @@ Core REST methods and CRUD aliases
         will be returned instead of a RallyRESTResponse.  This can be useful when 
         retrieving an item you know exists and is uniquely identified by your query argument.
 
+        The query keyword argument can consist of a String, a List of Strings as *<name> <relation> <value>*
+        conditions
+        or as a Dictionary where the key-value pairs have an implicit equality relationship and
+        all the resulting conditions are AND'ed together.
+
 .. note::
 
         If you use a simple query, eg., 'SomeField = "Abc"' then _you_ don't need
@@ -220,6 +220,20 @@ Core REST methods and CRUD aliases
         toolkit takes a hands-off policy and lets you take the responsibility for specifying
         the query in a form suitable for the Rally REST WSAPI. (See the Help page for 
         for the Rally REST WSAPI in the Rally web-based product).
+
+        If you need to have any OR'ing of conditions, you'll have to construct the entire
+        query yourself in the form of a single String with paren characters in the correct
+        locations to make the query syntactically conformant with the Rally REST WSAPI.
+        Example: query=((Name contains "ABC") OR ((Priority = "1-Critical") AND (Severity != "3-Minor")))
+        Yes, it's kind of a pain in the ...
+
+        Using the characters of '**~**' or '**&**' or '**|**' or a backslash '**\\**' 
+        within a query expression (eg. 'Name contains "|"') are problematic with the use of this
+        toolkit.  A REST request will be issued, but even if there are actual qualifying 
+        items that you could observe by using the Rally web GUI, the Rally WSAPI response will 
+        not have the correct count or content of the qualifying items.  Other workarounds are
+        recommended to deal with this; one way is to post-process the results of a less
+        restrictive criteria to filter or qualify the results to your specific criteria.
 
         Use the instance keyword with **caution**, as an exception will be generated
         if the query produces no qualifying results.
@@ -368,10 +382,14 @@ pyral.Rally instance convenience methods
     easy means of obtaining the appropriate entity for the particular entity and state Name
     you want.  Typically the usage would be along the lines of this example:
 
+::
+
        info = { ...., "State" : rally.getState('Feature', 'Discovering').ref, ... })
 
-    WARNING: This method only works with PortfolioItem subclasses at this time.
-             (Theme, Initiative, Feature)
+.. warning:: 
+
+        This method only works with PortfolioItem subclasses at this time.  (Theme, Initiative, Feature)
+
 
 .. method:: getStates(entityName)
     
@@ -557,4 +575,4 @@ Example::
         KanbanState       : Accepted
         LastUpdateDate    : 2012-07-12T09:14:36.237Z
         ...
-
+    

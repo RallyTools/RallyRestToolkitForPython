@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Python toolkit for the Rally REST API &mdash; pyral 0.9.4 documentation</title>
+    <title>Python toolkit for the Rally REST API &mdash; pyral 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.4',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,9 +25,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral 0.9.4 documentation" href="index.html" />
+    <link rel="top" title="pyral 1.0.0 documentation" href="index.html" />
     <link rel="next" title="Primary pyral classes and functions" href="interface.html" />
-    <link rel="prev" title="pyral documentation!" href="index.html" /> 
+    <link rel="prev" title="Python toolkit for the Rally REST API" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -40,9 +40,9 @@
           <a href="interface.html" title="Primary pyral classes and functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="pyral documentation!"
+          <a href="index.html" title="Python toolkit for the Rally REST API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral 0.9.4 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -63,6 +63,12 @@ the workspace and project you want to interact with and you&#8217;re on your way
 <p>For more information on how workspaces and projects in Rally are set up and configured, consult
 the Rally documentation available via the &#8216;Help&#8217; link from the Rally landing page
 displayed after your initial login.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">As of the 1.0.0 version of <strong>pyral</strong> (the Python toolkit for the Rally REST API),
+the implementation works with Rally WSAPI 2.0 and is <strong>not</strong> backward compatible
+with Rally WSAPI 1.x.</p>
+</div>
 </div>
 <div class="section" id="simple-use">
 <h1>Simple Use<a class="headerlink" href="#simple-use" title="Permalink to this headline">¶</a></h1>
@@ -101,11 +107,11 @@ via the &#8216;Help&#8217; link from the Rally page displayed after the initial 
 <p>In the Rally vernacular, a logical entity is  called a <em>type</em>.  Some examples of Rally
 <em>types</em> are UserStory, Defect, Release, UserProfile.  There is a subset of
 <em>types</em> that are usually what a user of <strong>pyral</strong> will be interested in called <em>artifacts</em>.
-An <em>artifact</em> is either a UserStory, Defect, Task, DefectSuite, TestSet or TestCaseResult.
+An <em>artifact</em> is either a UserStory, Defect, Task, DefectSuite, TestCase or TestSet.
 The Python toolkit for the Rally REST API (<strong>pyral</strong>) is primarily oriented towards operations with artifacts.
 But, it is not limited to those as it is very possible view/operate on other Rally
-entities such as Workspace, Project, UserProfile, Release, Iteration, TestFolder, Tag and
-others.</p>
+entities such as Workspace, Project, UserProfile, Release, Iteration, TestCaseResult,
+TestFolder, Tag and others.</p>
 </div>
 <div class="section" id="full-crud-capability">
 <h1>Full CRUD capability<a class="headerlink" href="#full-crud-capability" title="Permalink to this headline">¶</a></h1>
@@ -124,7 +130,8 @@ list of values.</p>
 </div>
 <div class="section" id="queries-and-results">
 <h1>Queries and Results<a class="headerlink" href="#queries-and-results" title="Permalink to this headline">¶</a></h1>
-<p>The Rally REST API has two interesting characteristics that the Python toolkit for the Rally REST API insulates the scriptwriter from having to deal with.  The first is that the Rally REST API
+<p>The Rally REST API has two interesting characteristics that the Python toolkit for the Rally REST API
+insulates the scriptwriter from having to deal with.  The first is that the Rally REST API
 has a maximum &#8220;pagesize&#8221; of 200 records to limit volume and prevent unwarranted hijacking of the
 Rally SaaS servers.  But, having script writers deal with this directly to obtain further
 &#8220;pages&#8221; would be burdensome and out of character with the mainstream of Python interfaces
@@ -146,15 +153,23 @@ to obtain the value.  There are two significant advantages to this, one being li
 the load on the server with the reduction of data returned and the other being easy and
 intuitive attribute access syntax.</p>
 </div>
+<div class="section" id="custom-fields">
+<h1>Custom Fields<a class="headerlink" href="#custom-fields" title="Permalink to this headline">¶</a></h1>
+<p>Most Artifact types in Rally can be augmented with custom fields.  As of Rally WSAPI v2.0, the
+ElementName for a custom field is prefixed with &#8216;<a href="#id1"><span class="problematic" id="id2">c_</span></a>&#8216;.  The <strong>pyral</strong> toolkit allows you to
+reference these fields without having to use the &#8216;<a href="#id3"><span class="problematic" id="id4">c_</span></a>&#8216; prefix.  For example, if your custom field
+has a DisplayName of &#8216;Burnt Offerings Index&#8217; you can use the String of &#8216;BurntOfferingsIndex&#8217; in
+a fetch clause or a query clause or refer to the field directly on an artifact
+as artifact.BurntOfferingsIndex.</p>
+</div>
 <div class="section" id="introduction-of-dyna-types">
 <h1>Introduction of Dyna-Types<a class="headerlink" href="#introduction-of-dyna-types" title="Permalink to this headline">¶</a></h1>
 <p>As of Rally WebServices API 1.37, Rally has introduced a modification of their data model, which
 is termed dyna-types.  This modification offers a means of establishing and using a parent type
 and defining sub-types of that parent.  The PortfolioItem type is now an &#8220;abstract&#8221; type from which
-there are some pre-defined sub-types (Initiative, Theme, Feature).  For the user of the pyral package,
-the change manifests in two ways.  First, you&#8217;ll only be able to work with PortfolioItem sub-types
-when specifying WSAPI version 1.37 or greater.  Second, by convention the preferred way to identify
-a PortfolioItem sub-type is via slashed naming, eg. &#8216;PortfolioItem/Feature&#8217;.  While it is possible
+there are some pre-defined sub-types (Initiative, Theme, Feature).
+By convention the preferred way to identify a PortfolioItem sub-type is via slashed
+naming, eg. &#8216;PortfolioItem/Feature&#8217;.  While it is possible
 to identify a PortfolioItem sub-type by the sub-type name, eg, (Theme), this is not the preferred
 means.  The reason for the latter statement is that with dyna-types it is possible to define new
 &#8220;abstract&#8221; types and define sub-types therefrom that may have names identical to a sub-type whose
@@ -162,15 +177,14 @@ parent differs from your newly defined &#8220;abstract&#8221; type.</p>
 <p>An example of this is a fictional &#8220;abstract&#8221; parent type named &#8220;Bogutrunk&#8221; (for a type that
 encompasses stories about requests for things you&#8217;ll never implement and aren&#8217;t bugs, but you want
 to track them anyway).  Additionally, let&#8217;s say you define some sub-types whose parent type is
-&#8220;Bogutrunk&#8221; named &#8220;Outlandish&#8221;, &#8220;NonScalable&#8221;, &#8220;Theme&#8221; and &#8220;Feature&#8221;.  Now, identifying a specific
-NonScalable Bogutrunk item is unambiguous, you&#8217;d just specify the entity in any pyral
-get/put/post/delete as a &#8220;NonScalable&#8221;.  But, you cannot use that convention for a &#8220;Feature&#8221;.  You&#8217;d need
-to specify one as a &#8220;Bogutrunk/Feature&#8221; to disambiguate from a &#8220;PortfolioItem/Feature&#8221;.  The main take-away
-here is that if you don&#8217;t use PortfolioItem instances with pyral, you can use any version of Rally WSAPI
-past version 1.20.  If you use PortfolioItem instances with pyral or you&#8217;ve defined your own &#8220;abstract&#8221;
-parent types and specific sub-types thereof, you must use version 1.37 or greater and you are strongly
-encouraged to use the slashed specification to uniquely identify which Rally entity type you are
-working with.</p>
+&#8220;Bogutrunk&#8221; and are named &#8220;Outlandish&#8221;, &#8220;NonScalable&#8221;, &#8220;Theme&#8221; and &#8220;Feature&#8221;.  Now, identifying a specific
+NonScalable Bogutrunk item is unambiguous; you&#8217;d just specify the entity in any pyral get/put/post/delete
+as a &#8220;NonScalable&#8221;.  But, you cannot use that convention for a &#8220;Feature&#8221;.  You&#8217;d need to specify
+one as a &#8220;Bogutrunk/Feature&#8221; to disambiguate from a &#8220;PortfolioItem/Feature&#8221;.  The main take-away
+here is that if you don&#8217;t use PortfolioItem instances with pyral, you don&#8217;t have worry about this.
+If you use PortfolioItem instances with pyral or you&#8217;ve defined your own &#8220;abstract&#8221;
+parent types and specific sub-types thereof, you are strongly encouraged to use the slashed specification
+to avoid ambiguity in identifying the Rally entity type.</p>
 </div>
 
 
@@ -188,12 +202,13 @@ working with.</p>
 <li><a class="reference internal" href="#full-crud-capability">Full CRUD capability</a></li>
 <li><a class="reference internal" href="#rally-introspection">Rally Introspection</a></li>
 <li><a class="reference internal" href="#queries-and-results">Queries and Results</a></li>
+<li><a class="reference internal" href="#custom-fields">Custom Fields</a></li>
 <li><a class="reference internal" href="#introduction-of-dyna-types">Introduction of Dyna-Types</a></li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">pyral documentation!</a></p>
+                        title="previous chapter">Python toolkit for the Rally REST API</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="interface.html"
                         title="next chapter">Primary <em>pyral</em> classes and functions</a></p>
@@ -229,9 +244,9 @@ working with.</p>
           <a href="interface.html" title="Primary pyral classes and functions"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="pyral documentation!"
+          <a href="index.html" title="Python toolkit for the Rally REST API"
              >previous</a> |</li>
-        <li><a href="index.html">pyral 0.9.4 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

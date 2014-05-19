@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (0, 9, 4)
+__version__ = (1, 0, 0)
 
 import sys
 reload(sys)  # Reload gets a sys module that has the setdefaultencoding before site.py deletes it
@@ -39,7 +39,9 @@ class EntityHydrator(object):
 
     def _attributes(self, item):
 ##
-##        print "in hydrateInstance, item contents:\n    %s" % repr(item)
+##        print "in hydrateInstance, item contents:"
+##        pprint(item)
+##        print ""
 ##
         return [attr for attr in item.keys() 
                       if attr not in MINIMAL_ATTRIBUTES
@@ -53,8 +55,8 @@ class EntityHydrator(object):
             the instance attributes with values from the dict item.
             The OID value is embedded in the value for the '_ref' key
             Use this OID and the name in the call to instantiate the object of the desired type.
-        """
-            
+        """ 
+
         if not existingInstance:
             instance = self._basicInstance(item)
         else:
@@ -79,9 +81,9 @@ class EntityHydrator(object):
             All native Rally entities have '_type', '_ref', '_refObjectName' in the item dict.
             However, there are entities with attributes that are non-scalar and do not have a '_type' entry.
             So, we cheat and make an instance of a CustomField class and return that. 
-
+            
             For now we are not using try/except as in development we want any Exception to be 
-            raised to see what sort of problems might be encountered
+            raised to see what sort of problems might be encountered.
         """
         itemType = item.get(u'_type', "CustomField")
 ##
@@ -90,13 +92,10 @@ class EntityHydrator(object):
         name = item.get(u'_refObjectName', "Unknown")
         if itemType == 'AllowedQueryOperator':
             name = item[u'OperatorName']
-        #elif not item.get(u'_refObjectName', None):
-        #    print "item has no _refObjectName, has the following info..."
-        #    pprint(item)
         oid = 0
         resource_url = item.get(u'_ref', "") 
         if resource_url:
-            oid = resource_url.split('/')[-1].replace('.js', '')
+            oid = resource_url.split('/')[-1]
         try:
             instance = classFor[str(itemType)](oid, name, resource_url, self.context)
         except KeyError, e:
@@ -117,11 +116,15 @@ class EntityHydrator(object):
         if itemType == 'AllowedAttributeValue':
             instance.Name  = 'AllowedValue'
             instance.value = item[u'StringValue']
+##
+##        print "in EntityHydrator.hydrateInstance, _basicInstance returning a %s" % instance._type
+##
         return instance
 
     def _setAppropriateAttrValueForType(self, instance, attrName, attrValue, level=0):
 ##
-##        print "setting attribute level: %d  attrName |%s|" % (level, attrName)
+##        indent = "  " * level
+##        print "%s attr level: %d  attrName |%s| attrValue: |%s|" % (indent, level, attrName, attrValue)
 ##
         if attrValue == None:
             setattr(instance, attrName, attrValue)
@@ -138,10 +141,30 @@ class EntityHydrator(object):
 
         # if we're here, then  type(attrValue) == types.DictType
         # for now, only attempt to populate fully to the third level, after that, short-circuit
+        if attrValue.has_key(u'_rallyAPIMajor'):
+            del attrValue[u'_rallyAPIMajor']
+        if attrValue.has_key(u'_rallyAPIMinor'):
+            del attrValue[u'_rallyAPIMinor']
+
         if level > 3:
             setattr(instance, attrName, attrValue)
             return
 
+        # if the attrValue contains a Count key and a _ref key and the Count is > 0, then 
+        # yank the collection ref at _ref and rename the attrName to __collection_ref_for_<attrName>
+        if attrValue.has_key(u'_ref') and attrValue.has_key(u'Count'):
+            if attrValue[u'Count'] == 0:
+                setattr(instance, attrName, [])
+            else:
+                collection_ref = attrValue[u'_ref']
+                setattr(instance, "__collection_ref_for_%s" % attrName, collection_ref)
+            return
+
+        if attrName == 'RevisionHistory':  # this gets treated as a collection ref also at this point
+            collection_ref = attrValue[u'_ref']
+            setattr(instance, "__collection_ref_for_%s" % attrName, collection_ref)
+            return
+            
         attrInstance = self._basicInstance(attrValue)
         setattr(instance, attrName, attrInstance)
         subAttrNames = self._attributes(attrValue)

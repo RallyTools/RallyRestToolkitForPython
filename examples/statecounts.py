@@ -19,7 +19,7 @@ from pyral import rallySettings, Rally
 
 errout = sys.stderr.write
 
-VALID_ARTIFACT_TYPES = ['Story', 'UserStory', 'HierarchicalRequirement', 'Defect', 'Task', 'TestCase']
+VALID_ARTIFACT_TYPES = ['Story', 'UserStory', 'HierarchicalRequirement', 'Defect', 'Task']
 
 ###################################################################################################
 
@@ -41,7 +41,7 @@ def main(args):
     artifact_type = args[0]
     if artifact_type not in VALID_ARTIFACT_TYPES:
         errout(USAGE)
-        errout('The artifact_type argument must be one of: %s' % ", ".join(VALID_ARTIFACT_TYPES))
+        errout('The artifact_type argument must be one of: %s\n' % ", ".join(VALID_ARTIFACT_TYPES))
         sys.exit(1)
         
     art_type = artifact_type[:]
@@ -51,7 +51,7 @@ def main(args):
         state = 'ScheduleState'
 
     t_zero = time.time()
-    state_values = rally.getAllowedValues(artifact_type, state).keys()
+    state_values = rally.getAllowedValues(artifact_type, state)
     t_one = time.time()
     av_time = t_one - t_zero
 
@@ -69,22 +69,16 @@ def show_counts(rally, artifact_type, state, state_values, av_time):
     """
     output = []
    
-    proc_time_start = time.time()
     for state_value in sorted(state_values):
         response = rally.get(artifact_type, fetch="FormattedID", query='%s = %s' % (state, state_value),
                                             projectScopeUp=False, projectScopeDown=False)
         if response.errors:
-            print "Blaarrrgggghhhhh!  %s" % response.errors[0]
-            continue
+            print "ERROR detected %s" % response.errors[0]
+            sys.exit(1)
         output.append("%16s : %5d" % (state_value, response.resultCount))
-    proc_time_finish = time.time()
-    elapsed = (proc_time_finish - proc_time_start) + av_time
+
     for line in output:
         print line
-    
-    print ""
-    print "querying for all the %s %s item counts took %5.2f secs" % (artifact_type, state, elapsed)
-    print ""
 
 ###################################################################################################
 ###################################################################################################

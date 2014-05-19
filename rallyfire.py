@@ -22,11 +22,9 @@ def main(args):
     args    = [arg for arg in args if arg not in options]
     server, user, password, workspace, project = rallySettings(options)
     print " ".join(["|%s|" % item for item in [server, user, password, workspace, project]])
-    #rally = Rally(server, user, password, workspace=workspace, project=project, 
-    #              verify_ssl_cert=False) 
-    #rally = Rally(server, user, password, workspace=workspace, project=project, debug=True) 
     rally = Rally(server, user, password, workspace=workspace, project=project) 
-    #rally = Rally(server, user, password, debug=True) 
+    #rally = Rally(server, user, password, debug=True)
+    rally.enableLogging('fire.log')
     # add in the debug=True keyword arg if you want more verbiage ...
     #rally = Rally(server, user, password, workspace=workspace, project=project, debug=True) 
     specified_workspace = workspace
