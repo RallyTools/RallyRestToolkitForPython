@@ -630,11 +630,25 @@ class RallyContextHelper(object):
             self._project_ref[  workspace.Name] = {}
             resp = self.agent._getResourceByOID( self.context, 'workspace', workspace.oid, _disableAugments=True)
             response = json.loads(resp.content)
+            # Seen a WSAPI 2.0 issue where the server tells us the number
+            # of open projects in a workspace in the project Count field,
+            # tells us the total number of open and closed projects in the
+            # workspace in the response item count but only returns the
+            # details for the open projects. So at REDUCEREDUCE below,
+            # we set the number of items we're looking for to the count
+            # of open projects.
+            workspace_open_projects = response['Workspace']['Projects']['Count']
             # If SLM gave back consistent responses, we could use RallyRESTResponse, but no joy...
             # Carefully weasel into the response to get to the guts of what we need
             # and note we specify only the necessary fetch fields or this query takes a *lot* longer...
             projects_collection_url = '%s?fetch="ObjectID,Name,State"' % response['Workspace']['Projects'][u'_ref']
             response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
+            if response._limit > workspace_open_projects:
+                sys.stderr.write('WARNING: Had to reduce project count from %s to %s\n' %
+                                 (response._limit, workspace_open_projects))
+                sys.stderr.flush()
+                # REDUCEREDUCE - see WSAPI comment above
+                response._limit = workspace_open_projects
             for project in response:
                 projName = project.Name
                 # we only need the project/123534 section to qualify as a valid ref

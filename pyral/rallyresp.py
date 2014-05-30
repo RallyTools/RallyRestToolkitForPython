@@ -264,13 +264,17 @@ class RallyRESTResponse(object):
             try:
                 item = self._page[self._curIndex]
             except IndexError:
-                verbiage = "Unable to access item %d (%d items served so far from a " +\
-                           "container purported to be %d items in length)"
-                problem = verbiage % (self._curIndex+1, self._served, self.resultCount)
-                errout("ERROR: %s\n" % problem)
                 self._page[:] = self.__retrieveNextPage()
-                pprint(self._page[0])
-                raise IndexError("RallyRESTResponse._page[%d]" % self._curIndex)
+                if len(self._page) > 0:
+                    self._curIndex = 0
+                    item = self._page[0]
+                else:
+                    verbiage = "Unable to access item %d (%d items served so far from a " +\
+                               "container purported to be %d items in length)"
+                    problem = verbiage % (self._curIndex+1, self._served, self.resultCount)
+                    errout("ERROR: %s\n" % problem)
+                    #pprint(self._page[0])
+                    raise IndexError("RallyRESTResponse._page[%d]" % self._curIndex)
         else:  # the Response had a non-std format
 ##
 ##            blurb = "item from page is a %s, but Response was not in std-format" % self._item_type
