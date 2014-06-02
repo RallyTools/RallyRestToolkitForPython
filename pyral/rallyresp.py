@@ -238,6 +238,17 @@ class RallyRESTResponse(object):
     def __iter__(self):
         return self
 
+    def __nonzero__(self):
+        """
+            This is for evaluating any invalid response as False.
+
+        :return:
+        """
+        if 200 <= self.status_code < 300:
+            return True
+        else:
+            return False
+
     def next(self):
         """
             Return a hydrated instance from the self.page until the page is exhausted,
