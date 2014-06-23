@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 0, 1)
+__version__ = (1, 0, 0)
 
 import sys, os
 import re
@@ -231,7 +231,7 @@ class Rally(object):
         __adjust_cache = False
 
         if 'workspace' in kwargs and kwargs['workspace'] != self.contextHelper.currentContext().workspace \
-                                 and kwargs['workspace'] != 'default':
+           and kwargs['workspace'] != 'default':
             if self.contextHelper.isAccessibleWorkspaceName(kwargs['workspace']):
                 self.contextHelper.setWorkspace(kwargs['workspace'])
                 __adjust_cache = True
@@ -239,7 +239,7 @@ class Rally(object):
                  warning("Unable to use your workspace specification, that value is not listed in your subscription")
                   
         if 'project' in kwargs and kwargs['project'] != self.contextHelper.currentContext().project \
-                               and kwargs['project'] != 'default':
+           and kwargs['project'] != 'default':
             accessibleProjects = [name for name, ref in self.contextHelper.getAccessibleProjects(workspace='current')]
 
             if kwargs['project'] in accessibleProjects:

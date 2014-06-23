@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 0, 1)
+__version__ = (1, 0, 0)
 
 import sys
 reload(sys)  # Reload gets a sys module that has the setdefaultencoding before site.py deletes it

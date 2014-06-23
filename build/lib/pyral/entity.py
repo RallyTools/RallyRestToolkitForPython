@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 0, 1)
+__version__ = (1, 0, 0)
 
 import sys
 import re
@@ -823,12 +823,10 @@ def processSchemaInfo(workspace, schema_info):
         typePath = entity.TypePath
         pyralized_class_name = str(typePath.replace('/', '_'))
         if not classFor.has_key(pyralized_class_name):
-            parentClass = WorkspaceDomainObject
             if entity.Parent:
-                try:
-                    parentClass = classFor[entity.Parent]
-                except:
-                    pass
+                parentClass = classFor[entity.Parent]
+            else:
+                parentClass = classFor['Persistable']
             rally_entity_class = _createClass(pyralized_class_name, parentClass)
             classFor[typePath] = rally_entity_class
 

@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 0, 1)
+__version__ = (1, 0, 0)
 
 import sys
 import re
@@ -263,32 +263,14 @@ class RallyRESTResponse(object):
                 raise StopIteration
             try:
                 item = self._page[self._curIndex]
-            #except IndexError:
-            #    verbiage = "Unable to access item %d (%d items served so far from a " +\
-            #               "container purported to be %d items in length)"
-            #    problem = verbiage % (self._curIndex+1, self._served, self.resultCount)
-            #    errout("ERROR: %s\n" % problem)
-            #    self._page[:] = self.__retrieveNextPage()
-            #    pprint(self._page[0])
-            #    raise IndexError("RallyRESTResponse._page[%d]" % self._curIndex)
             except IndexError:
-                item = None
-                if self.target in ['Workspace', 'Workspaces', 'Project', 'Projects']:
-                    try:
-                        self.page[:] = self.__retrieveNextPage()
-                        self._curIndex = 0
-                        item = self.page[self._curIndex]
-                    except:
-                        exception_type, value, traceback = sys.exc_info()
-                        exc_name = re.search("'exceptions\.(.+)'", str(exception_type)).group(1)
-                        problem = '%s: %s for response from request to get next data page for %s' % (exc_name, value, self.target)
-                        errout("ERROR: %s\n" % problem)
-                if item is None:               
-                    verbiage = "Unable to access item %d (%d items served so far from a " +\
-                               "container purported to be %d items in length)"
-                    problem = verbiage % (self._curIndex+1, self._served, self.resultCount)
-                    errout("ERROR: %s\n" % problem)
-                    raise StopIteration
+                verbiage = "Unable to access item %d (%d items served so far from a " +\
+                           "container purported to be %d items in length)"
+                problem = verbiage % (self._curIndex+1, self._served, self.resultCount)
+                errout("ERROR: %s\n" % problem)
+                self._page[:] = self.__retrieveNextPage()
+                pprint(self._page[0])
+                raise IndexError("RallyRESTResponse._page[%d]" % self._curIndex)
         else:  # the Response had a non-std format
 ##
 ##            blurb = "item from page is a %s, but Response was not in std-format" % self._item_type

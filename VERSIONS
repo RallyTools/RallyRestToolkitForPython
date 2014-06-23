@@ -53,3 +53,10 @@
     Added internal facility to accept Rally reference identifiers in a list form and convert them
     to a list of dicts with each dict containing a key-value pair for '_ref' and associated value.
     Added a details method for any WorkspaceDomain derived entity instance.
+
+1.0.0 - May 2014
+    Upped default WSAPI version to v2.0 and stated in docs that prior WSAPI versions (1.x) were no longer supported.
+
+1.0.1 - June 2014
+    Patch to address flaw in WSAPI v2.0 projects collection endpoint having a mismatch between TotalResultCount and
+    actual information about projects.    

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/opt/local/bin/python2.6
 
 ###################################################################################################
 #
@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 0, 1)
+__version__ = (1, 0, 0)
 
 import sys, os
 import platform
@@ -236,12 +236,8 @@ class RallyContextHelper(object):
             raise Exception(sub.errors[0])
         subscription = sub.next()
         self._subs_name = subscription.Name
-        wksp_coll_ref_base = "%s/Workspaces" % subscription._ref
-        workspaces_collection_url = '%s?fetch=true&query=(State = Open)&pagesize=200&start_index=1' % wksp_coll_ref_base
-        workspaces = self.agent.getCollection(workspaces_collection_url, _disableAugments=True)
-        subscription.Workspaces = [wksp for wksp in workspaces]
-##        num_wksps = len(subscription.Workspaces)
-##        print "Subscription has %d active Workspaces" % num_wksps
+        # TODO: is the assumption that len(subscription.Workspaces) > 0 always valid?
+        num_wksps = len(subscription.Workspaces)
         self._subs_workspaces  = subscription.Workspaces
         self._defaultWorkspace = subscription.Workspaces[0]
 
@@ -637,17 +633,8 @@ class RallyContextHelper(object):
             # If SLM gave back consistent responses, we could use RallyRESTResponse, but no joy...
             # Carefully weasel into the response to get to the guts of what we need
             # and note we specify only the necessary fetch fields or this query takes a *lot* longer...
-            base_proj_coll_url = response['Workspace']['Projects'][u'_ref']
-            projects_collection_url = '%s?fetch="ObjectID,Name,State"&pagesize=200&start_index=1' % base_proj_coll_url
-            #projects_collection_url = '%s?fetch=true&pagesize=200&start_index=1' % base_proj_coll_url
+            projects_collection_url = '%s?fetch="ObjectID,Name,State"' % response['Workspace']['Projects'][u'_ref']
             response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
-#not-as-bad?#            response = self.agent.get('Project', fetch="ObjectID,Name,State", workspace=workspace.Name)
-
-##
-##            print "  Number of Projects: %d" % response.data[u'TotalResultCount']
-##            for item in response.data[u'Results']:
-##                print "    %-36.36s" % (item[u'_refObjectName'], )
-##
             for project in response:
                 projName = project.Name
                 # we only need the project/123534 section to qualify as a valid ref
