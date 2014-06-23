@@ -59,7 +59,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 0, 0)
+   (1, 0, 1)
 
 
 
@@ -258,6 +258,9 @@ Prerequisites
 
 Versions
 --------
+
+   * 1.0.1 - Patch to address defect with Rally WSAPI v2.0 projects collection endpoint
+             providing conflicting information.
 
    * 1.0.0 - 
             Default WSAPI version in config is v2.0. This version is not compatible 

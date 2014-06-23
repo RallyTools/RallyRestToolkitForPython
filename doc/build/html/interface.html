@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Primary pyral classes and functions &mdash; pyral 1.0.0 documentation</title>
+    <title>Primary pyral classes and functions &mdash; pyral 1.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '1.0.0',
+        URL_ROOT:    './',
+        VERSION:     '1.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral 1.0.0 documentation" href="index.html" />
+    <link rel="top" title="pyral 1.0.1 documentation" href="index.html" />
     <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
   </head>
   <body>
@@ -38,7 +36,7 @@
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -147,8 +145,8 @@ and each individual can have their own appropriately secured config file with th
 Using this mechanism can save tedious and error-prone entry of target information and credentials
 on the command line or having credential information in clear text in unsecured files.</p>
 <p>Example use:</p>
-<div class="highlight-python"><pre>% export RALLY_SERVER="rally1.rallydev.com"
-% export RALLY_USER="crazedwiley@acmeproducts.com"
+<div class="highlight-python"><div class="highlight"><pre>% export RALLY_SERVER=&quot;rally1.rallydev.com&quot;
+% export RALLY_USER=&quot;crazedwiley@acmeproducts.com&quot;
 
 % ls -l current.cfg
 
@@ -165,14 +163,15 @@ on the command line or having credential information in clear text in unsecured 
 import sys
 from rally import rallySettings
 
-options = [opt for opt in sys.argv[1:] if opt.startswith('--')]
+options = [opt for opt in sys.argv[1:] if opt.startswith(&#39;--&#39;)]
 server, user, password, workspace, project = rallySettings(options)
-print " ".join(['|%|' % opt for opt in [server, user, password, workspace, project]]
+print &quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password, workspace, project]]
 
 
-% python basic.py --config=current --rallyPassword='*****' --rallyProject="Livestock Mgmt"
+% python basic.py --config=current --rallyPassword=&#39;*****&#39; --rallyProject=&quot;Livestock Mgmt&quot;
 
-|rally1.rallydev.com| |wiley@acme.com| |*****| |General Products Umbrella| |Livestock Mgmt|</pre>
+|rally1.rallydev.com| |wiley@acme.com| |*****| |General Products Umbrella| |Livestock Mgmt|
+</pre></div>
 </div>
 <p>Note that for convenience purposes a configuration file name may be fully specified
 or you may elect to not specify the &#8216;.cfg&#8217; suffix.</p>
@@ -476,7 +475,8 @@ easy means of obtaining the appropriate entity for the particular entity and sta
 you want.  Typically the usage would be along the lines of this example:</p>
 </dd></dl>
 
-<div class="highlight-python"><pre>info = { ...., "State" : rally.getState('Feature', 'Discovering').ref, ... })</pre>
+<div class="highlight-python"><div class="highlight"><pre>info = { ...., &quot;State&quot; : rally.getState(&#39;Feature&#39;, &#39;Discovering&#39;).ref, ... })
+</pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -638,7 +638,7 @@ with the content of the instance.</p>
 </dd></dl>
 
 <p>Example:</p>
-<div class="highlight-python"><pre>response = rally.get('UserStory', fetch=True, query='FormattedID = S321')
+<div class="highlight-python"><div class="highlight"><pre>response = rally.get(&#39;UserStory&#39;, fetch=True, query=&#39;FormattedID = S321&#39;)
 story1 = response.next()
 print story1.details()
 
@@ -675,7 +675,8 @@ HierarchicalRequirement
     Iteration         : Iteration.ref               (OID  1242381  Name Iteration 5 (Summer))
     KanbanState       : Accepted
     LastUpdateDate    : 2012-07-12T09:14:36.237Z
-    ...</pre>
+    ...
+</pre></div>
 </div>
 </div>
 
@@ -732,12 +733,12 @@ HierarchicalRequirement
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              >previous</a> |</li>
-        <li><a href="index.html">pyral 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Rally Software Development 2010-2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>
