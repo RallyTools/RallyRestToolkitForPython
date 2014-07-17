@@ -118,7 +118,7 @@ def rallySettings(args):
     #
     for ix, name in enumerate(['RALLY_SERVER', 'RALLY_USER', 'RALLY_PASSWORD', 'RALLY_WORKSPACE', 'RALLY_PROJECT']):
         if name in os.environ:
-            server_creds[ix] = name
+            server_creds[ix] = os.environ[name]
 
     # #4
     # if there is a rally-<version>.cfg file in the current directory matching the WS_API_VERSION
