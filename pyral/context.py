@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 0, 2)
+__version__ = (1, 1, 0)
 
 import sys, os
 import platform
@@ -79,7 +79,7 @@ class RallyContext(object):
     def identity(self):
         workspace = self.workspace or 'None'
         project   = self.project   or 'None'
-        return " | ".join([self.server, self.user, self.password, workspace or "None", project or "None"])
+        return " | ".join([self.server, self.user or "None", self.password, workspace, project])
 
     def __repr__(self):
         return self.identity()
@@ -147,32 +147,17 @@ class RallyContextHelper(object):
                  problem = "host: '%s' non-existent or unreachable"  % target_host
              raise RallyRESTAPIError(problem)
 
-        #if IPV4_ADDRESS_PATT.match(target_host):  # is server an IPV4 address?
-        #    try:
-        #        info = socket.gethostbyaddr(target_host)
-        #    except socket.herror as ex:
-        #        pass
-        #        problem = "IP v4 address '%s' not valid or unreachable" % target_host
-        #        raise RallyRESTAPIError(problem)
-        #    except Exception as ex:
-        #        print "Exception detected: %s" % ex.args[0]
-        #        problem = "Exception detected trying to obtain host info for: %s" % target_host
-        #        raise RallyRESTAPIError(problem)
-
-        # TODO: look for IPV6 type address also?
-
-        #else:
-        #    try:
-        #        target_host = socket.gethostbyname(target_host)
-        #    except socket.gaierror as ex:
-        #        problem = "hostname: '%s' non-existent or unreachable"  % target_host
-        #        raise RallyRESTAPIError(problem)
-
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
+##
+##        print "user_name_query: |%s|" % user_name_query
+##
         try:
             timer_start = time.time()
-            response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
+            if self.user:
+                response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
+            else:
+                response = self.agent.get('User', fetch=True, _disableAugments=True)
             timer_stop = time.time()
         except Exception as ex:
 ##
@@ -190,6 +175,9 @@ class RallyContextHelper(object):
 ##            print "context check response:\n%s\n" % response
 ##            print "request attempt elapsed time: %6.2f" % elapsed
 ##
+            if response.status_code == 401:
+                raise RallyRESTAPIError("Invalid credentials")
+                
             if response.status_code == 404:
                 if elapsed >= float(INITIAL_REQUEST_TIME_LIMIT):
                     problem = "Request timed out on attempt to reach %s" % server
@@ -213,13 +201,19 @@ class RallyContextHelper(object):
 ##                print response.errors
 ##
                 if 'The username or password you entered is incorrect.' in response.errors[0]:
-                    problem = "%s The username or password you entered is incorrect." % response.status_code
+                    problem = "Invalid credentials"
                 else:
                     error_blurb = response.errors[0][:80] if response.errors else ""
                     problem = "%s %s" % (response.status_code, error_blurb)
             raise RallyRESTAPIError(problem)
 ##
 ##        print " RallyContextHelper.check got the User info ..."
+##        print "response    resource: %s" % response.resource
+##        print "response status code: %s" % response.status_code
+##        print "response     headers: %s" % response.headers
+##        print "response      errors: %s" % response.errors
+##        print "response    warnings: %s" % response.warnings
+##        print "response resultCount: %s" % response.resultCount
 ##        sys.stdout.flush()
 ##
         self._loadSubscription()
@@ -240,10 +234,15 @@ class RallyContextHelper(object):
         workspaces_collection_url = '%s?fetch=true&query=(State = Open)&pagesize=200&start_index=1' % wksp_coll_ref_base
         workspaces = self.agent.getCollection(workspaces_collection_url, _disableAugments=True)
         subscription.Workspaces = [wksp for wksp in workspaces]
+##
 ##        num_wksps = len(subscription.Workspaces)
 ##        print "Subscription has %d active Workspaces" % num_wksps
+##
         self._subs_workspaces  = subscription.Workspaces
         self._defaultWorkspace = subscription.Workspaces[0]
+##
+##        print "Subscription default Workspace: %s" % self._defaultWorkspace.Name
+##
 
     def _getDefaults(self, response):
         """
@@ -254,9 +253,13 @@ class RallyContextHelper(object):
         """
 ##
 ##        print "in RallyContextHelper._getDefaults, response arg has:"
-##        pprint(response.data[u'Results'])
+##        #pprint(response.data[u'Results'])
+##        pprint(response.data)
 ##
         user = response.next()
+##
+##        print user.details()
+##
         self.user_oid = user.oid
 ##
 ##        print " RallyContextHelper._getDefaults calling _getResourceByOID to get UserProfile info..."
@@ -639,7 +642,6 @@ class RallyContextHelper(object):
             # and note we specify only the necessary fetch fields or this query takes a *lot* longer...
             base_proj_coll_url = response['Workspace']['Projects'][u'_ref']
             projects_collection_url = '%s?fetch="ObjectID,Name,State"&pagesize=200&start_index=1' % base_proj_coll_url
-            #projects_collection_url = '%s?fetch=true&pagesize=200&start_index=1' % base_proj_coll_url
             response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
 #not-as-bad?#            response = self.agent.get('Project', fetch="ObjectID,Name,State", workspace=workspace.Name)
 

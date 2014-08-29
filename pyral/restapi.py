@@ -3,14 +3,13 @@
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 11 incorporating support for Rally WSAPI 2.0,
-#             no explicit support for Rally WSAPI 1.x
+#          round 12 incorporating support for Rally API Key
 #          notable dependencies:
 #               requests v2.0.0 or better
 #
 ###################################################################################################
 
-__version__ = (1, 0, 2)
+__version__ = (1, 1, 0)
 
 import sys, os
 import re
@@ -173,11 +172,12 @@ class Rally(object):
     FORMATTED_ID_PATTERN = re.compile(r'^[A-Z]{1,2}\d+$') #S|US|DE|DS|TA|TC|TS|PI
     MAX_ATTACHMENT_SIZE = 5000000  # approx 5MB 
 
-    def __init__(self, server=SERVER, user=USER_NAME, password=PASSWORD, 
+    def __init__(self, server=SERVER, user=None, password=None, apikey=None,
                        version=WS_API_VERSION, warn=True, **kwargs):
-        self.server   = server
-        self.user     = user
-        self.password = password
+        self.server   = server 
+        self.user     = user     or USER_NAME
+        self.password = password or PASSWORD
+        self.apikey   = apikey
         self.version  = WS_API_VERSION  # we only support v2.0 now
         self._inflated   = False
         self.service_url = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE    % self.version)
@@ -192,7 +192,6 @@ class Rally(object):
         if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
             config['verbose'] = sys.stdout
 
-        credentials = requests.auth.HTTPBasicAuth(self.user, self.password)
         proxy_dict = {} 
         https_proxy = os.environ.get('HTTPS_PROXY', None) or os.environ.get('https_proxy', None)
         if https_proxy and https_proxy not in ["", None]:
@@ -210,7 +209,12 @@ class Rally(object):
 
         self.session = requests.Session()
         self.session.headers = RALLY_REST_HEADERS
-        self.session.auth    = credentials
+        if self.apikey:
+            self.session.headers['ZSESSIONID'] = self.apikey
+            self.user     = None
+            self.password = None
+        else:
+            self.session.auth = requests.auth.HTTPBasicAuth(self.user, self.password)
         self.session.timeout = 10.0
         self.session.proxies = proxy_dict
         self.session.verify  = verify_ssl_cert
@@ -218,7 +222,7 @@ class Rally(object):
         
         global _rallyCache
 
-        self.contextHelper = RallyContextHelper(self, server, user, password)
+        self.contextHelper = RallyContextHelper(self, self.server, self.user, self.password or self.apikey)
         _rallyCache[self.contextHelper.context] = {'rally' : self }
         self.contextHelper.check(self.server)
 
@@ -292,6 +296,9 @@ class Rally(object):
         return self.service_url
 
     def obtainSecurityToken(self):
+        if self.apikey:
+            return None
+
         if not self._sec_token:
             security_service_url = "%s/%s" % (self.service_url, AUTH_ENDPOINT)
             response = self.session.get(security_service_url)
@@ -781,7 +788,7 @@ class Rally(object):
         resource.qualify(fetch, query, order, pagesize, startIndex)
 
         if '_disableAugments' in kwargs:
-            context = RallyContext(self.server, self.user, self.password, self.service_url)
+            context = RallyContext(self.server, self.user, self.password or self.apikey, self.service_url)
         else:
             context, augments = self.contextHelper.identifyContext(**kwargs)
             workspace_ref = self.contextHelper.currentWorkspaceRef()
@@ -908,11 +915,11 @@ class Rally(object):
 ##
         resource = collection_url
 
-        #disabled_augments = kwargs.get('_disableAugments', False)
-        #if disabled_augments:
-        #    workspace_ref = self.contextHelper.currentWorkspaceRef()
-        #    project_ref   = self.contextHelper.currentProjectRef()
-        #    resource = "%s&workspace=%s&project=%s" % (resource, workspace_ref, project_ref)
+        disabled_augments = kwargs.get('_disableAugments', False)
+        if not disabled_augments:
+            workspace_ref = self.contextHelper.currentWorkspaceRef()
+            project_ref   = self.contextHelper.currentProjectRef()
+            resource = "%s&workspace=%s&project=%s" % (resource, workspace_ref, project_ref)
 ##
 ##        print "Collection resource URL: %s" % resource
 ##
@@ -1247,7 +1254,9 @@ class Rally(object):
         if not matching_attrs:
             return None
         attribute = matching_attrs[0]
-        return [av.value for av in attribute.AllowedValues]
+        # suggested by Scott Vitale to address issue in Rally WebServices response 
+        #   (sometimes value is present, other times StringValue must be used)
+        return [av.StringValue for av in attribute.AllowedValues]
 
 
     def addAttachment(self, artifact, filename, mime_type='text/plain'):
@@ -1414,13 +1423,11 @@ class Rally(object):
         return attachments
 
 
-    def __disabled__deleteAttachment(self, artifact, filename):
+    def deleteAttachment(self, artifact, filename):
         """
-            Unfortunately, at this time (WSAPI 1.34+) while AttachmentContent items can be deleted,
-            Attachment items cannot.  So, exposing this method would offer very limited utility.
+            Still unclear for WSAPI v2.0 if Attachment items can be deleted.
+            Apparently AttachmentContent items can be deleted.
         """
-        return False
-
         art_type, artifact = self._realizeArtifact(artifact)
         if not art_type:
             return False
@@ -1432,36 +1439,29 @@ class Rally(object):
 
         # get the target Attachment and the associated AttachmentContent item
         attachment = hits.pop(0)
-        print attachment.details()
+##
+##        print attachment.details()
+##
         if attachment.Content and attachment.Content.oid:
             success = self.delete('AttachmentContent', attachment.Content.oid, project=None)
-##
-##            print "deletion attempt on AttachmentContent %s succeeded? %s" % (attachment.Content.oid, success)
-##
             if not success:
-                print "Panic!  unable to delete AttachmentContent item for %s" % attachment.Name
+                print "ERROR: Unable to delete AttachmentContent item for %s" % attachment.Name
                 return False
 
-#        # Squeamishness about the drawbacks of deleting certain entities in Rally has
-#        # sloshed into the Attachment realm, so can't actually do a delete of an Attachment.
-#### 2012-09-24  re-attempt to delete an Attachment with Rally WSAPI 1.37
-####             attempt failed, no Exception raised, but Attachment not deleted...
-####
-#        #deleted = self.delete('Attachment', attachment.oid, project=None)
-#
-#        # But, we can still just not include the targeted Attachment here from 
-#### 2012-09-20  in fact, this is now dysfunctional also as of WSAPI 1.37 backward incompatible changes
-#        # being included in the list of Attachments for our target artifact
-#        remaining_attachments = [att for att in current_attachments if att.ref != attachment.ref]
-#        att_refs = [dict(_ref=str(att.ref)) for att in remaining_attachments]
-#        artifact_info = { 'ObjectID'    : artifact.ObjectID,
-#                          'Attachments' : att_refs,
-#                        }
-#        updated = self.update(art_type, artifact_info, project=None)
-#        if updated:
-#            return updated
-#        else: 
-#            return False
+        deleted = self.delete('Attachment', attachment.oid, project=None)
+        if not deleted:
+            print "ERROR: Unable to delete Attachment for %s" % attachment.Name
+            return False
+        remaining_attachments = [att for att in current_attachments if att.ref != attachment.ref]
+        att_refs = [dict(_ref=str(att.ref)) for att in remaining_attachments]
+        artifact_info = { 'ObjectID'    : artifact.ObjectID,
+                          'Attachments' : att_refs,
+                        }
+        updated = self.update(art_type, artifact_info, project=None)
+        if updated:
+            return updated
+        else: 
+            return False
 
 
     def _realizeArtifact(self, artifact):

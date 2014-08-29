@@ -60,3 +60,9 @@
 1.0.1 - June 2014
     Patch to address flaw in WSAPI v2.0 projects collection endpoint having a mismatch between TotalResultCount and
     actual information about projects.    
+
+1.1.0 - August 2014
+    Introduction of support for Rally API Key, along with rallyWorkset convenience method to superced rallySettings. 
+    Defects fixed related to internalizing environment in rallySettings (and rallyWorkset) 
+      and in getting allowed values for Rally types.
+

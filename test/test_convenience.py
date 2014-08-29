@@ -22,7 +22,7 @@ def test_getSchemaInfo():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     schema_info = rally.getSchemaInfo(rally.getWorkspace())
     assert type(schema_info) == types.ListType
-    assert len(schema_info) > 65
+    assert len(schema_info) > 50
     subs_schema = [item for item in schema_info if item['Name'] == 'Subscription']
     assert subs_schema != None
     assert len(subs_schema) == 1

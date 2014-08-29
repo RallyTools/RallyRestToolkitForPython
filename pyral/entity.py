@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 0, 2)
+__version__ = (1, 1, 0)
 
 import sys
 import re
@@ -22,6 +22,7 @@ from .restapi   import getCollection
 
 VERSION_ATTRIBUTES = ['_rallyAPIMajor', '_rallyAPIMinor', '_objectVersion']
 MINIMAL_ATTRIBUTES = ['_type', '_ref', '_refObjectName']
+PORTFOLIO_ITEM_SUB_TYPES = ['Strategy', 'Theme', 'Initiative', 'Feature']
 
 _rally_schema       = {}  # keyed by workspace at the first level, then by EntityName
 _rally_entity_cache = {}
@@ -157,9 +158,6 @@ class Persistable(object):
             description = "%s instance has no attribute: '%s'" % (rallyEntityTypeName, name)
             raise AttributeError(description)
 
-    #def getCollectionData(self, attributeName, collection_url):
-    #    collection_response = getCollection(self._context, collection_url, _disableAugments=False)
-    #    self.__dict__[str(attributeName)] = [item for item in collection_response]
 
     def _hydrateRevisionHistory(self, collection_ref, collection):
         """
@@ -702,7 +700,7 @@ class SchemaItemAttribute(object):
             anomaly = "Standard AllowedValues ref pattern |%s| not matched by candidate |%s|" % \
                       (std_av_ref_pattern, self.AllowedValues)
             raise UnrecognizedAllowedValuesReference(anomaly)
-            
+        
         collection = getCollection(context, self.AllowedValues)
         self.AllowedValues = [value for value in collection]
         self._allowed_values_resolved = True
@@ -775,15 +773,16 @@ def validRallyType(candidate):
         the ElementName of a valid Rally Type.
     """
     global _rally_entity_cache
-##
-##    print "checking validity of Rally Type name: |%s|" % candidate
-##
-    if candidate not in _rally_entity_cache:
-        raise InvalidRallyTypeNameError(candidate)
-    if '/' not in candidate:
-        return candidate
-    else:
+
+    if candidate in _rally_entity_cache:
         return getEntityName(candidate)
+
+    # Unfortunate hard-coding of standard Rally Portfolio item dyna-types
+    if candidate in PORTFOLIO_ITEM_SUB_TYPES:
+        pi_candidate = 'PortfolioItem/%s' % candidate
+        return getEntityName(pi_candidate)
+
+    raise InvalidRallyTypeNameError(candidate)
 
 
 def processSchemaInfo(workspace, schema_info):

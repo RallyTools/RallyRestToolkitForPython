@@ -5,7 +5,9 @@ Primary *pyral* classes and functions
 For the most part, you'll only be utilizing two main entry points to the **pyral** package.
 
 The first is the **rallySettings** convenience function that you'll use to obtain target
-and credential values.
+and credential values. If you are using 1.1.x or beyond, you may want to alternatively use the 
+**rallyWorkset** convenience function to obtain target and credential values if you intend
+to use a Rally API Key for credentials.
 The second is the **Rally** class, from which you'll obtain an instance and then treat that
 as a direct link to the Rally SaaS.  An instance of the Rally class has the basic four CRUD
 operations as well as several convenience methods to obtain information about workspaces, 
@@ -25,8 +27,8 @@ Rally server.
 
 The process consists of a priority chain where some reasonable default information is
 established first and then overridden with subsequent steps in the chain (if they exist).
-At then end of the priority chain values for server, user, password, workspace, project are
-returned to the caller.
+After following the priority chain, values for server, user, password, workspace, project
+are returned to the caller.
 
 The priority chain consists of these steps:
     * establish baseline values from values defined in the module containing the rallySettings
@@ -91,7 +93,7 @@ Example use::
 
     % ls -l current.cfg
 
-      -rw-------  1 wiley  eng  173 Oct 14 07:02 current.cfg
+      -rw-------  1 wiley  eng  173 Jul 14 07:02 current.cfg
 
     % cat current.cfg
 
@@ -116,6 +118,127 @@ Example use::
 Note that for convenience purposes a configuration file name may be fully specified 
 or you may elect to not specify the '.cfg' suffix.
 
+Returns a tuple of (server, username, password, workspace, project)
+
+
+rallyWorkset
+============
+
+New in 1.1.0.
+
+This function takes into account your environment and arguments provided to this function
+to arrive at and return information necessary to establish a useful *connection* to the 
+Rally server.  This convenience function differs from **rallySettings** by also including
+the Rally API Key in the set of values considered and returned.
+
+The process consists of a priority chain where some reasonable default information is
+established first and then overridden with subsequent steps in the chain (if they exist).
+After following the priority chain, values for server, user, password, apikey, workspace, 
+project are returned to the caller.
+
+The priority chain consists of these steps:
+    * establish baseline values from values defined in the module containing the rallyWorkset
+    * override with any environment variables present from this list:
+        - RALLY_SERVER
+        - RALLY_USER
+        - RALLY_PASSWORD
+        - RALLY_APIKEY
+        - RALLY_WORKSPACE
+        - RALLY_PROJECT
+    * if present, use information from a rally-<version>.cfg file in the current directory,
+      where <version> matches the Rally WSAPI version defined in the pyral.config module.
+      Currently, that version is defined as v2.0.
+    * if present, use the contents of a file named in the RALLY_CONFIG environment variable.
+    * if present, use the contents of a config named on the command line via the --config-<filename>
+      option
+    * if present, use the values of individual credential/target settings provided as command line
+      options via the --<option>=<value>.
+       
+The specific syntax available for these levels is detailed below.
+    
+    **Files**
+
+        The general syntax is:
+            - CAP_NAME  = value
+        Valid entries are:
+            - SERVER    = <RallyServer>
+            - USER      = <validUserName>
+            - PASSWORD  = <validPassword>
+            - APIKEY    = <validAPIKey>
+            - WORKSPACE = <validWorkspaceName>
+            - PROJECT   = <validProjectName>
+
+    **Command line options**
+
+         --rallyConfig=<configFileName>
+
+        or --config=<configFileName>
+
+        or --conf=<configFileName>
+
+        or --cfg=<configFileName>
+
+        --rallyServer=<serverName>
+
+        --rallyUser=<validRallyUserName>
+
+        --rallyPassword=<validRallyPassword>
+
+        --apikey=<validRallyAPIKeyValue>
+
+        --workspace=<validWorkspaceName>
+
+        --project=<validProjectName>
+
+This mechanism provides the ability to centrally locate a configuration file that can
+be used by many members of a team where server, workspace, project are common to all members
+and each individual can have their own appropriately secured config file with their credentials.
+Using this mechanism can save tedious and error-prone entry of target information and credentials
+on the command line or having credential information in clear text in unsecured files.
+
+The use of a Rally API Key value for identification/authentication is new in pyral 1.1.x. 
+If used, you do not need to provide a username / password combination.
+In order to use this, you must first obtain a valid API Key value from the Rally Application
+Manager (API Keys) that you can access from https://rally1.rallydev.com/login.
+Once obtained, you should treat the key with the same level of protection as you would 
+any user/password information; once presented to Rally via the Rally Web Services API, 
+a connection has all the rights associated with the user whose key was presented.
+Consult the Rally help documentation for further information.
+
+Example use::
+
+    % export RALLY_SERVER="rally1.rallydev.com"
+    % export RALLY_USER="crazedwiley@acmeproducts.com"
+
+    % ls -l current.cfg
+
+      -rw-------  1 wiley  eng  173 Jul 14 07:02 current.cfg
+
+    % cat current.cfg
+
+      USER = wiley@acme.com
+      WORKSPACE = General Products Umbrella
+      PROJECT = Dairy Farm Automation
+
+    % cat basic.py
+    
+    import sys
+    from rally import rallyWorkset
+
+    options = [opt for opt in sys.argv[1:] if opt.startswith('--')]
+    server, user, password, apikey, workspace, project = rallyWorkset(options)
+    print " ".join(['|%|' % opt for opt in [server, user, password, apikey, workspace, project]]
+
+
+    % python basic.py --config=current --rallyProject="Livestock Mgmt"
+
+    |rally1.rallydev.com| |wiley@acme.com| |*****| |*****| |General Products Umbrella| |Livestock Mgmt|
+
+Note that for convenience purposes a configuration file name may be fully specified 
+or you may elect to not specify the '.cfg' suffix.
+
+Returns a tuple of (server, username, password, apikey, workspace, project)
+
 
 Rally
 =====
@@ -131,7 +254,8 @@ Rally
 
     either in this specific order or as keyword arguments.
 
-    You can optionally specify the following as keyword arguments.
+    You can optionally specify the following as keyword arguments:
+        * apikey
         * workspace
         * project
         * verify_ssl_cert  (True or False, default is True)
@@ -141,7 +265,18 @@ Rally
                     Under those conditions, the project is changed to the first project
                     (alphabetic ordering) in the list of projects for the specified workspace.
 
-.. py:class:: Rally (server, user, password, workspace=None, project=None, warn=True)
+    If you use an apikey value, any user name and password you provide is not considered, the connection
+    attempt will only use the apikey.
+    Consult the Rally Help documentation for Rally Application Manager for information
+    on how to generate an API Key and how to reset or delete an API Key.
+
+.. note::
+
+        If your Subscription administrator has set up your Rally Subscription as "SSO only", then to use
+        **pyral**, you must have your account added to the whitelist in Rally so that you can use either
+        BasicAuth (username and password) or the API Key to authenticate to Rally.
+
+.. py:class:: Rally (server, user=None, password=None, apikey=None, workspace=None, project=None, warn=True)
 
 Examples::
 
@@ -152,6 +287,8 @@ Examples::
     rally = Rally(server, user, password, workspace='Division #1 Products', project='ABC')
 
     rally = Rally(server, user, password, workspace='Brontoville', verify_ssl_cert=False, warn=False)
+
+    rally = Rally(server, apikey="_some-more-numbers", workspace='RockLobster', project='Fence Posts')
 
 
 
@@ -173,7 +310,7 @@ Core REST methods and CRUD aliases
         alias for put
 
 
-.. method:: get (entityName, fetch=False | True | comma_separated_list_of_fields, query=None, order=None, **kwargs)
+.. method:: get (entityName, fetch=False | True | comma_separated_list_of_fields, query=None, order=None, \*\*kwargs)
 
         This method allows for the retrieval of records for the given entityName.
         A fetch value of False results in a "shell" record returned with only basic

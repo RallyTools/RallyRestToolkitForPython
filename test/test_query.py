@@ -14,6 +14,7 @@ from pyral.query_builder import RallyUrlBuilder, RallyQueryFormatter
 ##################################################################################################
 
 from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
+from rally_targets import DEFAULT_WORKSPACE, NON_DEFAULT_PROJECT
 
 ##################################################################################################
 
@@ -332,7 +333,7 @@ def test_start_value_query():
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     qualifier = "State = Submitted"
-    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=200, start=300)
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=200, start=2000)
     items = [item for item in response]
     assert len(items) > 200 
     assert len(items) < 600
@@ -382,12 +383,12 @@ def test_query_target_value_with_and():
 
 def test_query_with_special_chars_in_criteria():
     """
-       DE3228 in 'Yeti Manual Test Workspace' / 'Sample Project' has Name = Special chars:/!@#$%^&*()-=+[]{};:./<>?/ 
+       DE3228 in DEFAULT_WORKSPACE / NON_DEFAULT_PROJECT has Name = Special chars:/!@#$%^&*()-=+[]{};:./<>?/ 
        query for it by looking for it by the name value
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    rally.setWorkspace('Yeti Manual Test Workspace')
-    rally.setProject('Sample Project')
+    rally.setWorkspace(DEFAULT_WORKSPACE)
+    rally.setProject(NON_DEFAULT_PROJECT)
     rally.enableLogging('spec_char_query')
     criteria = 'Name = "distinctive criteria of -32% degradation in rust protection"'
     response = rally.get('Defect', fetch=True, query=criteria, limit=10)
@@ -422,6 +423,28 @@ def test_query_with_special_chars_in_criteria():
     assert response.errors   == []
     assert response.warnings == []
     assert response.resultCount >= 1
+
+def test_query_with_matched_parens_in_condition_value():
+    """
+        'REST Toolkit Testing' / 'Sample Project' has a Release in it whose name contains a matched paren pair
+        make sure a query containing a condition looking for the Release by this name succeeds.
+    """
+    target_workspace = 'REST Toolkit Testing'
+    target_project   = 'Sample Project'
+
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=target_workspace, project=target_project)
+    rally.enableLogging('query_condition_value_has_matched_internal_parens')
+
+    criteria = 'Name = "8.5 (Blah and Stuff)"'
+    response = rally.get('Release', fetch=True, query=criteria, limit=10)
+
+    assert response.__class__.__name__ == 'RallyRESTResponse'
+    assert response.status_code == 200
+    assert response.errors   == []
+    assert response.warnings == []
+    assert response.resultCount >= 1
+    release = response.next()
+    assert release.Name == '8.5 (Blah and Stuff)'
 
 
 #test_basic_query()

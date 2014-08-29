@@ -11,7 +11,7 @@ Usage: python builddefs.py
 
 import sys, os
 
-from pyral import Rally, rallySettings
+from pyral import Rally, rallyWorkset
 
 ##################################################################################################
 
@@ -43,8 +43,11 @@ wps = [('WHuffaovc', 'Progicbadf')]  # pronounced "dubya-peas" for Workspace-Pro
 def main(args):
     options = [opt for opt in args if opt.startswith('--')]
 
-    server, user, password, workspace, project = rallySettings(options)
-    rally = Rally(server, user, password, workspace=workspace)
+    server, user, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace)
+    else:
+        rally = Rally(server, user=user, password=password, workspace=workspace)
     rally.enableLogging("rally.history.blddefs")
 
     for workspace, project in wps:

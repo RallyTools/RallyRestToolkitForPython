@@ -11,7 +11,7 @@ Usage: uptask.py <Task FormattedID>
 
 import sys, os
 
-from pyral import Rally, RallyRESTAPIError, rallySettings
+from pyral import Rally, RallyRESTAPIError, rallyWorkset
 
 #################################################################################################
 
@@ -26,8 +26,11 @@ def main(args):
         errout(USAGE)
         sys.exit(1)
 
-    server, user, password, workspace, project = rallySettings(options)
-    rally = Rally(server, user, password, workspace=workspace, project=project)
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     rally.enableLogging("rally.history.uptask")
 
     taskID = args.pop()   # for this example use the FormattedID
@@ -43,8 +46,8 @@ def main(args):
     #
     owner_name = 'Crandall'
     storyID    = 'S12345'
-    release_target  = 'April-A'
-    iteration_targe = 'Ivanhoe'
+    release_target   = 'April-A'
+    iteration_target = 'Ivanhoe'
 
     target_workspace = rally.getWorkspace()
     target_project   = rally.getProject()

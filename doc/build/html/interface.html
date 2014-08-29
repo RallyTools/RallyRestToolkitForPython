@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Primary pyral classes and functions &mdash; pyral 1.0.1 documentation</title>
+    <title>Primary pyral classes and functions &mdash; pyral 1.1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0.1',
+        VERSION:     '1.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral 1.0.1 documentation" href="index.html" />
+    <link rel="top" title="pyral 1.1.0 documentation" href="index.html" />
     <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
   </head>
   <body>
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral 1.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -49,7 +49,9 @@
 <h1>Primary <em>pyral</em> classes and functions<a class="headerlink" href="#primary-pyral-classes-and-functions" title="Permalink to this headline">¶</a></h1>
 <p>For the most part, you&#8217;ll only be utilizing two main entry points to the <strong>pyral</strong> package.</p>
 <p>The first is the <strong>rallySettings</strong> convenience function that you&#8217;ll use to obtain target
-and credential values.
+and credential values. If you are using 1.1.x or beyond, you may want to alternatively use the
+<strong>rallyWorkset</strong> convenience function to obtain target and credential values if you intend
+to use a Rally API Key for credentials.
 The second is the <strong>Rally</strong> class, from which you&#8217;ll obtain an instance and then treat that
 as a direct link to the Rally SaaS.  An instance of the Rally class has the basic four CRUD
 operations as well as several convenience methods to obtain information about workspaces,
@@ -66,8 +68,8 @@ to arrive at and return information necessary to establish a useful <em>connecti
 Rally server.</p>
 <p>The process consists of a priority chain where some reasonable default information is
 established first and then overridden with subsequent steps in the chain (if they exist).
-At then end of the priority chain values for server, user, password, workspace, project are
-returned to the caller.</p>
+After following the priority chain, values for server, user, password, workspace, project
+are returned to the caller.</p>
 <dl class="docutils">
 <dt>The priority chain consists of these steps:</dt>
 <dd><ul class="first last">
@@ -150,7 +152,7 @@ on the command line or having credential information in clear text in unsecured 
 
 % ls -l current.cfg
 
-  -rw-------  1 wiley  eng  173 Oct 14 07:02 current.cfg
+  -rw-------  1 wiley  eng  173 Jul 14 07:02 current.cfg
 
 % cat current.cfg
 
@@ -175,6 +177,139 @@ print &quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password
 </div>
 <p>Note that for convenience purposes a configuration file name may be fully specified
 or you may elect to not specify the &#8216;.cfg&#8217; suffix.</p>
+<p>Returns a tuple of (server, username, password, workspace, project)</p>
+</div>
+<div class="section" id="rallyworkset">
+<h1>rallyWorkset<a class="headerlink" href="#rallyworkset" title="Permalink to this headline">¶</a></h1>
+<p>New in 1.1.0.</p>
+<p>This function takes into account your environment and arguments provided to this function
+to arrive at and return information necessary to establish a useful <em>connection</em> to the
+Rally server.  This convenience function differs from <strong>rallySettings</strong> by also including
+the Rally API Key in the set of values considered and returned.</p>
+<p>The process consists of a priority chain where some reasonable default information is
+established first and then overridden with subsequent steps in the chain (if they exist).
+After following the priority chain, values for server, user, password, apikey, workspace,
+project are returned to the caller.</p>
+<dl class="docutils">
+<dt>The priority chain consists of these steps:</dt>
+<dd><ul class="first last">
+<li><p class="first">establish baseline values from values defined in the module containing the rallyWorkset</p>
+</li>
+<li><dl class="first docutils">
+<dt>override with any environment variables present from this list:</dt>
+<dd><ul class="first last simple">
+<li>RALLY_SERVER</li>
+<li>RALLY_USER</li>
+<li>RALLY_PASSWORD</li>
+<li>RALLY_APIKEY</li>
+<li>RALLY_WORKSPACE</li>
+<li>RALLY_PROJECT</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">if present, use information from a rally-&lt;version&gt;.cfg file in the current directory,
+where &lt;version&gt; matches the Rally WSAPI version defined in the pyral.config module.
+Currently, that version is defined as v2.0.</p>
+</li>
+<li><p class="first">if present, use the contents of a file named in the RALLY_CONFIG environment variable.</p>
+</li>
+<li><p class="first">if present, use the contents of a config named on the command line via the &#8211;config-&lt;filename&gt;
+option</p>
+</li>
+<li><p class="first">if present, use the values of individual credential/target settings provided as command line
+options via the &#8211;&lt;option&gt;=&lt;value&gt;.</p>
+</li>
+</ul>
+</dd>
+</dl>
+<p>The specific syntax available for these levels is detailed below.</p>
+<blockquote>
+<div><p><strong>Files</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>The general syntax is:</dt>
+<dd><ul class="first last simple">
+<li>CAP_NAME  = value</li>
+</ul>
+</dd>
+<dt>Valid entries are:</dt>
+<dd><ul class="first last simple">
+<li>SERVER    = &lt;RallyServer&gt;</li>
+<li>USER      = &lt;validUserName&gt;</li>
+<li>PASSWORD  = &lt;validPassword&gt;</li>
+<li>APIKEY    = &lt;validAPIKey&gt;</li>
+<li>WORKSPACE = &lt;validWorkspaceName&gt;</li>
+<li>PROJECT   = &lt;validProjectName&gt;</li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Command line options</strong></p>
+<blockquote>
+<div><blockquote>
+<div>&#8211;rallyConfig=&lt;configFileName&gt;</div></blockquote>
+<p>or &#8211;config=&lt;configFileName&gt;</p>
+<p>or &#8211;conf=&lt;configFileName&gt;</p>
+<p>or &#8211;cfg=&lt;configFileName&gt;</p>
+<p class="attribution">&mdash;rallyServer=&lt;serverName&gt;</p>
+</div></blockquote>
+<blockquote>
+<div><p>&#8211;rallyUser=&lt;validRallyUserName&gt;</p>
+<p class="attribution">&mdash;rallyPassword=&lt;validRallyPassword&gt;</p>
+</div></blockquote>
+<blockquote>
+<div><p>&#8211;apikey=&lt;validRallyAPIKeyValue&gt;</p>
+<p class="attribution">&mdash;workspace=&lt;validWorkspaceName&gt;</p>
+</div></blockquote>
+<blockquote>
+<div>&#8211;project=&lt;validProjectName&gt;</div></blockquote>
+</div></blockquote>
+<p>This mechanism provides the ability to centrally locate a configuration file that can
+be used by many members of a team where server, workspace, project are common to all members
+and each individual can have their own appropriately secured config file with their credentials.
+Using this mechanism can save tedious and error-prone entry of target information and credentials
+on the command line or having credential information in clear text in unsecured files.</p>
+<p>The use of a Rally API Key value for identification/authentication is new in pyral 1.1.x.
+If used, you do not need to provide a username / password combination.
+In order to use this, you must first obtain a valid API Key value from the Rally Application
+Manager (API Keys) that you can access from <a class="reference external" href="https://rally1.rallydev.com/login">https://rally1.rallydev.com/login</a>.
+Once obtained, you should treat the key with the same level of protection as you would
+any user/password information; once presented to Rally via the Rally Web Services API,
+a connection has all the rights associated with the user whose key was presented.
+Consult the Rally help documentation for further information.</p>
+<p>Example use:</p>
+<div class="highlight-python"><div class="highlight"><pre>% export RALLY_SERVER=&quot;rally1.rallydev.com&quot;
+% export RALLY_USER=&quot;crazedwiley@acmeproducts.com&quot;
+
+% ls -l current.cfg
+
+  -rw-------  1 wiley  eng  173 Jul 14 07:02 current.cfg
+
+% cat current.cfg
+
+  USER = wiley@acme.com
+  WORKSPACE = General Products Umbrella
+  PROJECT = Dairy Farm Automation
+
+% cat basic.py
+
+import sys
+from rally import rallyWorkset
+
+options = [opt for opt in sys.argv[1:] if opt.startswith(&#39;--&#39;)]
+server, user, password, apikey, workspace, project = rallyWorkset(options)
+print &quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password, apikey, workspace, project]]
+
+
+% python basic.py --config=current --rallyProject=&quot;Livestock Mgmt&quot;
+
+|rally1.rallydev.com| |wiley@acme.com| |*****| |*****| |General Products Umbrella| |Livestock Mgmt|
+</pre></div>
+</div>
+<p>Note that for convenience purposes a configuration file name may be fully specified
+or you may elect to not specify the &#8216;.cfg&#8217; suffix.</p>
+<p>Returns a tuple of (server, username, password, apikey, workspace, project)</p>
 </div>
 <div class="section" id="rally">
 <h1>Rally<a class="headerlink" href="#rally" title="Permalink to this headline">¶</a></h1>
@@ -193,8 +328,10 @@ interacting with the Rally server.</p>
 </dl>
 <p>either in this specific order or as keyword arguments.</p>
 <dl class="docutils">
-<dt>You can optionally specify the following as keyword arguments.</dt>
+<dt>You can optionally specify the following as keyword arguments:</dt>
 <dd><ul class="first last">
+<li><p class="first">apikey</p>
+</li>
 <li><p class="first">workspace</p>
 </li>
 <li><p class="first">project</p>
@@ -213,10 +350,20 @@ Under those conditions, the project is changed to the first project
 </ul>
 </dd>
 </dl>
+<p>If you use an apikey value, any user name and password you provide is not considered, the connection
+attempt will only use the apikey.
+Consult the Rally Help documentation for Rally Application Manager for information
+on how to generate an API Key and how to reset or delete an API Key.</p>
 </div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If your Subscription administrator has set up your Rally Subscription as &#8220;SSO only&#8221;, then to use
+<strong>pyral</strong>, you must have your account added to the whitelist in Rally so that you can use either
+BasicAuth (username and password) or the API Key to authenticate to Rally.</p>
+</div>
 <dl class="class">
 <dt id="Rally">
-<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user</em>, <em>password</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user=None</em>, <em>password=None</em>, <em>apikey=None</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Examples:</p>
@@ -227,6 +374,8 @@ Under those conditions, the project is changed to the first project
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;Division #1 Products&#39;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s">&#39;ABC&#39;</span><span class="p">)</span>
 
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;Brontoville&#39;</span><span class="p">,</span> <span class="n">verify_ssl_cert</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">apikey</span><span class="o">=</span><span class="s">&quot;_some-more-numbers&quot;</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;RockLobster&#39;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s">&#39;Fence Posts&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="core-rest-methods-and-crud-aliases">
@@ -690,6 +839,7 @@ HierarchicalRequirement
   <ul>
 <li><a class="reference internal" href="#">Primary <em>pyral</em> classes and functions</a></li>
 <li><a class="reference internal" href="#rallysettings">rallySettings</a></li>
+<li><a class="reference internal" href="#rallyworkset">rallyWorkset</a></li>
 <li><a class="reference internal" href="#rally">Rally</a><ul>
 <li><a class="reference internal" href="#core-rest-methods-and-crud-aliases">Core REST methods and CRUD aliases</a></li>
 <li><a class="reference internal" href="#pyral-rally-instance-convenience-methods">pyral.Rally instance convenience methods</a></li>
@@ -733,11 +883,11 @@ HierarchicalRequirement
         <li class="right" >
           <a href="overview.html" title="Python toolkit for the Rally REST API"
              >previous</a> |</li>
-        <li><a href="index.html">pyral 1.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pyral 1.1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright Rally Software Development 2010-2012.
+        &copy; Copyright Rally Software Development 2010-2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>

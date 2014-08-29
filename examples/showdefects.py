@@ -7,8 +7,7 @@
 #################################################################################################
 
 import sys, os
-
-from pyral import Rally, rallySettings, RallyRESTAPIError
+from pyral import Rally, rallyWorkset, RallyRESTAPIError
 
 #################################################################################################
 
@@ -19,8 +18,11 @@ errout = sys.stderr.write
 def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, workspace, project = rallySettings(options)
-    rally = Rally(server, user, password, workspace=workspace, project=project)
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     rally.enableLogging("rally.history.showdefects")
     
     fields    = "FormattedID,State,Name,Severity,Priority", 
