@@ -15,7 +15,7 @@ Usage:  get_schema.py <entity_name>
 import sys
 import re
 
-from pyral import Rally, rallySettings
+from pyral import Rally, rallyWorkset
 
 #################################################################################################
 
@@ -63,12 +63,15 @@ def main(args):
 
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, workspace, project = rallySettings(options)
-    #print " ".join(["|%s|" % item for item in [server, user, '********', workspace, project]])
-
     if not args:
         errout("ERROR: You must supply an entity name!\n")
         sys.exit(1)
+
+    server, user, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project) 
 
     entity = args[0]
     if entity in ['UserStory', 'User Story', 'Story']:

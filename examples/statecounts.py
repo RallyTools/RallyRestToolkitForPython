@@ -13,7 +13,7 @@ Usage: python statecounts.py <artifact_type>
 import sys
 import time
 
-from pyral import rallySettings, Rally
+from pyral import rallyWorkset, Rally
 
 ###################################################################################################
 
@@ -26,9 +26,12 @@ VALID_ARTIFACT_TYPES = ['Story', 'UserStory', 'HierarchicalRequirement', 'Defect
 def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, workspace, project = rallySettings(options)
-    print " ".join(["|%s|" % item for item in [server, user, '********', workspace, project]])
-    rally = Rally(server, user, password, workspace=workspace, project=project)
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
+
     rally.enableLogging('rally.hist.statecount')  # name of file you want logging to go to
 
     if not args:

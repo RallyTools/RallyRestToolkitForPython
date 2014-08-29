@@ -10,7 +10,7 @@ Usage: add_tcrs.py <TestCase FormattedID> <tcr_info>[, <tcr_info>, ...]
 #################################################################################################
 
 import sys, os
-from pyral import Rally, rallySettings
+from pyral import Rally, rallyWorkset
 
 #################################################################################################
 
@@ -19,16 +19,19 @@ errout = sys.stderr.write
 #################################################################################################
 
 def main(args):
-    options = [opt  for opt  in args if opt.startswith('--')]
-    parms   = [parm for parm in args if parm not in options]
-    server, username, password, workspace, project = rallySettings(options)
-    rally = Rally(server, username, password, workspace=workspace, project=project)
+    options = [opt for opt in args if opt.startswith('--')]
+    args    = [arg for arg in args if arg not in options]
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     rally.enableLogging("rally.hist.add_tcrs")
 
-    if len(parms) < 2:
+    if len(args) < 2:
         errout(USAGE)
         sys.exit(1)
-    test_case_id, tcr_info_filename = parms
+    test_case_id, tcr_info_filename = args
     if not os.path.exists(tcr_info_filename):
         errout("ERROR:  file argument '%s' does not exist.  Respecify using corrent name or path\n" % tcr_info_filename)
         errout(USAGE)

@@ -1,4 +1,4 @@
-#!/op/local/bin/python2.6
+#!/usr/local/bin/python2.7
 
 import sys, os
 import types
@@ -12,6 +12,7 @@ RallyRESTAPIError = pyral.context.RallyRESTAPIError
 ##################################################################################################
 
 from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
+from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT
 
 EXAMPLE_ATTACHMENT_CONTENT = "The quck brown fox eluded the lumbering sloth\n"
 
@@ -42,14 +43,14 @@ def test_add_attachment():
     # create the attachment in Rally and link it to the US artifact
 
     wksp = rally.getWorkspace()
-    assert wksp.Name == "Yeti Manual Test Workspace"
+    assert wksp.Name == DEFAULT_WORKSPACE
 
     response = rally.get('Project', fetch=False, limit=10)
     assert response != None
     assert response.status_code == 200
 
-    proj = rally.getProject()  # proj.Name == My Project
-    assert proj.Name == "My Project"
+    proj = rally.getProject()  # proj.Name == DEFAULT_PROJECT
+    assert proj.Name == DEFAULT_PROJECT
 
     #response = rally.get("UserStory", fetch="FormattedID,Name,Attachments")
     #for story in response:
@@ -60,9 +61,6 @@ def test_add_attachment():
                                    query='FormattedID = "%s"' % candidate_story)
     print response.resultCount
     story = response.next()
-##
-    return True
-##
     assert len(story.Attachments) == 0
 
     attachment_name = "Addendum.txt"
@@ -71,6 +69,11 @@ def test_add_attachment():
 
     att = rally.addAttachment(story, attachment_name)
     assert att.Name == attachment_name
+
+    response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", 
+                                   query='FormattedID = "%s"' % candidate_story)
+    story = response.next()
+    assert len(story.Attachments) == 1
 
 
 def test_get_attachment():
@@ -96,11 +99,56 @@ def test_get_attachment():
     assert attachment.Content == EXAMPLE_ATTACHMENT_CONTENT
 
 
-def x_test_detach_attachment():
+def test_add_tcr_attachment():
     """
+        Add an Attachment to a TestCaseResult item
+
+        Create a TestCase, save a reference
+        Create a TestCaseResult to be associated with the TestCase
+        Create an attachment
+        Attach the Attachment to the TestCaseResult item
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    candidate_story = "S78"
+    wksp = rally.getWorkspace()
+    assert wksp.Name == DEFAULT_WORKSPACE
+
+    response = rally.get('Project', fetch=False, limit=10)
+    assert response != None
+    assert response.status_code == 200
+    proj = rally.getProject()  # proj.Name == My Project
+    assert proj.Name == 'My Project'
+
+    tc_info = { "Workspace"    : wksp.ref,
+                "Project"      : proj.ref,
+                "Name"         : "Heat exposure",
+                "Type"         : "Functional",
+              }
+    test_case = rally.create('TestCase', tc_info)
+    assert test_case.oid > 0
+
+    tcr_info = { "Workspace" : wksp.ref,
+                 "TestCase"  : test_case.ref,
+                 "Date"      : "2014-05-17T14:30:28.000Z",
+                 "Build"     : 27,
+                 "Verdict"   : "Pass"
+               }
+    tcr = rally.create('TestCaseResult', tcr_info)
+    assert tcr.oid > 0
+
+    attachment_name = "Addendum.txt"
+    att_ok = conjureUpAttachmentFile(attachment_name)
+    assert att_ok == True
+
+    att = rally.addAttachment(tcr, attachment_name)
+    assert att.Name == attachment_name
+
+
+def test_detach_attachment():
+    """
+        This is the counterpart test for test_add_attachment
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    candidate_story = "US96"
     target = 'FormattedID = "%s"' % candidate_story
 
     response = rally.get("UserStory", fetch=True, query=target, project=None)
