@@ -25,7 +25,7 @@ def main(args):
         rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     rally.enableLogging("rally.history.showdefects")
     
-    fields    = "FormattedID,State,Name,Severity,Priority", 
+    fields    = "FormattedID,State,Name,Severity,Priority"
     criterion = 'State != Closed'
 
     response = rally.get('Defect', fetch=fields, query=criterion, order="FormattedID",

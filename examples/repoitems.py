@@ -79,8 +79,7 @@ def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC", sinc
     criteria = by_repo
     if since_date:
         date_cond = "CommitTimestamp >= %s" % since_date
-        criteria = "((%s) and (%s))" % (by_repo, date_cond)
-
+        criteria = [by_repo, date_cond]
 
     try:
         response = rally.get('Changeset', fetch=True, 

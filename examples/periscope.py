@@ -25,7 +25,7 @@ def main(args):
     for workspace in rally.getWorkspaces():
         print "%s %s" % (workspace.oid, workspace.Name)
         for project in rally.getProjects(workspace=workspace.Name):
-            print "    %12.12s  %s" % (project.oid, project.Name)
+            print "    %12.12s  %-36.36s   |%s|" % (project.oid, project.Name, project.State)
         print ""
 
 #################################################################################################

@@ -142,7 +142,7 @@ The priority chain consists of these steps:
         - RALLY_SERVER
         - RALLY_USER
         - RALLY_PASSWORD
-        - RALLY_APIKEY
+        - APIKEY
         - RALLY_WORKSPACE
         - RALLY_PROJECT
     * if present, use information from a rally-<version>.cfg file in the current directory,

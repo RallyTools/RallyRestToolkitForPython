@@ -82,15 +82,7 @@ def main(args):
         sys.exit(5)
 
     for item in response:
-        for attr in COMMON_ATTRIBUTES:
-            print "    %-16.16s : %s" % (attr, getattr(item, attr))
-        attrs = [attr for attr in item.attributes() if attr not in COMMON_ATTRIBUTES]
-        for attr in sorted(attrs):
-            attribute = getattr(item, attr) 
-            cn = attribute.__class__.__name__
-            if cn[0] in string.uppercase:
-                attribute = attribute.Name if cn != 'NoneType' else None
-            print "    %-16.16s : %s" % (attr, attribute)
+        print item.details()
 
 #################################################################################################
 #################################################################################################
