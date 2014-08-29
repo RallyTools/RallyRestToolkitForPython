@@ -31,7 +31,7 @@ __doc__ = """
 import sys, os
 import time
 
-from pyral import Rally, rallySettings
+from pyral import Rally, rallyWorkset
 
 #################################################################################################
 
@@ -50,10 +50,11 @@ def main(args):
     if not args:
         print  USAGE
         sys.exit(9)
-    # specify the Rally server and credentials
-    server, username, password, workspace, project = rallySettings(options)
-    #print " ".join(["|%s|" % opt for opt in [server, username, '********', workspace]])
-    rally = Rally(server, user=username, password=password, workspace=workspace, warn=False)
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     rally.enableLogging('rally.hist.chgsets')  # name of file you want the logging to go to
 
     repo_name = args.pop(0)
@@ -78,8 +79,7 @@ def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC", sinc
     criteria = by_repo
     if since_date:
         date_cond = "CommitTimestamp >= %s" % since_date
-        criteria = "((%s) and (%s))" % (by_repo, date_cond)
-
+        criteria = [by_repo, date_cond]
 
     try:
         response = rally.get('Changeset', fetch=True, 
@@ -108,7 +108,6 @@ def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC", sinc
 
         # If we iterate over change items via cs.Changes, then we later have to do lazy load
         # for the change attributes on a per Change basis, which is relatively slow
-
         # So, instead we go get all Change items associated with the Changeset
         # and get the Change attributes populated, so we don't do a lazy load
 #        changes = rally.get('Change', fetch='Action,PathAndFilename,Changeset', 

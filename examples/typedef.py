@@ -13,7 +13,7 @@ Usage:  typedef.py <entity_name>
 import sys
 import re
 
-from pyral import Rally, rallySettings
+from pyral import Rally, rallyWorkset
 
 #################################################################################################
 
@@ -58,9 +58,6 @@ def main(args):
 
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, workspace, project = rallySettings(options)
-    #print " ".join(["|%s|" % item for item in [server, user, password, workspace, project]])
-
     if not args:
         print "You must supply an entity name!"
         sys.exit(1)
@@ -74,8 +71,12 @@ def main(args):
         target = entity
     query = 'ElementName = "%s"' % target
 
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
     try:
-        rally = Rally(server, user=user, password=password)
+        if apikey:
+            rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+        else:
+            rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     except Exception as ex:
         errout(str(ex.args[0]))       
         sys.exit(1)

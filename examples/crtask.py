@@ -10,7 +10,7 @@ Usage: crtask.py <Story FormattedID>
 #################################################################################################
 
 import sys, os
-from pyral import Rally, rallySettings
+from pyral import Rally, rallyWorkset
 
 #################################################################################################
 
@@ -26,8 +26,11 @@ def main(args):
         sys.exit(1)
     storyID = args[0]
 
-    server, user, password, workspace, project = rallySettings(options)
-    rally = Rally(server, user, password, workspace=workspace, project=project)
+    server, user, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     rally.enableLogging("rally.history.crtask")
 
     # For a task: Workspace, Project, WorkProduct, Name, State, TaskIndex are required;

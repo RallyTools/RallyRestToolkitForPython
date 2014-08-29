@@ -15,7 +15,7 @@ Usage: python wkspcounts.py {workspace | all} [-byproject] [art_type]
 import sys
 import time
 
-from pyral import rallySettings, Rally
+from pyral import Rally, rallyWorkset
 
 ###################################################################################################
 
@@ -30,9 +30,12 @@ COUNTABLE_ARTIFACT_TYPES = ['UserStory', 'Task', 'Defect',
 def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, workspace, project = rallySettings(options)
-    #print " ".join(["|%s|" % item for item in [server, user, '********', workspace, project]])
-    rally = Rally(server, user, password, workspace=workspace, warn=False)
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
+    
     target_workspace, byproject, art_types = processCommandLineArguments(args)
     rally.enableLogging('rally.hist.articount')  # name of file you want logging to go to
     
@@ -97,7 +100,7 @@ def processCommandLineArguments(args):
 
 def getArtifactCount(rally, artifact_type, project=None):
     if project:
-        query='Project.Name = "%s"' % project.Name
+        query = 'Project.Name = "%s"' % project.Name
         if artifact_type == 'TestCaseResult':
             query = 'TestCase.Project.Name = "%s"' % project.Name
         response = rally.get(artifact_type, fetch="FormattedID,Name",

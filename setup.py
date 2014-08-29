@@ -12,7 +12,7 @@ except:
         from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '1.0.1'
+VERSION       = '1.1.0'
 OFFICIAL_NAME = 'Python toolkit for Rally REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (Rally Software Development)'

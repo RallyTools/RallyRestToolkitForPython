@@ -14,7 +14,7 @@ import sys
 import re
 import string
 
-from pyral import Rally, rallySettings
+from pyral import Rally, rallyWorkset
 
 #################################################################################################
 
@@ -39,8 +39,12 @@ COMMON_ATTRIBUTES = ['_type', 'oid', '_ref', '_CreatedAt', '_hydrated', 'Name']
 def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, workspace, project = rallySettings(options)
-    print " ".join(["|%s|" % item for item in [server, user, '********', workspace, project]])
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
+
     rally = Rally(server, user, password)      # specify the Rally server and credentials
     rally.enableLogging('rally.hist.item') # name of file you want logging to go to
 
@@ -78,15 +82,7 @@ def main(args):
         sys.exit(5)
 
     for item in response:
-        for attr in COMMON_ATTRIBUTES:
-            print "    %-16.16s : %s" % (attr, getattr(item, attr))
-        attrs = [attr for attr in item.attributes() if attr not in COMMON_ATTRIBUTES]
-        for attr in sorted(attrs):
-            attribute = getattr(item, attr) 
-            cn = attribute.__class__.__name__
-            if cn[0] in string.uppercase:
-                attribute = attribute.Name if cn != 'NoneType' else None
-            print "    %-16.16s : %s" % (attr, attribute)
+        print item.details()
 
 #################################################################################################
 #################################################################################################

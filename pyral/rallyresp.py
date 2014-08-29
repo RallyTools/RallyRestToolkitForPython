@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 0, 1)
+__version__ = (1, 1, 0)
 
 import sys
 import re
@@ -115,6 +115,9 @@ class RallyRESTResponse(object):
 
         self._stdFormat  = True
         self.content     = json.loads(response.content)
+##
+##        print "response content: %s" % self.content
+##
         self.request_type, self.data = self._determineRequestResponseType(request)
 ##
 ##        print "RallyRESTResponse request_type: %s for %s" % (self.request_type, self._item_type)

@@ -12,7 +12,10 @@ RallyRESTAPIError = pyral.context.RallyRESTAPIError
 
 ##################################################################################################
 
+
 from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD, HTTPS_PROXY
+from rally_targets import PROD, API_KEY
+from rally_targets import PROD_USER, PROD_PSWD
 
 ##################################################################################################
 
@@ -43,6 +46,61 @@ def test_basic_connection():
 #    del os.environ['https_proxy']
 #    time.sleep(1)
 
+def test_basic_connection_with_apikey():
+    """
+        Using a known valid Rally server and valid API Key value, 
+        issue a simple query request against a known valid Rally target.
+    """
+    rally = Rally(server=PROD, apikey=API_KEY)
+    response = rally.get('Project', fetch=False, limit=10)
+    assert response != None
+    assert response.status_code == 200
+    time.sleep(1)
+
+def test_basic_connection_with_user_password_and_apikey():
+    """
+        Using a known valid Rally server and mush user and password values along
+        with a valid API Key value, issue a simple query request against a known valid
+        Rally target.
+    """
+    rally = Rally(PROD, "mush?", "mush!", apikey=API_KEY)
+    response = rally.get('Project', fetch=False, limit=10)
+    assert response != None
+    assert response.status_code == 200
+    time.sleep(1)
+
+
+def test_basic_connection_with_bad_api_key():
+    """
+        Using a known valid Rally server and bogus API Key value, 
+        issue a simple query request against a known valid Rally target.
+
+        The result should be that the attempt raises an exception.
+    """
+    BOGUS_API_KEY = "_ABC123DEF456GHI789JKL012MNO345PQR678STUVZ"
+    expectedErrMsg = 'Invalid credentials'
+    with py.test.raises(RallyRESTAPIError) as excinfo:
+        rally = Rally(PROD, "zooka@fluffernetter.com", "manict0X0", apikey=BOGUS_API_KEY)
+    actualErrVerbiage = excinfo.value.args[0]
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert expectedErrMsg == actualErrVerbiage
+    time.sleep(1)
+
+def test_basic_connection_with_good_up_and_bad_api_key():
+    """
+        Using a known valid Rally server and bogus API Key value, 
+        but providing a valid user name and password, observe
+        that the attempt to obtain a pyral Rally instance results
+        in an exception raised that identifies Invalid credentials as the culprit.
+    """
+    BOGUS_API_KEY = "_ABC123DEF456GHI789JKL012MNO345PQR678STUVZ"
+    expectedErrMsg = 'Invalid credentials'
+    with py.test.raises(RallyRESTAPIError) as excinfo:
+        rally = Rally(PROD, user=PROD_USER, password=PROD_PSWD, apikey=BOGUS_API_KEY)
+    actualErrVerbiage = excinfo.value.args[0]
+    assert expectedErrMsg == actualErrVerbiage
+    time.sleep(1)
+    
 def test_nonexistent_server():
     """
         Using a known invalid server specification, obtain a Rally instance.
@@ -150,10 +208,12 @@ def test_insuff_credentials():
         'guest' username, empty  password
         'guest' username, doofus password
 
+        Explicit None values for username, password, apikey
+        Explicit None values for username and password, doofus apikey value
+
         test for HTTP code associated with 'not authorized' (401)
     """
-    expectedErrMsg = u"401 An Authentication object was not found in the SecurityContext"
-    expectedErrMsg = u"The username or password you entered is incorrect"
+    expectedErrMsg = 'Invalid credentials'
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password="")

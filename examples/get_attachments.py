@@ -15,7 +15,7 @@ import sys
 import re
 import string
 
-from pyral import Rally, rallySettings
+from pyral import Rally, rallyWorkset
 
 #################################################################################################
 
@@ -33,9 +33,11 @@ COMMON_ATTRIBUTES = ['_type', 'oid', '_ref', '_CreatedAt', '_hydrated', 'Name']
 def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, workspace, project = rallySettings(options)
-    print " ".join(["|%s|" % item for item in [server, user, '********', workspace, project]])
-    rally = Rally(server, user, password, workspace=workspace)
+    server, user, password, apikey, workspace, project = rallyWorkset(options)
+    if apikey:
+        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    else:
+        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     rally.enableLogging('rally.hist.getattachs') # name of file you want logging to go to
 
     if len(args) != 2:
