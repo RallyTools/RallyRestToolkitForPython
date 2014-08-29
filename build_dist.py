@@ -34,7 +34,8 @@ EXAMPLES   = ['getitem.py',
               'builddefs.py',
               'creattach.py',
               'get_attachments.py',
-              'add_tcrs.py'
+              'add_tcrs.py',
+              'defrevs.py'
              ]
 DOC_FILES  = ['doc/Makefile',
               'doc/source/conf.py',
@@ -149,5 +150,4 @@ def make_zipfile(pkg_name, pkg_version, base_files, example_files, doc_files):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
 
