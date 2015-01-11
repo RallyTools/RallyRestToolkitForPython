@@ -302,10 +302,13 @@ class RallyContextHelper(object):
 ##            print projects.content
 ##
             if projects:
-                proj = projects.next()
-                proj_ref = proj._ref
-                self._defaultProject = proj.Name
-                self._currentProject = proj.Name
+                try:
+                    proj = projects.next()
+                    proj_ref = proj._ref
+                    self._defaultProject = proj.Name
+                    self._currentProject = proj.Name
+                except StopIteration: # The default workspace might not have any projects
+                    pass
 ##
 ##        print "   Default Workspace : %s" % self._defaultWorkspace
 ##        print "   Default Project   : %s" % self._defaultProject
