@@ -244,8 +244,6 @@ class RallyRESTResponse(object):
     def __nonzero__(self):
         """
             This is for evaluating any invalid response as False.
-
-        :return:
         """
         if 200 <= self.status_code < 300:
             return True
