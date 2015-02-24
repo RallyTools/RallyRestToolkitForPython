@@ -22,7 +22,7 @@ from .restapi   import getCollection
 
 VERSION_ATTRIBUTES = ['_rallyAPIMajor', '_rallyAPIMinor', '_objectVersion']
 MINIMAL_ATTRIBUTES = ['_type', '_ref', '_refObjectName']
-PORTFOLIO_ITEM_SUB_TYPES = ['Strategy', 'Theme', 'Initiative', 'Feature']
+PORTFOLIO_ITEM_SUB_TYPES = ['Strategy', 'Theme', 'Initiative', 'Feature', 'Epic']
 
 _rally_schema       = {}  # keyed by workspace at the first level, then by EntityName
 _rally_entity_cache = {}
@@ -108,7 +108,7 @@ class Persistable(object):
             # get "hydrated" by issuing a GET request for the resource referenced in self._ref
             # and having an EntityHydrator fill out the attributes, !!* on this instance *!!
             #
-            entity_name, oid = self._ref.split('/')[-2:]
+            entity_name, oid = self._ref.replace(self._context.serviceURL()+'/','').rsplit('/',1)
 ##
 ##            print "issuing OID specific get for %s OID: %s " % (entity_name, oid)
 ##            print "Entity: %s context: %s" % (rallyEntityTypeName, self._context) 
@@ -432,10 +432,11 @@ UserStory = HierarchicalRequirement   # synonomous but more intutive
 Story     = HierarchicalRequirement   # ditto
 
 class PortfolioItem(Artifact): pass
-class PortfolioItem_Strategy  (PortfolioItem): pass
-class PortfolioItem_Initiative(PortfolioItem): pass
-class PortfolioItem_Theme     (PortfolioItem): pass
-class PortfolioItem_Feature   (PortfolioItem): pass
+class Strategy  (PortfolioItem): pass
+class Initiative(PortfolioItem): pass
+class Theme     (PortfolioItem): pass
+class Feature   (PortfolioItem): pass
+class Epic      (PortfolioItem): pass
 
 class CustomField(object):  
     """
@@ -507,10 +508,11 @@ classFor = { 'Persistable'             : Persistable,
              'Change'                  : Change,
              'Changeset'               : Changeset,
              'PortfolioItem'           : PortfolioItem,
-             'PortfolioItem_Strategy'  : PortfolioItem_Strategy,
-             'PortfolioItem_Initiative': PortfolioItem_Initiative,
-             'PortfolioItem_Theme'     : PortfolioItem_Theme,
-             'PortfolioItem_Feature'   : PortfolioItem_Feature,
+             'Strategy'                : Strategy,
+             'Initiative'              : Initiative,
+             'Theme'                   : Theme,
+             'Feature'                 : Feature,
+             'Epic'                    : Epic,
              'State'                   : State,
              'PreliminaryEstimate'     : PreliminaryEstimate,
              'WebLinkDefinition'       : WebLinkDefinition,
@@ -548,7 +550,7 @@ class SchemaItem(object):
     def __init__(self, raw_info):
         self._type = 'TypeDefinition'
         # ElementName, DisplayName, Name
-        # Ordinal   # who knows what is for... looks to be only relevant for PortfoliItem sub-items
+        # Ordinal   # who knows what is for... looks to be only relevant for PortfolioItem sub-items
         # ObjectID, 
         # Parent, Abstract, TypePath, IDPrefix, 
         # Creatable, ReadOnly, Queryable, Deletable, Restorable
@@ -820,7 +822,7 @@ def processSchemaInfo(workspace, schema_info):
                            
         entity = _rally_schema[wksp_ref][entity_name]
         typePath = entity.TypePath
-        pyralized_class_name = str(typePath.replace('/', '_'))
+        pyralized_class_name = str(typePath.split('/')[-1])
         if not classFor.has_key(pyralized_class_name):
             parentClass = WorkspaceDomainObject
             if entity.Parent:

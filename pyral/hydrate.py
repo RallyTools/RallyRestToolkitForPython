@@ -96,21 +96,12 @@ class EntityHydrator(object):
         resource_url = item.get(u'_ref', "") 
         if resource_url:
             oid = resource_url.split('/')[-1]
+        class_name = str(itemType).split('/')[-1]
         try:
-            instance = classFor[str(itemType)](oid, name, resource_url, self.context)
+            instance = classFor[class_name](oid, name, resource_url, self.context)
         except KeyError, e:
-            bonked = True
-            if '/' in itemType:  # valid after intro of dyna-types in 1.37
-                try:
-                    type_name, type_subdivision = itemType.split('/')
-                    instance = classFor[str(type_name)](oid, name, resource_url, self.context)
-                    itemType = type_name
-                    bonked = False
-                except KeyError, e:
-                    raise
-            if bonked:    
-                print "No classFor item for |%s|" % itemType
-                raise KeyError(itemType)
+            print "No classFor item for |%s|" % itemType
+            raise KeyError(itemType)
 
         instance._type = itemType  # although, this info is also available via instance.__class__.__name__
         if itemType == 'AllowedAttributeValue':
