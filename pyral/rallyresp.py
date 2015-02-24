@@ -241,6 +241,15 @@ class RallyRESTResponse(object):
     def __iter__(self):
         return self
 
+    def __nonzero__(self):
+        """
+            This is for evaluating any invalid response as False.
+        """
+        if 200 <= self.status_code < 300:
+            return True
+        else:
+            return False
+
     def next(self):
         """
             Return a hydrated instance from the self.page until the page is exhausted,
@@ -367,7 +376,7 @@ class RallyRESTResponse(object):
                 blurb = self.warnings[0]
             else:
                 blurb = "%sResult TotalResultCount: %d  Results: %s" % \
-                         (self.req_type, self.resultCount, self.content['Results'])
+                         (self.request_type, self.resultCount, self.content['Results'])
             return "%s %s" % (self.status_code, blurb)
 
 ##################################################################################################
