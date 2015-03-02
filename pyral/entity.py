@@ -17,7 +17,6 @@ import types
 from .restapi   import hydrateAnInstance
 from .restapi   import getResourceByOID
 from .restapi   import getCollection
-from .restapi   import WS_API_VERSION
 
 ##################################################################################################
 
@@ -109,8 +108,7 @@ class Persistable(object):
             # get "hydrated" by issuing a GET request for the resource referenced in self._ref
             # and having an EntityHydrator fill out the attributes, !!* on this instance *!!
             #
-            # RELEASED: entity_name, oid = self._ref.split('/')[-2:]
-            entity_name, oid = self._ref.split(WS_API_VERSION + '/')[-1].rsplit('/',1)
+            entity_name, oid = self._ref.split('/')[-2:]
 ##
 ##            print "issuing OID specific get for %s OID: %s " % (entity_name, oid)
 ##            print "Entity: %s context: %s" % (rallyEntityTypeName, self._context) 
@@ -129,22 +127,7 @@ class Persistable(object):
 ##
                 raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
 
-            try:
-                item = response.content[rallyEntityTypeName]
-            except KeyError:
-                if rallyEntityTypeName == 'PortfolioItem':
-                    # Another unfortunate hard coding of portfolio items
-                    for type_name in PORTFOLIO_ITEM_SUB_TYPES:
-                        try:
-                            item = response.content[type_name]
-                            break
-                        except KeyError:
-                            pass
-                    else:
-                        # Force the original error
-                        item = response.content[rallyEntityTypeName]
-                else:
-                    raise
+            item = response.content[rallyEntityTypeName]
             hydrateAnInstance(self._context, item, existingInstance=self)
             self._hydrated = True
 
