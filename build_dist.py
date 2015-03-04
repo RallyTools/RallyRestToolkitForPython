@@ -11,7 +11,7 @@ import tarfile
 import zipfile
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.1.0"
+VERSION      = "1.1.1"
 
 AUX_FILES  = ['MANIFEST.in', 
               'LICENSE', 
@@ -34,6 +34,7 @@ EXAMPLES   = ['getitem.py',
               'builddefs.py',
               'creattach.py',
               'get_attachments.py',
+              'get_schedulable_artifacts.py',
               'add_tcrs.py',
               'defrevs.py'
              ]
@@ -63,6 +64,7 @@ TEST_FILES = ['test/rally_targets.py',
               'test/test_inflation.py',
               'test/test_field_access.py',
               'test/test_query.py',
+              'test/test_search.py',
               'test/test_wksprj_setting.py',
               'test/test_attachments.py',
              ]

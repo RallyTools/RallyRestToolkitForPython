@@ -133,7 +133,7 @@ Introduction of Dyna-Types
 As of Rally WebServices API 1.37, Rally has introduced a modification of their data model, which
 is termed dyna-types.  This modification offers a means of establishing and using a parent type
 and defining sub-types of that parent.  The PortfolioItem type is now an "abstract" type from which
-there are some pre-defined sub-types (Initiative, Theme, Feature).  
+there are some pre-defined sub-types (Theme, Strategy, Initiative, Feature).  
 By convention, the preferred way to identify a PortfolioItem sub-type is via slashed 
 naming, eg. 'PortfolioItem/Feature'.  While it is possible
 to identify a PortfolioItem sub-type by the sub-type name, eg, (Theme), this is not the preferred

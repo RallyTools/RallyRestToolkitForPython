@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 0)
+__version__ = (1, 1, 1)
 
 import sys
 import re
@@ -237,10 +237,6 @@ class RallyRESTResponse(object):
         else:
             return None
 
-
-    def __iter__(self):
-        return self
-
     def __nonzero__(self):
         """
             This is for evaluating any invalid response as False.
@@ -249,6 +245,9 @@ class RallyRESTResponse(object):
             return True
         else:
             return False
+
+    def __iter__(self):
+        return self
 
     def next(self):
         """

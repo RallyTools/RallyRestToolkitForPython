@@ -34,7 +34,7 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.1.0) has been tested using requests 2.3.0.
+The most recent release of pyral (1.1.1) has been tested using requests 2.3.0.
 
 
 Unpack the ``pyral`` distribution file (zip or tar.gz) and then install the pyral_ package. 
@@ -60,7 +60,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 1, 0)
+   (1, 1, 1)
 
 
 
@@ -263,6 +263,23 @@ Prerequisites
 Versions
 --------
 
+   1.1.1 
+       Modified entity.py to allow pass back PortfolioItem sub type instances.
+       Modified rallresp.py defect referencing non-existing req_type instance var by changing 
+                reference to request_type. 
+       Modified restapi.py to use user, dropped auth_user.
+       Modified restapi.py to be more defensive when user has no associated UserProfile.
+       Modified context.py to account for use of Cygwin in Pinger code.
+       Modified restapi.py to handle encoding of attachment content to match Rally expectations.
+       Modified restapi.py/entity.py to handle querying of SchedulableArtifact instances.
+       Modified restapi.py to handle querying and hydrating of PortfolioItem instances more completely.
+       Modified restapi.py/entity.py to provide rudimentary support for querying of RecycleBin entries.
+       Modified restapi.py and added search_utils.py to provide a search method for pyral Rally instances.
+       Modified rallyresp.py to better handle some boundary conditions when response body item counts 
+                differ from what is stated in the TotalResultCount.
+       Modified context.py to account for scenario where user's default workspace has no projects.
+       Modified restapi.py/getProject to return correct project.
+
    1.1.0 
        Introduction of support to use Rally API Key and rallyWorkset (supercedes rallySettings). 
        Two relatively minor defects fixed dealing with internalizing environment
@@ -352,7 +369,7 @@ TODO
 License
 -------
 
-BSD3-style license. Copyright (c) 2010-2014 Rally Software Development.
+BSD3-style license. Copyright (c) 2010-2015 Rally Software Development.
 
 See the LICENSE file provided with the source distribution for full details.
 

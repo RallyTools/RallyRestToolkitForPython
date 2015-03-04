@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 0)
+__version__ = (1, 1, 1)
 
 import sys, os
 import platform
@@ -71,15 +71,17 @@ class RallyContext(object):
         return context_dict
 
     def subscription(self):
-        return self._subs_name
+        return self.subs_name
 
     def serviceURL(self):
         return self.service_url
 
     def identity(self):
+        subs      = self.subs_name or 'None'
         workspace = self.workspace or 'None'
         project   = self.project   or 'None'
-        return " | ".join([self.server, self.user or "None", self.password, workspace, project])
+ 
+        return " | ".join([self.server, self.user or "None", self.password, subs, workspace, project])
 
     def __repr__(self):
         return self.identity()
@@ -230,6 +232,7 @@ class RallyContextHelper(object):
             raise Exception(sub.errors[0])
         subscription = sub.next()
         self._subs_name = subscription.Name
+        self.context.subs_name = subscription.Name
         wksp_coll_ref_base = "%s/Workspaces" % subscription._ref
         workspaces_collection_url = '%s?fetch=true&query=(State = Open)&pagesize=200&start_index=1' % wksp_coll_ref_base
         workspaces = self.agent.getCollection(workspaces_collection_url, _disableAugments=True)
@@ -307,7 +310,7 @@ class RallyContextHelper(object):
                     proj_ref = proj._ref
                     self._defaultProject = proj.Name
                     self._currentProject = proj.Name
-                except StopIteration: # The default workspace might not have any projects
+                except StopIteration:  # the default Workspace might not have any projects
                     pass
 ##
 ##        print "   Default Workspace : %s" % self._defaultWorkspace
@@ -328,6 +331,7 @@ class RallyContextHelper(object):
                                            self.user, 
                                            self.password,
                                            self.agent.serviceURL(),
+                                           subscription=self._subs_name,
                                            workspace=self._defaultWorkspace, 
                                            project=self._defaultProject)
         self.context = self.defaultContext 
@@ -705,12 +709,15 @@ class Pinger(object):
     PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "2", "-t", "2"],
                     'Unix'    : ["ping",       "-c", "2", "-w", "2"],
                     'Linux'   : ["ping",       "-c", "2", "-w", "2"],
-                    'Windows' : ["ping",       "-n", "2", "-w", "2"]
+                    'Windows' : ["ping",       "-n", "2", "-w", "2"],
+                    'Cygwin'  : ["ping",       "-n", "2", "-w", "2"]
                    }
 
     @classmethod
     def ping(self, target):
         plat_ident = platform.system()
+        if plat_ident.startswith('CYGWIN'):
+            plat_ident = 'Cygwin'
         vector = Pinger.PING_COMMAND[plat_ident][:]
         vector.append(target)
         bucket = ".ping-bucket"
