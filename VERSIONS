@@ -66,3 +66,9 @@
     Defects fixed related to internalizing environment in rallySettings (and rallyWorkset) 
       and in getting allowed values for Rally types.
 
+1.1.1 - March 2015
+    Fixed return value for updating a PortfolioItem sub-type instance.
+    Added the Milestone entity to the list of instantiable entities.
+    Added ability to query RecycleBin entries.
+    Added basic search method to Rally instance.
+

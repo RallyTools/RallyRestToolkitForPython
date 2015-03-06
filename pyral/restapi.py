@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 0)
+__version__ = (1, 1, 1)
 
 import sys, os
 import re
@@ -19,7 +19,7 @@ import urllib
 import json
 import string
 import base64
-from operator import itemgetter, attrgetter
+from operator import itemgetter
 from pprint   import pprint
 
 import requests   
@@ -30,6 +30,7 @@ from .config  import RALLY_REST_HEADERS
 from .config  import USER_NAME, PASSWORD 
 from .config  import START_INDEX, PAGESIZE, MAX_PAGESIZE, MAX_ITEMS
 from .config  import timestamp
+from .search_utils  import projectAncestors, projectDescendants, projeny, flatten, MockRallyRESTResponse
 
 ###################################################################################################
 
@@ -148,7 +149,7 @@ def _createShellInstance(context, entity_name, item_name, item_ref):
            }
     hydrator = EntityHydrator(context, hydration="shell")
     return hydrator.hydrateInstance(item)
-        
+
 ##################################################################################################
 
 class Rally(object):
@@ -568,7 +569,7 @@ class Rally(object):
         for user in users:
             # get any matching user profiles (aka mups), there really should only be 1 matching...
             mups = [prof for prof in profiles 
-                          if prof._ref == user.UserProfile._ref] 
+                          if hasattr(user, 'UserProfile') and prof._ref == user.UserProfile._ref] 
             if not mups:
                 problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
                 warning("%s" % (problem % (user.DisplayName, user.UserProfile)))
@@ -587,6 +588,8 @@ class Rally(object):
     def _officialRallyEntityName(self, supplied_name):
         if supplied_name in ['Story', 'UserStory', 'User Story']:
             supplied_name = 'HierarchicalRequirement'
+        if supplied_name == 'search':
+            return supplied_name
 
         # here's where we'd make an inquiry into entity to see if the supplied_name
         # is a Rally entity on which CRUD ops are permissible.
@@ -717,37 +720,7 @@ class Rally(object):
         return item_data
 
 
-    def get(self, entity, fetch=False, query=None, order=None, **kwargs):
-        """
-            A REST approach has the world seen as resources with the big 4 ops available on them
-            (GET, PUT, POST, DELETE). There are other ops but we don't care about them here.
-            Each resource _should_ have a unique URI that is used to identify the resource.
-            The GET operation is used to specify that we want a representation of that resource.
-            For Rally, in order to construct a URI, we need the name of the entity, the attributes
-            of the entity (and attributes on any child/parent entity related to the named entity),
-            the query (selection criteria) and the order in which the results should be returned.
-
-            The fetch argument (boolean or a comma separated list of attributes) indicates whether 
-            we get complete representations of objects back or whether we get "shell" objects with 
-            refs to be able to retrieve the full info at some later time.
-
-            An optional instance=True keyword argument will result in returning an instantiated 
-            Rally Entity if and only if the resultCount of the get is exactly equal to 1.
-            Otherwise, a RallyRESTResponse instance is returned.
-
-            All optional keyword args:
-                fetch=True/False or "List,Of,Attributes,We,Are,Interested,In"
-                query='FieldName = "some value"' or ['fld1 = 19', 'fld27 != "Shamu"', etc.]
-                order="fieldName ASC|DESC"
-                instance=False/True
-                pagesize=n
-                start=n
-                limit=n
-                projectScopeUp=True/False
-                projectScopeDown=True/False
-        """
-        # TODO: this method too long, break into small setup, 2 or 3 subcalls and some wrapup
-        # set some useful defaults...
+    def _buildRequest(self, entity, fetch, query, order, kwargs):
         pagesize   = PAGESIZE
         startIndex = START_INDEX
         limit      = MAX_ITEMS
@@ -769,11 +742,10 @@ class Rally(object):
                 limit = min(ulimit, MAX_ITEMS)
             except:
                 pass
-
-        if fetch == True:
+        if fetch in ['true', 'True', True]:
             fetch = 'true'
             self.hydration = "full"
-        elif fetch == False:
+        elif fetch in ['false', 'False', False]:
             fetch = 'false'
             self.hydration = "shell"
         elif type(fetch) == types.StringType and fetch.lower() != 'false':
@@ -803,68 +775,10 @@ class Rally(object):
         resource = resource.build()  # can also use resource = resource.build(pretty=True)
         full_resource_url = "%s/%s" % (self.service_url, resource)
 
-        # TODO: see if much of above can be pushed into another method
+        return context, resource, full_resource_url, limit
 
-        if self._log: 
-            #urllib.unquote the resource for enhanced readability
-            self._logDest.write('%s GET %s\n' % (timestamp(), urllib.unquote(resource)))
-            self._logDest.flush()
 
-        response = None  # in case an exception gets raised in the session.get call ...
-        try:
-            # a response has status_code, content and data attributes
-            # the data attribute is a dict that has a single entry for the key 'QueryResult' 
-            # or 'OperationResult' whose value is in turn a dict with values of 
-            # 'Errors', 'Warnings', 'Results'
-            response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
-        except Exception as ex:
-            if response:
-##
-##                print "Exception detected for session.get requests, response status code: %s" % response.status_code
-##
-                ret_code, content = response.status_code, response.content
-            else:
-                ret_code, content = PAGE_NOT_FOUND_CODE, str(ex.args[0])
-            if self._log:
-                self._logDest.write('%s %s\n' % (timestamp(), ret_code))
-                self._logDest.flush()
-
-            errorResponse = ErrorResponse(ret_code, content)
-            response = RallyRESTResponse(self.session, context, resource, errorResponse, self.hydration, 0)
-            return response
-##
-##        print "response.status_code is %s" % response.status_code
-##
-        if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
-            if self._log:
-                code, verbiage = response.status_code, response.content[:56]
-                self._logDest.write('%s %s %s ...\n' % (timestamp(), code, verbiage))
-                self._logDest.flush()
-##
-##            print response
-##
-            #if response.status_code == PAGE_NOT_FOUND_CODE:
-            #    problem = "%s Service unavailable from %s, check for proper hostname" % (response.status_code, self.service_url)
-            #    raise Exception(problem)
-            errorResponse = ErrorResponse(response.status_code, response.content)
-            response = RallyRESTResponse(self.session, context, resource, errorResponse, self.hydration, 0)
-            return response
-
-        response = RallyRESTResponse(self.session, context, resource, response, self.hydration, limit)
-        if self._log:
-            if response.status_code == HTTP_REQUEST_SUCCESS_CODE:
-                desc = '%s TotalResultCount %s' % (entity, response.resultCount)
-            else:
-                desc = response.errors[0]
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
-            self._logDest.flush()
-        if kwargs and 'instance' in kwargs and kwargs['instance'] == True and response.resultCount == 1:
-            return response.next()
-        return response
-
-    find = get # offer interface approximately matching Ruby Rally REST API, App SDK Javascript RallyDataSource
-
-    def _getRequestResponse(self, context, request_url, **kwargs):
+    def _getRequestResponse(self, context, request_url, limit):
         response = None  # in case an exception gets raised in the session.get call ...
         try:
             # a response has status_code, content and data attributes
@@ -888,17 +802,84 @@ class Rally(object):
             response = RallyRESTResponse(self.session, context, request_url, errorResponse, self.hydration, 0)
             return response
 
-        num_items = kwargs.get('limit', 0)
-        response = RallyRESTResponse(self.session, context, request_url, response, self.hydration, num_items)
+##
+##        print "response.status_code is %s" % response.status_code
+##
+        if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
+            if self._log:
+                code, verbiage = response.status_code, response.content[:56]
+                self._logDest.write('%s %s %s ...\n' % (timestamp(), code, verbiage))
+                self._logDest.flush()
+##
+##            print response
+##
+            #if response.status_code == PAGE_NOT_FOUND_CODE:
+            #    problem = "%s Service unavailable from %s, check for proper hostname" % \
+            #             (response.status_code, self.service_url)
+            #    raise Exception(problem)
+            errorResponse = ErrorResponse(response.status_code, response.content)
+            response = RallyRESTResponse(self.session, context, request_url, errorResponse, self.hydration, 0)
+            return response 
+
+        response = RallyRESTResponse(self.session, context, request_url, response, self.hydration, limit)
+
         if self._log:
             if response.status_code == HTTP_REQUEST_SUCCESS_CODE:
-                req_target = "/".join(request_url.split('/'))
+                #req_target = "/".join(request_url.split('/'))
+                slm_ws_ver = '/%s/' % (WEB_SERVICE % WS_API_VERSION)
+                req_target, oid = request_url.split(slm_ws_ver)[-1].rsplit('/', 1)
                 desc = '%s TotalResultCount %s' % (req_target, response.resultCount)
             else:
                 desc = response.errors[0]
             self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
             self._logDest.flush()
+
         return response
+
+
+    def get(self, entity, fetch=False, query=None, order=None, **kwargs):
+        """
+            A REST approach has the world seen as resources with the big 4 ops available on them
+            (GET, PUT, POST, DELETE). There are other ops but we don't care about them here.
+            Each resource _should_ have a unique URI that is used to identify the resource.
+            The GET operation is used to specify that we want a representation of that resource.
+            For Rally, in order to construct a URI, we need the name of the entity, the attributes
+            of the entity (and attributes on any child/parent entity related to the named entity),
+            the query (selection criteria) and the order in which the results should be returned.
+
+            The fetch argument (boolean or a comma separated list of attributes) indicates whether 
+            we get complete representations of objects back or whether we get "shell" objects with 
+            refs to be able to retrieve the full info at some later time.
+
+            An optional instance=True keyword argument will result in returning an instantiated 
+            Rally Entity if and only if the resultCount of the get is exactly equal to 1.
+            Otherwise, a RallyRESTResponse instance is returned.
+
+            All optional keyword args:
+                fetch=True/False or "List,Of,Attributes,We,Are,Interested,In"
+                query='FieldName = "some value"' or ['fld1 = 19', 'fld27 != "Shamu"', etc.]
+                order="fieldName ASC|DESC"
+                instance=False/True
+                pagesize=n
+                start=n
+                limit=n
+                projectScopeUp=True/False
+                projectScopeDown=True/False
+        """
+        context, resource, full_resource_url, limit = self._buildRequest(entity, fetch, query, order, kwargs)
+
+        if self._log: 
+            #urllib.unquote the resource for enhanced readability
+            self._logDest.write('%s GET %s\n' % (timestamp(), urllib.unquote(resource)))
+            self._logDest.flush()
+
+        response = self._getRequestResponse(context, full_resource_url, limit)
+            
+        if kwargs and 'instance' in kwargs and kwargs['instance'] == True and response.resultCount == 1:
+            return response.next()
+        return response
+
+    find = get # offer interface approximately matching Ruby Rally REST API, App SDK Javascript RallyDataSource
 
 
     def getCollection(self, collection_url, **kwargs):
@@ -926,7 +907,7 @@ class Rally(object):
         if self._log: 
             self._logDest.write('%s GET %s\n' % (timestamp(), resource))
             self._logDest.flush()
-        rally_rest_response = self._getRequestResponse(context, resource)
+        rally_rest_response = self._getRequestResponse(context, resource, 0)
         return rally_rest_response
 
 
@@ -944,6 +925,8 @@ class Rally(object):
             project = self.getProject().Name  # just need the Name here
 
         entityName = self._officialRallyEntityName(entityName)
+        if entityName.lower() == 'recyclebinentry':
+            raise RallyRESTAPIError("create operation unsupported for RecycleBinEntry")
 
         resource = "%s/create?key=%s" % (entityName.lower(), auth_token)
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
@@ -998,6 +981,8 @@ class Rally(object):
             project = self.getProject().Name  # just need the Name here
 
         entityName = self._officialRallyEntityName(entityName)
+        if entityName.lower() == 'recyclebinentry':
+            raise RallyRESTAPIError("create operation unsupported for RecycleBinEntry")
 
         oid = itemData.get('ObjectID', None)
         if not oid:
@@ -1115,6 +1100,132 @@ class Rally(object):
         return status
 
 
+    def search(self, keywords, **kwargs):
+        """
+            Given a list of keywords or a string with space separated words, issue
+            the relevant Rally WSAPI search request to find artifacts within the search
+            scope that have any of the keywords in any of the artifact's text fields.
+
+            https://rally1.rallydev.com/slm/webservice/v2.x/search?
+                _slug=%2Fsearch
+                &project=%2Fproject%2F3839949386
+                &projectScopeUp=false
+                &projectScopeDown=true
+                &searchScopeOid=3839949386   # in this case it is the Project ObjectID
+                &searchScopeUp=false
+                &searchScopeDown=true
+                &searchScopeType=project
+                &keywords=wsapi%20documentation
+                &fetch=true
+                &recycledItems=true
+                &includePermissions=true
+                &compact=true
+                &start=1
+                &pagesize=25
+
+             defaults:
+                 projectScopeUp=false
+                 projectScopeDown=false
+                 includePermissions=true
+                 recycledItems=false
+                 compact=true
+
+             A successful search returns SearchObject instances, which have the useful attributes of:
+                ObjectID
+                FormattedID
+                Name
+                Project
+                MatchingText
+                LastUpdateDate
+        """
+        context = self.contextHelper.currentContext()
+        kwargs['_slug'] = "/search"
+        kwargs['pagesize'] = 200
+        kwargs['searchScope'] = 'project'
+        if not kwargs.has_key('projectScopeUp'):
+            kwargs['projectScopeUp'] = False
+        if not kwargs.has_key('projectScopeDown'):
+            kwargs['projectScopeDown'] = False
+
+        # unfortunately, the WSAPI seems to not recognize/operate on projectScopeX, searchScopeX parameters...
+        #kwargs['searchScopeUp'] = 'false'
+        #kwargs['searchScopeDown'] = 'false'
+        #if getattr(kwargs, 'projectScopeUp', False):
+        #    kwargs['searchScopeUp'] = 'true'
+        #if getattr(kwargs, 'projectScopeDown', False):
+        #    kwargs['searchScopeDown'] = 'true'
+
+        fields = "ObjectID,FormattedID,Name,Project,MatchingText,LastUpdatedDate"
+        context, resource, resource_url, limit = self._buildRequest('search', fields, None, None, kwargs)
+
+        # so don't bother with including the searchScopeX in the resource_url query_string
+        #left, right = resource_url.split('&pagesize=')
+        #left += "&searchScope=project"
+        #ssu = 'true' if getattr(kwargs, 'searchScopeUp', False) else 'false'
+        #ssd = 'true' if getattr(kwargs, 'searchScopeDown', False) else 'false'
+        #left += "&searchScopeUp=%s&searchScopeDown=%s" % (ssu, ssd)
+        #resource_url = "%s&pagesize=%s" % (left, right)
+
+        url, query_string = resource_url.split('?', 1)
+        resource_url = "%s?keywords=%s&%s" % (url, urllib.quote(keywords), query_string)
+##
+        print resource_url
+##
+        response = self._getRequestResponse(context, resource_url, limit)
+        if response.errors:
+            error_text = response.errors[0]
+            raise RallyRESTAPIError(error_text)
+##
+        print response.data
+##
+
+        # since the WSAPI apparently doesn't pay attention to scoping (projectScopeUp, projectScopeDown, searchScopeUp, searchScopeDown)
+        # let's take care of the intended scoping here and provide back to the caller the
+        # resultCount as well as the iterable with the SearchObject instances.
+
+        # if the projectScopeUp and projectScopeDown are False
+        #     only capture the SearchObject instances whose Project attribute matches our current context Project Name
+        # if the projectScopeUp is True and the projectScopeDown is False
+        #    only capture the SearchObject instances whose Project attribute is the current context's Project Name OR is NOT in the list of sub-projects
+        # if the projectScopeUp is False and the projectScopeDown is True
+        #    only capture the SearchObject instances whose Project attribute is the current context's Project Name OR is IN the list of sub-projects
+        # if the projectScopeUp is True and projectScopeDown is True
+        #     everything in the result is eligible so pass it on...
+
+        if kwargs['projectScopeUp'] == True and kwargs['projectScopeDown'] == True:
+            # this behavior is an intitial _gross_ approximation of recognizing the scopeUp and scopeDown settings
+            # in no way should this be construed as being comprehensively accurate...
+            return response
+
+        all_search_hits = [item for item in response]
+        #all_projects    = [project for project in self.getProjects()] # when this is used the projeny function is waaayyy slow...
+        #                  and this is because getProjects returns _shell instances that don't have the Parent attribute.
+        fields = 'ObjectID,Name,Owner,Description,Iterations,Releases,State,Parent' 
+        response = self.get('Project', fetch=fields, order="Name")
+        all_projects = [project for project in response]  # when this is used, projeny zips along, as each instance has Parent attribute
+        current_project = self.getProject()
+
+        project_matches = [so for so in all_search_hits if so.Project == current_project.Name]
+        filtered = project_matches
+
+        if kwargs['projectScopeUp']:
+            ancestors = projectAncestors(current_project, all_projects, [])
+            scope_up_matches   = [so for so in all_search_hits if so.Project in ancestors]
+            filtered += scope_up_matches
+        else:  # projectScopeUp is False 
+            pass
+
+        if kwargs['projectScopeDown']:
+            descendents = projectDescendants(current_project, all_projects)
+            scope_down_matches = [so for so in all_search_hits if so.Project in descendents and so.Project != current_project.Name]
+            filtered += scope_down_matches
+        else: # projectScopeDown is False
+            pass
+
+        # TODO: uniquify the filtered, just in case we have duplicate Project Names for Projects in the target Workspace
+        return MockRallyRESTResponse(filtered)
+
+
     def getSchemaInfo(self, workspace, project=None):
         """
             Hit the schema endpoint for the given workspace name and return a dict
@@ -1128,6 +1239,11 @@ class Rally(object):
         schema_endpoint = "%s/workspace/%s" % (self.schema_url, wksp_ref.split('/').pop())
         response = self.session.get(schema_endpoint, timeout=30)
         poorly_explained_schema_url_hash = response.request.url.split('/').pop()
+        # above 'poorly_explained_schema_url_hash' is a key that can be used to retrieve this schema info again
+        # and if the system hasn't changed then the hash is current and the cached results are used. Otherwise
+        # Rally has to go pull the information again which could take somewhat longer.
+        # We don't use it here as we don't account for the potential of a _really_ long winded process during which
+        # Rally schema changes may be made.
         #print response.content
         return json.loads(response.content)[u'QueryResult'][u'Results']
 
@@ -1306,7 +1422,7 @@ class Rally(object):
 
         contents = ''
         with open(filename, 'r') as af:
-            contents = base64.encodestring(af.read())
+            contents = base64.b64encode(af.read())
             
         # create an AttachmentContent item
         ac = self.create('AttachmentContent', {"Content" : contents}, project=None)

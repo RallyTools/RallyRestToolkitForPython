@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 0)
+__version__ = (1, 1, 1)
 
 import sys
 reload(sys)  # Reload gets a sys module that has the setdefaultencoding before site.py deletes it
@@ -18,7 +18,7 @@ sys.setdefaultencoding('UTF8')
 import types
 from pprint import pprint
 
-from .entity import classFor, VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES
+from .entity import classFor, VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES, PORTFOLIO_ITEM_SUB_TYPES
 
 ##################################################################################################
 
@@ -81,9 +81,6 @@ class EntityHydrator(object):
             All native Rally entities have '_type', '_ref', '_refObjectName' in the item dict.
             However, there are entities with attributes that are non-scalar and do not have a '_type' entry.
             So, we cheat and make an instance of a CustomField class and return that. 
-            
-            For now we are not using try/except as in development we want any Exception to be 
-            raised to see what sort of problems might be encountered.
         """
         itemType = item.get(u'_type', "CustomField")
 ##
@@ -103,6 +100,14 @@ class EntityHydrator(object):
             if '/' in itemType:  # valid after intro of dyna-types in 1.37
                 try:
                     type_name, type_subdivision = itemType.split('/')
+                    instance = classFor[str(type_name)](oid, name, resource_url, self.context)
+                    itemType = type_name
+                    bonked = False
+                except KeyError, e:
+                    raise
+            elif itemType in PORTFOLIO_ITEM_SUB_TYPES:
+                try:
+                    type_name = "PortfolioItem_%s" % itemType
                     instance = classFor[str(type_name)](oid, name, resource_url, self.context)
                     itemType = type_name
                     bonked = False
@@ -178,6 +183,9 @@ class EntityHydrator(object):
         # an impact in terms of unnecessary requests back to Rally to get 
         # attribute.sub-attr values when they might actually be hydrated.
         # 
+        # Addendum 2015-02-21: this has been commented out since 0.9.x timeframe
+        #                      get rid of these comments and commented out code
+        #                      as part of 1.2.0 release
         #if self.hydration == 'full':
         #    attrInstance._hydrated = True
         return

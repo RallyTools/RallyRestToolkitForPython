@@ -410,6 +410,21 @@ Core REST methods and CRUD aliases
 
         Returns a boolean indication of the disposition of the attempt to delete the item.
 
+.. method:: search(keywords, \*\*kwargs)
+
+     Given a list of keywords or a string with space separated words, issue
+     the relevant Rally WSAPI search request to find artifacts within the search
+     scope that have any of the keywords in any of the artifact's text fields.
+
+     NOTE: The search functionality must be turned on for your subscription to use this method.
+
+     keyword arguments:
+         - projectScopeUp = true/false (defaults to false)
+         - projectScopeDown = true/false (defaults to false)
+         - pagesize = n  (defaults to 200)
+         - start = n  (defaults to 1)
+         - limit = n  (defaults to no limit)
+
 pyral.Rally instance convenience methods
 ----------------------------------------
 
@@ -525,7 +540,7 @@ pyral.Rally instance convenience methods
 
 .. warning:: 
 
-        This method only works with PortfolioItem subclasses at this time.  (Theme, Initiative, Feature)
+        This method only works with PortfolioItem subclasses at this time.  (Theme, Strategy, Initiative, Feature)
 
 
 .. method:: getStates(entityName)

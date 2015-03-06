@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 0)
+__version__ = (1, 1, 1)
 
 import sys
 import re
@@ -18,11 +18,14 @@ from .restapi   import hydrateAnInstance
 from .restapi   import getResourceByOID
 from .restapi   import getCollection
 
+from .config    import WEB_SERVICE, WS_API_VERSION
+
 ##################################################################################################
 
 VERSION_ATTRIBUTES = ['_rallyAPIMajor', '_rallyAPIMinor', '_objectVersion']
 MINIMAL_ATTRIBUTES = ['_type', '_ref', '_refObjectName']
 PORTFOLIO_ITEM_SUB_TYPES = ['Strategy', 'Theme', 'Initiative', 'Feature']
+SLM_WS_VER = '/%s/' % (WEB_SERVICE % WS_API_VERSION)
 
 _rally_schema       = {}  # keyed by workspace at the first level, then by EntityName
 _rally_entity_cache = {}
@@ -88,6 +91,8 @@ class Persistable(object):
            They refer to s.Iterations or s.FormattedID (both of which weren't in the 
            original fetch spec)
         """
+        global SLM_WS_VER
+
         # access to this Entity's ref attribute is a special case and dealt with early in the logic flow
         if name == "ref":
             entity_name, oid = self._ref.split('/')[-2:]  # last two path elements in _ref are entity/oid
@@ -97,6 +102,10 @@ class Persistable(object):
             raise Exception('Unsupported attempt to retrieve context attribute')
 
         rallyEntityTypeName = self.__class__.__name__
+        entity_path, oid = self._ref.split(SLM_WS_VER)[-1].rsplit('/', 1)
+        if entity_path.startswith('portfolioitem/'):
+            rallyEntityTypeName = entity_path.split('/')[-1].capitalize()
+
         faultTrigger = "getattr fault detected on %s instance for attribute: %s  (hydrated? %s)" % \
                        (rallyEntityTypeName, name, self._hydrated)
 ##
@@ -108,8 +117,9 @@ class Persistable(object):
             # get "hydrated" by issuing a GET request for the resource referenced in self._ref
             # and having an EntityHydrator fill out the attributes, !!* on this instance *!!
             #
-            entity_name, oid = self._ref.split('/')[-2:]
+            entity_name, oid = self._ref.split(SLM_WS_VER)[-1].rsplit('/', 1)
 ##
+##            print "self._ref : %s" % self._ref
 ##            print "issuing OID specific get for %s OID: %s " % (entity_name, oid)
 ##            print "Entity: %s context: %s" % (rallyEntityTypeName, self._context) 
 ##            sys.stdout.flush()
@@ -156,6 +166,9 @@ class Persistable(object):
             return self.__dict__[name]
         else:
             description = "%s instance has no attribute: '%s'" % (rallyEntityTypeName, name)
+##
+##            print "Rally entity getattr fault: %s" % description
+##
             raise AttributeError(description)
 
 
@@ -383,6 +396,7 @@ class BuildMetricDefinition (WorkspaceDomainObject): pass  # query capable only
 class Change                (WorkspaceDomainObject): pass
 class Changeset             (WorkspaceDomainObject): pass
 class ConversationPost      (WorkspaceDomainObject): pass  # query capable only
+class Milestone             (WorkspaceDomainObject): pass 
 class Preference            (WorkspaceDomainObject): pass
 class PreliminaryEstimate   (WorkspaceDomainObject): pass
 class SCMRepository         (WorkspaceDomainObject): pass
@@ -394,6 +408,7 @@ class Tag                   (WorkspaceDomainObject): pass
 class TimeEntryItem         (WorkspaceDomainObject): pass
 class TimeEntryValue        (WorkspaceDomainObject): pass
 class UserIterationCapacity (WorkspaceDomainObject): pass
+class RecycleBinEntry       (WorkspaceDomainObject): pass
 class RevisionHistory       (WorkspaceDomainObject): pass
 class Revision              (WorkspaceDomainObject):
     INFO_ATTRS = ['RevisionNumber', 'Description', 'CreationDate', 'User']
@@ -418,18 +433,23 @@ class Artifact(WorkspaceDomainObject):
     """ This is an Abstract Base class """
     pass
 
-class Task         (Artifact): pass
-class Defect       (Artifact): pass
-class DefectSuite  (Artifact): pass
-class TestCase     (Artifact): pass
-class TestSet      (Artifact): pass
-class Requirement  (Artifact):
+class SchedulableArtifact(Artifact):
+    """ This is an Abstract Base class """ 
+    pass
+
+class Requirement  (SchedulableArtifact):
     """ This is an Abstract Base class """
     pass
 class HierarchicalRequirement(Requirement): pass
 
 UserStory = HierarchicalRequirement   # synonomous but more intutive
 Story     = HierarchicalRequirement   # ditto
+
+class Task         (Artifact): pass
+class Defect       (Artifact): pass
+class TestCase     (Artifact): pass
+class DefectSuite  (SchedulableArtifact): pass
+class TestSet      (SchedulableArtifact): pass
 
 class PortfolioItem(Artifact): pass
 class PortfolioItem_Strategy  (PortfolioItem): pass
@@ -451,6 +471,50 @@ class CustomField(object):
         self._ref = resource_url
         self._context  = context
         self._hydrated = False
+
+def so_element_text(mo):
+    #if mo: return mo.group('field_name') + ': '
+    #else: return ""
+    return mo.group('field_name') + ': 'if mo else ""
+
+def so_bolded_text(mo):
+    #if mo: return "<bold>%s</bold>" % mo.group('word')
+    #else: return ""
+    return "<bold>%s</bold>" % mo.group('word') if mo else ""
+
+class SearchObject(object): 
+    """
+        An instance of SearchObject is created for each artifact that
+        matches a search criteria.  A SearchObject is not a full-fledged
+        artifact however, it only has minimal identifying attributes and
+        snippets from each string field that contained text that matched
+        a part of the search criteria.
+    """
+
+    tagged_field_name_pattern = re.compile(r'<span class=\'alm-search-page matching-text-field-name\'>(?P<field_name>.*?): </span>')
+                                         #   <span class='alm-search-page matching-text-field-name'>Discussion: </span>
+    bolding_pattern = re.compile(r'<span id="keepMeBolded" class="alm-search-page matching-text-highlight">(?P<word>.*?)</span>')
+                               #   <span id="keepMeBolded" class="alm-search-page matching-text-highlight">bogus</span>
+
+    def __init__(self, oid, name, resource_url, context):
+        """
+            All sub-classes have an oid (Object ID), so it makes sense to provide the 
+            attribute storage here.
+        """
+        self.oid = self.ObjectID = oid
+        self.Name = name
+        self._ref = resource_url
+        self._hydrated = True
+        self._context = context
+
+    def __setattr__(self, item, value):
+        self.__dict__[item] = value
+        if item == 'MatchingText':
+            # scrub out the alm specific html tags 
+            scrubbed = re.sub(self.tagged_field_name_pattern, so_element_text, value)
+            scrubbed = re.sub(self.bolding_pattern, so_bolded_text, scrubbed)
+            self.__dict__[item] = scrubbed
+        return self.__dict__[item]
 
 #################################################################################################
 
@@ -514,6 +578,7 @@ classFor = { 'Persistable'             : Persistable,
              'State'                   : State,
              'PreliminaryEstimate'     : PreliminaryEstimate,
              'WebLinkDefinition'       : WebLinkDefinition,
+             'Milestone'               : Milestone,
              'ConversationPost'        : ConversationPost,
              'Blocker'                 : Blocker,
              'AllowedAttributeValue'   : AllowedAttributeValue,
@@ -523,6 +588,8 @@ classFor = { 'Persistable'             : Persistable,
              'CumulativeFlowData'      : CumulativeFlowData,
              'ReleaseCumulativeFlowData'   : ReleaseCumulativeFlowData,
              'IterationCumulativeFlowData' : IterationCumulativeFlowData,
+             'RecycleBinEntry'         : RecycleBinEntry,
+             'SearchObject'            : SearchObject,
            }
 
 for entity_name, entity_class in classFor.items():
@@ -548,7 +615,7 @@ class SchemaItem(object):
     def __init__(self, raw_info):
         self._type = 'TypeDefinition'
         # ElementName, DisplayName, Name
-        # Ordinal   # who knows what is for... looks to be only relevant for PortfoliItem sub-items
+        # Ordinal   # who knows what is for... looks to be only relevant for PortfolioItem sub-items
         # ObjectID, 
         # Parent, Abstract, TypePath, IDPrefix, 
         # Creatable, ReadOnly, Queryable, Deletable, Restorable
@@ -707,6 +774,7 @@ class SchemaItemAttribute(object):
 
         return True
 
+
     def __str__(self):
         ident = self.ElementName
         disp  = "|%s|" % self.Name if self.Name != self.ElementName else ""
@@ -815,7 +883,7 @@ def processSchemaInfo(workspace, schema_info):
                                              and not entity_name.startswith('ObjectAttr')
                                ]
     for entity_name in unaccounted_for_entities:
-        if entity_name in ['ScopedAttributeDefinition', 'RecycleBinEntry']:
+        if entity_name in ['ScopedAttributeDefinition']:
             continue
                            
         entity = _rally_schema[wksp_ref][entity_name]
@@ -855,5 +923,6 @@ def _createClass(name, parentClass):
 
 
 __all__ = [processSchemaInfo, classFor, validRallyType, getSchemaItem,
-           InvalidRallyTypeNameError, UnrecognizedAllowedValuesReference
+           InvalidRallyTypeNameError, UnrecognizedAllowedValuesReference,
+           PORTFOLIO_ITEM_SUB_TYPES
           ]
