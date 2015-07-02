@@ -708,7 +708,7 @@ class Pinger(object):
     """
     PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "2", "-t", "2"],
                     'Unix'    : ["ping",       "-c", "2", "-w", "2"],
-                    'Linux'   : ["ping",       "-c", "2", "-w", "2"],
+                    'Linux'   : ["ping",       "-c", "2", "-w", "10"],
                     'Windows' : ["ping",       "-n", "2", "-w", "2"],
                     'Cygwin'  : ["ping",       "-n", "2", "-w", "2"]
                    }
