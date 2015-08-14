@@ -143,12 +143,6 @@ class RallyContextHelper(object):
             proxy_host, proxy_port = proxy.split(':')
         target_host = proxy_host or server
 
-        reachable, problem = Pinger.ping(target_host)
-        if not reachable:
-             if not problem:
-                 problem = "host: '%s' non-existent or unreachable"  % target_host
-             raise RallyRESTAPIError(problem)
-
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
 ##
@@ -699,41 +693,3 @@ class RallyContextHelper(object):
         return representation
 
 ##################################################################################################
-
-class Pinger(object):
-    """
-        An instance of this class attempts a single ping against a given target.
-        Response to the ping command results in the ping method returning True,
-        otherwise a False is returned
-    """
-    PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", "2", "-t", "2"],
-                    'Unix'    : ["ping",       "-c", "2", "-w", "2"],
-                    'Linux'   : ["ping",       "-c", "2", "-w", "2"],
-                    'Windows' : ["ping",       "-n", "2", "-w", "2"],
-                    'Cygwin'  : ["ping",       "-n", "2", "-w", "2"]
-                   }
-
-    @classmethod
-    def ping(self, target):
-        plat_ident = platform.system()
-        if plat_ident.startswith('CYGWIN'):
-            plat_ident = 'Cygwin'
-        vector = Pinger.PING_COMMAND[plat_ident][:]
-        vector.append(target)
-        bucket = ".ping-bucket"
-        result = ""
-        try:
-            with open(bucket, 'w') as sink:
-                rc = subprocess.call(vector, stdout=sink, stderr=sink)
-        except:
-            stuff = sys.exc_info()
-            result = stuff[1]
-        finally:
-            with open(bucket, 'r') as of:
-                result = of.read()
-            os.unlink(bucket)
-
-        return rc == 0, result
-
-##################################################################################################
-
