@@ -18,7 +18,7 @@ PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (Rally Software Development)'
 AUTHOR_EMAIL  = 'klehman@rallydev.com'
 GITHUB_SITE   = 'https://github.com/RallyTools/RallyRestToolkitForPython'
-GITHUB_DISTS  = '%s/blob/master/dists' % GITHUB_SITE
+GITHUB_DISTS  = '%s/raw/master/dists' % GITHUB_SITE
 DOWNLOADABLE_ZIP = '%s/%s-%s.zip' % (GITHUB_DISTS, PACKAGE, VERSION)
 
 MINIMUM_REQUESTS_VERSION = '2.0.0'
