@@ -572,7 +572,9 @@ class Rally(object):
                           if hasattr(user, 'UserProfile') and prof._ref == user.UserProfile._ref] 
             if not mups:
                 problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
-                warning("%s" % (problem % (user.DisplayName, user.UserProfile)))
+                if hasattr(user, 'UserProfile'):
+                    problem = problem % (user.DisplayName, user.UserProfile)
+                warning("%s" % problem)
                 continue
             else:
                 if len(mups) > 1:
