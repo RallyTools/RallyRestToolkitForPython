@@ -21,6 +21,7 @@ from pprint import pprint
 
 # intra-package imports
 from .rallyresp import RallyRESTResponse
+from .restapi   import RallyRESTAPIError
 from .entity    import processSchemaInfo, getSchemaItem
 from .entity    import InvalidRallyTypeNameError, UnrecognizedAllowedValuesReference
 
@@ -39,9 +40,6 @@ SCHEME_PREFIX_PATT = re.compile(r'^https?://')
 
 ##################################################################################################
 
-class RallyRESTAPIError(Exception): pass
-
-##################################################################################################
 
 class RallyContext(object):
 
