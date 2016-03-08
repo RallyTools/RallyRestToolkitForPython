@@ -90,11 +90,12 @@ class RallyContext(object):
 
 class RallyContextHelper(object):
 
-    def __init__(self, agent, server, user, password):
+    def __init__(self, agent, server, user, password, ping=True):
         self.agent  = agent
         self.server = server
         self.user   = user
         self.password = password
+        self.ping   = ping
 
         # capture this user's User, UserProfile, Subscription records to extract 
         # the workspaces and projects this user has access to (and their defaults)
@@ -143,11 +144,12 @@ class RallyContextHelper(object):
             proxy_host, proxy_port = proxy.split(':')
         target_host = proxy_host or server
 
-        reachable, problem = Pinger.ping(target_host)
-        if not reachable:
-             if not problem:
-                 problem = "host: '%s' non-existent or unreachable"  % target_host
-             raise RallyRESTAPIError(problem)
+        if self.ping:
+            reachable, problem = Pinger.ping(target_host)
+            if not reachable:
+                 if not problem:
+                     problem = "host: '%s' non-existent or unreachable"  % target_host
+                 raise RallyRESTAPIError(problem)
 
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
