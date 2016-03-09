@@ -174,7 +174,7 @@ class Rally(object):
     MAX_ATTACHMENT_SIZE = 5000000  # approx 5MB 
 
     def __init__(self, server=SERVER, user=None, password=None, apikey=None,
-                       version=WS_API_VERSION, warn=True, **kwargs):
+                       version=WS_API_VERSION, warn=True, ping=True, **kwargs):
         self.server   = server 
         self.user     = user     or USER_NAME
         self.password = password or PASSWORD
@@ -189,6 +189,7 @@ class Rally(object):
         self._logDest    = None
         self._logAttrGet = False
         self._warn       = warn
+        self._ping       = ping
         config = {}
         if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
             config['verbose'] = sys.stdout
@@ -223,7 +224,8 @@ class Rally(object):
         
         global _rallyCache
 
-        self.contextHelper = RallyContextHelper(self, self.server, self.user, self.password or self.apikey)
+        self.contextHelper = RallyContextHelper(self, self.server, self.user, self.password or self.apikey,
+                                                ping=self._ping)
         _rallyCache[self.contextHelper.context] = {'rally' : self }
         self.contextHelper.check(self.server)
 
