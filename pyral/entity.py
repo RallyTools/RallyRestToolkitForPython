@@ -714,8 +714,10 @@ class SchemaItemAttribute(object):
         self.ElementName   = str(attr_info[u'ElementName'])
         self.Name          = str(attr_info[u'Name'])
         self.AttributeType = str(attr_info[u'AttributeType'])
-        self.Subscription  =     attr_info[u'Subscription']
-        self.Workspace     =     attr_info[u'Workspace']
+        if u'Subscription' in attr_info:
+            self.Subscription  =     attr_info[u'Subscription']
+        if u'Workspace' in attr_info:
+            self.Workspace     =     attr_info[u'Workspace']
         self.Custom        =     attr_info[u'Custom']
         self.Required      =     attr_info[u'Required']
         self.ReadOnly      =     attr_info[u'ReadOnly']
