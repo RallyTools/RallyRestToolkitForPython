@@ -72,15 +72,15 @@ def main(args):
     elif response.resultCount > 1:
         errout('WARNING: more than 1 item returned matching your criteria\n')
 
-    artifact = response.next()
+    artifact = next(response)
     attachments = rally.getAttachments(artifact)
     for attachment in attachments:
-        print "-" * 32
-        print attachment.Name
-        print "~" * len(attachment.Name)
-        print attachment.Content
-        print ""
-        print "=" *  64
+        print("-" * 32)
+        print(attachment.Name)
+        print("~" * len(attachment.Name))
+        print(attachment.Content)
+        print("")
+        print("=" *  64)
 
 #################################################################################################
 #################################################################################################

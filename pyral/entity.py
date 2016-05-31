@@ -151,7 +151,7 @@ class Persistable(object):
         # upon initial access of a Collection type field, we have to detect, retrieve the Collection 
         # and then torch the "lazy" evaluation field marker
         coll_ref_field = '__collection_ref_for_%s' % name
-        if coll_ref_field in self.__dict__.keys():
+        if coll_ref_field in list(self.__dict__.keys()):
             collection_ref = self.__dict__[coll_ref_field]
 ##
 ##            print "  chasing %s collection ref: %s" % (name, collection_ref)
@@ -180,9 +180,9 @@ class Persistable(object):
             so that is retrieved and used to construct the "guts" of RevisionHistory, ie., the Revisions.
         """
         # pull the necessary fragment out from collection query, 
-        rev_hist_raw = collection.data[u'QueryResult'][u'Results']['RevisionHistory']
-        rev_hist_oid = rev_hist_raw[u'ObjectID']
-        revs_ref     = rev_hist_raw[u'Revisions'][u'_ref']  # this is the "true" Revisions collection ref
+        rev_hist_raw = collection.data['QueryResult']['Results']['RevisionHistory']
+        rev_hist_oid = rev_hist_raw['ObjectID']
+        revs_ref     = rev_hist_raw['Revisions']['_ref']  # this is the "true" Revisions collection ref
         # create a RevisionHistory instance with oid, Name and _ref field information
         rev_hist = RevisionHistory(rev_hist_oid, 'RevisonHistory', collection_ref, self._context)
         # chase the revs_ref set the RevisionHistory.Revisions attribute with that Revisions collection
@@ -592,7 +592,7 @@ classFor = { 'Persistable'             : Persistable,
              'SearchObject'            : SearchObject,
            }
 
-for entity_name, entity_class in classFor.items():
+for entity_name, entity_class in list(classFor.items()):
     _rally_entity_cache[entity_name] = entity_name
 entity_class = None # reset...
 
@@ -622,26 +622,26 @@ class SchemaItem(object):
         # Attributes
         # RevisionHistory
         # Subscription, Workspace
-        self.ref    = "/".join(raw_info[u'_ref'].split('/')[-2:])
-        self.ObjectName  = str(raw_info[u'_refObjectName'])
-        self.ElementName = str(raw_info[u'ElementName'])
-        self.Name        = str(raw_info[u'Name'])
-        self.DisplayName = str(raw_info[u'DisplayName'])
-        self.TypePath    = str(raw_info[u'TypePath'])
-        self.IDPrefix    = str(raw_info[u'IDPrefix'])
-        self.Abstract    =     raw_info[u'Abstract']
-        self.Parent      =     raw_info[u'Parent']
+        self.ref    = "/".join(raw_info['_ref'].split('/')[-2:])
+        self.ObjectName  = str(raw_info['_refObjectName'])
+        self.ElementName = str(raw_info['ElementName'])
+        self.Name        = str(raw_info['Name'])
+        self.DisplayName = str(raw_info['DisplayName'])
+        self.TypePath    = str(raw_info['TypePath'])
+        self.IDPrefix    = str(raw_info['IDPrefix'])
+        self.Abstract    =     raw_info['Abstract']
+        self.Parent      =     raw_info['Parent']
         if self.Parent:  # so apparently AdministratableProject doesn't have a Parent object
-            self.Parent = str(self.Parent[u'_refObjectName'])
-        self.Creatable   =     raw_info[u'Creatable']
-        self.Queryable   =     raw_info[u'Queryable']
-        self.ReadOnly    =     raw_info[u'ReadOnly']
-        self.Deletable   =     raw_info[u'Deletable']
-        self.Restorable  =     raw_info[u'Restorable']
-        self.Ordinal     =     raw_info[u'Ordinal']
-        self.RevisionHistory = raw_info[u'RevisionHistory'] # a ref to a Collection, defer chasing for now...
+            self.Parent = str(self.Parent['_refObjectName'])
+        self.Creatable   =     raw_info['Creatable']
+        self.Queryable   =     raw_info['Queryable']
+        self.ReadOnly    =     raw_info['ReadOnly']
+        self.Deletable   =     raw_info['Deletable']
+        self.Restorable  =     raw_info['Restorable']
+        self.Ordinal     =     raw_info['Ordinal']
+        self.RevisionHistory = raw_info['RevisionHistory'] # a ref to a Collection, defer chasing for now...
         self.Attributes  = []
-        for attr in raw_info[u'Attributes']:
+        for attr in raw_info['Attributes']:
             self.Attributes.append(SchemaItemAttribute(attr))
         self.completed = False
 
@@ -709,34 +709,34 @@ class SchemaItem(object):
 class SchemaItemAttribute(object):
     def __init__(self, attr_info):
         self._type    = "AttributeDefinition"
-        self.ref      = "/".join(attr_info[u'_ref'][-2:])
-        self.ObjectName    = str(attr_info[u'_refObjectName'])
-        self.ElementName   = str(attr_info[u'ElementName'])
-        self.Name          = str(attr_info[u'Name'])
-        self.AttributeType = str(attr_info[u'AttributeType'])
-        self.Subscription  =     attr_info[u'Subscription']
-        self.Workspace     =     attr_info[u'Workspace']
-        self.Custom        =     attr_info[u'Custom']
-        self.Required      =     attr_info[u'Required']
-        self.ReadOnly      =     attr_info[u'ReadOnly']
-        self.Filterable    =     attr_info[u'Filterable']
-        self.Hidden        =     attr_info[u'Hidden']
-        self.SchemaType    =     attr_info[u'SchemaType']
-        self.Constrained   =     attr_info[u'Constrained']
-        self.AllowedValueType =  attr_info[u'AllowedValueType'] # has value iff this attribute has allowed values
-        self.AllowedValues    =  attr_info[u'AllowedValues']
-        self.MaxLength        =  attr_info[u'MaxLength']
-        self.MaxFractionalDigits = attr_info[u'MaxFractionalDigits']
-        if self.AllowedValues and type(self.AllowedValues) == types.DictType:
-            self.AllowedValues = str(self.AllowedValues[u'_ref']) # take the ref as value
+        self.ref      = "/".join(attr_info['_ref'][-2:])
+        self.ObjectName    = str(attr_info['_refObjectName'])
+        self.ElementName   = str(attr_info['ElementName'])
+        self.Name          = str(attr_info['Name'])
+        self.AttributeType = str(attr_info['AttributeType'])
+        self.Subscription  =     attr_info['Subscription']
+        self.Workspace     =     attr_info['Workspace']
+        self.Custom        =     attr_info['Custom']
+        self.Required      =     attr_info['Required']
+        self.ReadOnly      =     attr_info['ReadOnly']
+        self.Filterable    =     attr_info['Filterable']
+        self.Hidden        =     attr_info['Hidden']
+        self.SchemaType    =     attr_info['SchemaType']
+        self.Constrained   =     attr_info['Constrained']
+        self.AllowedValueType =  attr_info['AllowedValueType'] # has value iff this attribute has allowed values
+        self.AllowedValues    =  attr_info['AllowedValues']
+        self.MaxLength        =  attr_info['MaxLength']
+        self.MaxFractionalDigits = attr_info['MaxFractionalDigits']
+        if self.AllowedValues and isinstance(self.AllowedValues, dict):
+            self.AllowedValues = str(self.AllowedValues['_ref']) # take the ref as value
             self._allowed_values = True
             self._allowed_values_resolved = False
-        elif self.AllowedValues and type(self.AllowedValues) == types.ListType:
+        elif self.AllowedValues and isinstance(self.AllowedValues, list):
             buffer = []
             for item in self.AllowedValues:
-                aav = AllowedAttributeValue(0, item[u'StringValue'], None, None)
-                aav.Name        = item[u'StringValue']
-                aav.StringValue = item[u'StringValue']
+                aav = AllowedAttributeValue(0, item['StringValue'], None, None)
+                aav.Name        = item['StringValue']
+                aav.StringValue = item['StringValue']
                 aav._hydrated   = True
                 buffer.append(aav)
             self.AllowedValues = buffer[:]
@@ -759,7 +759,7 @@ class SchemaItemAttribute(object):
             return True
         if self._allowed_values_resolved:
             return True
-        if type(self.AllowedValues) != types.StringType:
+        if not isinstance(self.AllowedValues, bytes):
             return True
         std_av_ref_pattern = '^https?://.*/\w+/-?\d+/AllowedValues$'
         mo = re.match(std_av_ref_pattern, self.AllowedValues)
@@ -792,20 +792,20 @@ class SchemaItemAttribute(object):
         output_lines = [ident_line, misc_line]
 
         if self.AllowedValueType and not self._allowed_values_resolved:
-            avt_ref = "/".join(self.AllowedValueType[u'_ref'].split('/')[-2:])
+            avt_ref = "/".join(self.AllowedValueType['_ref'].split('/')[-2:])
             avt_line = "             AllowedValueType ref: %s" % avt_ref
             #output_lines.append(avt_line)
             avv_ref = "/".join(self.AllowedValues.split('/')[-3:])
             avv_line = "             AllowedValues: %s" % avv_ref
             output_lines.append(avv_line)
         elif self._allowed_values_resolved:
-            if self.AllowedValues and type(self.AllowedValues) == types.ListType:
+            if self.AllowedValues and isinstance(self.AllowedValues, list):
                 avs = []
                 for ix, item in enumerate(self.AllowedValues):
-                   if type(item) == types.DictType:
-                       avs.append(str(item[u'StringValue']))
+                   if isinstance(item, dict):
+                       avs.append(str(item['StringValue']))
                    else:
-                       avs.append(str(item.__dict__[u'StringValue']))
+                       avs.append(str(item.__dict__['StringValue']))
 
                 avv_line = "             AllowedValues: %s" % avs
                 output_lines.append(avv_line)
@@ -822,7 +822,7 @@ def getEntityName(candidate):
     global _rally_entity_cache
 
     official_name = candidate
-    hits = [path for entity, path in _rally_entity_cache.items()
+    hits = [path for entity, path in list(_rally_entity_cache.items())
                     if '/' in path and path.split('/')[1] == candidate]
 ##
 ##    print "for candidate |%s|  hits: |%s|" % (candidate, hits)
@@ -869,17 +869,17 @@ def processSchemaInfo(workspace, schema_info):
         _rally_schema[wksp_ref][item.ElementName] = item
         if item.Abstract:
             continue
-        if  not _rally_entity_cache.has_key(item.ElementName):
+        if  item.ElementName not in _rally_entity_cache:
             _rally_entity_cache[item.ElementName] = item.ElementName
         if item.TypePath != item.ElementName:
             _rally_schema[wksp_ref][item.TypePath] = item
-            if not _rally_entity_cache.has_key(item.TypePath):
+            if item.TypePath not in _rally_entity_cache:
                 _rally_entity_cache[item.TypePath] = item.TypePath
     _rally_schema[wksp_ref]['Story']     = _rally_schema[wksp_ref]['HierarchicalRequirement']
     _rally_schema[wksp_ref]['UserStory'] = _rally_schema[wksp_ref]['HierarchicalRequirement']
 
-    unaccounted_for_entities = [entity_name for entity_name in _rally_schema[wksp_ref].keys()
-                                             if  not classFor.has_key(entity_name)
+    unaccounted_for_entities = [entity_name for entity_name in list(_rally_schema[wksp_ref].keys())
+                                             if  entity_name not in classFor
                                              and not entity_name.startswith('ObjectAttr')
                                ]
     for entity_name in unaccounted_for_entities:
@@ -889,7 +889,7 @@ def processSchemaInfo(workspace, schema_info):
         entity = _rally_schema[wksp_ref][entity_name]
         typePath = entity.TypePath
         pyralized_class_name = str(typePath.replace('/', '_'))
-        if not classFor.has_key(pyralized_class_name):
+        if pyralized_class_name not in classFor:
             parentClass = WorkspaceDomainObject
             if entity.Parent:
                 try:
@@ -906,7 +906,7 @@ def getSchemaItem(workspace, entity_name):
     if wksp_ref not in _rally_schema:
         raise Exception("Fault: no _rally_schema info for %s" % wksp_ref)
     schema = _rally_schema[wksp_ref]
-    if not schema.has_key(entity_name):
+    if entity_name not in schema:
         return None
     return schema[entity_name]
 

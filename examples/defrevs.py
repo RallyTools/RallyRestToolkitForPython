@@ -29,13 +29,13 @@ def main(args):
 
     defect = rally.get('Defect', fetch=fields, query=criteria, instance=True)
 
-    print "%s  %10.10s  %-11s  %s" % (defect.FormattedID, defect.CreationDate, 
-                                      defect.State, defect.Name)
-    print ""
+    print("%s  %10.10s  %-11s  %s" % (defect.FormattedID, defect.CreationDate,
+                                      defect.State, defect.Name))
+    print("")
     for rev in reversed(defect.RevisionHistory.Revisions):
-        print "%d) %-22.22s %-16.16s %s\n" % \
+        print("%d) %-22.22s %-16.16s %s\n" % \
               (rev.RevisionNumber, rev.CreationDate.replace('T', ' '), 
-               rev.User.DisplayName, rev.Description)
+               rev.User.DisplayName, rev.Description))
 
 #################################################################################################
 #################################################################################################

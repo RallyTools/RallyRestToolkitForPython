@@ -59,8 +59,8 @@ def test_add_attachment():
     candidate_story = "US96"
     response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", 
                                    query='FormattedID = "%s"' % candidate_story)
-    print response.resultCount
-    story = response.next()
+    print(response.resultCount)
+    story = next(response)
     assert len(story.Attachments) == 0
 
     attachment_name = "Addendum.txt"
@@ -72,7 +72,7 @@ def test_add_attachment():
 
     response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", 
                                    query='FormattedID = "%s"' % candidate_story)
-    story = response.next()
+    story = next(response)
     assert len(story.Attachments) == 1
 
 
@@ -84,7 +84,7 @@ def test_get_attachment():
     target = 'FormattedID = "%s"' % candidate_story
     response = rally.get("UserStory", fetch=True, query=target, project=None)
     assert response.resultCount == 1
-    story = response.next()
+    story = next(response)
 ##
     assert True == True
     return True
@@ -153,7 +153,7 @@ def test_detach_attachment():
 
     response = rally.get("UserStory", fetch=True, query=target, project=None)
     assert response.resultCount == 1
-    story = response.next()
+    story = next(response)
     assert len(story.Attachments) == 1
     attachment = story.Attachments[0]
     expected_attachment_name = "Addendum.txt"

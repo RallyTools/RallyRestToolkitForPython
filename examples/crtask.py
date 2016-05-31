@@ -55,9 +55,9 @@ def main(args):
              "Notes"       : "I have really only done some daydreaming wrt this task.  Sorry Jane, I knew you had big plans for Frankie's blowout BBQ next month, but the honeycomb harvest project is taking all my time."
            }
 
-    print "Creating Task ..."
+    print("Creating Task ...")
     task = rally.put('Task', info)
-    print "Created  Task: %s   OID: %s" % (task.FormattedID, task.oid)
+    print("Created  Task: %s   OID: %s" % (task.FormattedID, task.oid))
 
 #################################################################################################
 
@@ -91,9 +91,9 @@ def queryForTasks(rally):
 
     for task in response:
         #print "%s  %s  %s  %s" % (task.__class__.__name__, task.oid, task.name, task._ref)
-        print "%s  %s  %s  %s  %s  %s" % (task.FormattedID,    task.Name, 
+        print("%s  %s  %s  %s  %s  %s" % (task.FormattedID,    task.Name,
                                           task.Workspace.Name, task.Project.Name,
-                                          task.Release.Name,   task.Iteration.Name)
+                                          task.Release.Name,   task.Iteration.Name))
 
 #################################################################################################
 #################################################################################################

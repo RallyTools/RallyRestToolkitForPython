@@ -34,7 +34,7 @@ def main(args):
     rally.enableLogging("rally.history.uptask")
 
     taskID = args.pop()   # for this example use the FormattedID
-    print "attempting to update Task: %s" % taskID
+    print("attempting to update Task: %s" % taskID)
 
     #
     # following assumes there is:
@@ -80,12 +80,12 @@ def main(args):
 
     try:
         task = rally.update('Task', info)
-    except RallyRESTAPIError, details:
+    except RallyRESTAPIError as details:
         sys.stderr.write('ERROR: %s \n' % details)
         sys.exit(2)
 
-    print "Task updated" 
-    print "ObjectID: %s  FormattedID: %s" % (task.oid, task.FormattedID)
+    print("Task updated")
+    print("ObjectID: %s  FormattedID: %s" % (task.oid, task.FormattedID))
 
 #################################################################################################
 #################################################################################################

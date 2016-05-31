@@ -32,10 +32,10 @@ def main(args):
                                    pagesize=200, limit=400)
 
     for defect in response:
-        print "%-8.8s  %-52.52s  %s" % (defect.FormattedID, defect.Name, defect.State)
+        print("%-8.8s  %-52.52s  %s" % (defect.FormattedID, defect.Name, defect.State))
 
-    print "-----------------------------------------------------------------"
-    print response.resultCount, "qualifying defects"
+    print("-" * 65)
+    print(response.resultCount, "qualifying defects")
 
 #################################################################################################
 #################################################################################################

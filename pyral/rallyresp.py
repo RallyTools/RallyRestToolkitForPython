@@ -14,7 +14,7 @@ __version__ = (1, 1, 1)
 
 import sys
 import re
-from exceptions import StopIteration
+#from exceptions import StopIteration
 import json
 from pprint import pprint
 
@@ -114,7 +114,10 @@ class RallyRESTResponse(object):
             return
 
         self._stdFormat  = True
-        self.content     = json.loads(response.content)
+        if response.content.__class__ == bytes:
+            self.content = json.loads(response.content.decode(encoding='utf_8'))
+        else:
+            self.content = json.loads(response.content)
 ##
 ##        print "response content: %s" % self.content
 ##
@@ -134,42 +137,42 @@ class RallyRESTResponse(object):
 ##            print "ImpliedQuery presumed target: |%s|" % target
 ##            print ""
 ##
-            if target not in self.content.keys():
+            if target not in list(self.content.keys()):
                 # check to see if there is a case-insensitive match before upchucking...
-                ckls = [k.lower() for k in self.content.keys()]
+                ckls = [k.lower() for k in list(self.content.keys())]
                 if target.lower() not in ckls:
                     forensic_info = "%s\n%s\n" % (response.status_code, response.content)
                     problem = 'missing _Xx_Result specifier for target %s in following:' % target
                     raise RallyResponseError('%s\n%s' % (problem, forensic_info))
                 else:
                     matching_item_ix = ckls.index(target.lower())
-                    target = self.content.keys()[matching_item_ix]
+                    target = list(self.content.keys())[matching_item_ix]
                     self.target = target
             self._stdFormat = False
             # fudge in the QueryResult.Results.<target> dict keychain
             self._item_type = target
-            self.data = {u'QueryResult': {u'Results' : { target: self.content[target] }}}
-            self.data[u'Errors']   = self.content[target]['Errors']
-            self.data[u'Warnings'] = self.content[target]['Warnings']
+            self.data = {'QueryResult': {'Results' : { target: self.content[target] }}}
+            self.data['Errors']   = self.content[target]['Errors']
+            self.data['Warnings'] = self.content[target]['Warnings']
             del self.content[target]['Errors']    # we just snagged this and repositioned it
             del self.content[target]['Warnings']  # ditto
-            self.data[u'PageSize'] = 1
-            self.data[u'TotalResultCount'] = 1
+            self.data['PageSize'] = 1
+            self.data['TotalResultCount'] = 1
 
         qr = self.data
-        self.errors      =     qr[u'Errors']
-        self.warnings    =     qr[u'Warnings']
-        self.startIndex  = int(qr[u'StartIndex'])       if u'StartIndex'       in qr else 0
-        self.pageSize    = int(qr[u'PageSize'])         if u'PageSize'         in qr else 0
-        self.resultCount = int(qr[u'TotalResultCount']) if u'TotalResultCount' in qr else 0
+        self.errors      =     qr['Errors']
+        self.warnings    =     qr['Warnings']
+        self.startIndex  = int(qr['StartIndex'])       if 'StartIndex'       in qr else 0
+        self.pageSize    = int(qr['PageSize'])         if 'PageSize'         in qr else 0
+        self.resultCount = int(qr['TotalResultCount']) if 'TotalResultCount' in qr else 0
         self._limit      = limit if limit > 0 else self.resultCount
         self._page = []
 
-        if u'Results' in qr:
-            self._page = qr[u'Results']
+        if 'Results' in qr:
+            self._page = qr['Results']
         else:
-            if u'QueryResult' in qr and u'Results' in qr[u'QueryResult']:
-                self._page = qr[u'QueryResult'][u'Results']
+            if 'QueryResult' in qr and 'Results' in qr['QueryResult']:
+                self._page = qr['QueryResult']['Results']
 ##
 ##        print "initial page has %d items" % len(self._page)
 ##
@@ -205,16 +208,16 @@ class RallyRESTResponse(object):
 ##
 
     def _determineRequestResponseType(self, request):
-        if u'OperationResult' in self.content:
-            return 'Operation', self.content[u'OperationResult']
-        if u'QueryResult' in self.content:
-            return 'Query', self.content[u'QueryResult']
-        if u'CreateResult' in self.content:
-            return 'Create', self.content[u'CreateResult']
-        if u'UpdateResult' in self.content:
-            return 'Update', self.content[u'UpdateResult']
-        if u'DeleteResult' in self.content:
-            return 'Delete', self.content[u'DeleteResult']
+        if 'OperationResult' in self.content:
+            return 'Operation', self.content['OperationResult']
+        if 'QueryResult' in self.content:
+            return 'Query', self.content['QueryResult']
+        if 'CreateResult' in self.content:
+            return 'Create', self.content['CreateResult']
+        if 'UpdateResult' in self.content:
+            return 'Update', self.content['UpdateResult']
+        if 'DeleteResult' in self.content:
+            return 'Delete', self.content['DeleteResult']
         if '_CreatedAt' in self.content and self.content['_CreatedAt'] == 'just now':
             return 'Create', self.content
         else:
@@ -237,7 +240,7 @@ class RallyRESTResponse(object):
         else:
             return None
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
             This is for evaluating any invalid response as False.
         """
@@ -249,7 +252,7 @@ class RallyRESTResponse(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """
             Return a hydrated instance from the self.page until the page is exhausted,
             then issue another session.get(...request...) with startIndex
@@ -309,12 +312,12 @@ class RallyRESTResponse(object):
             # have to stuff the item type into the item dict like it is for the _stdFormat responses
             #
             item = self._page[self._item_type]
-            item_type_key = u'_type'
+            item_type_key = '_type'
             if item_type_key not in item:
-                item[item_type_key] = unicode(self._item_type) 
+                item[item_type_key] = str(self._item_type) 
 
-        del item[u'_rallyAPIMajor']
-        del item[u'_rallyAPIMinor']
+        del item['_rallyAPIMajor']
+        del item['_rallyAPIMinor']
 ##
 ##        print " next item served is a %s" % self._item_type
 ##        print "RallyRESTResponse.next, item before call to to hydrator.hydrateInstance"
@@ -353,14 +356,17 @@ class RallyRESTResponse(object):
             sys.exit(9)
             return []
 
-        content = json.loads(response.content)
-        return content[u'QueryResult'][u'Results']
+        if response.content.__class__ == bytes:
+            content = json.loads(response.content.decode(encoding='utf_8'))
+        else:
+            content = json.loads(response.content)
+        return content['QueryResult']['Results']
 
 
     def __repr__(self):
         if self.status_code == 200 and self._page:
             try:
-                entity_type = self._page[0][u'_type']
+                entity_type = self._page[0]['_type']
                 return "%s result set, totalResultSetSize: %d, startIndex: %s  pageSize: %s  current Index: %s" % \
                    (entity_type, self.resultCount, self.startIndex, self.pageSize, self._curIndex)
             except:

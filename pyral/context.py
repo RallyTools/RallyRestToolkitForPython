@@ -163,8 +163,8 @@ class RallyContextHelper(object):
             timer_stop = time.time()
         except Exception as ex:
 ##
-            print "-----"
-            print str(ex)
+            print("-----")
+            print(str(ex))
 ##
             if str(ex.args[0]).startswith('404 Service unavailable'):
                 # TODO: discern whether we should mention server or target_host as the culprit
@@ -230,7 +230,7 @@ class RallyContextHelper(object):
         sub = self.agent.get('Subscription', fetch=True, _disableAugments=True)
         if sub.errors:
             raise Exception(sub.errors[0])
-        subscription = sub.next()
+        subscription = next(sub)
         self._subs_name = subscription.Name
         self.context.subs_name = subscription.Name
         wksp_coll_ref_base = "%s/Workspaces" % subscription._ref
@@ -259,7 +259,7 @@ class RallyContextHelper(object):
 ##        #pprint(response.data[u'Results'])
 ##        pprint(response.data)
 ##
-        user = response.next()
+        user = next(response)
 ##
 ##        print user.details()
 ##
@@ -274,7 +274,7 @@ class RallyContextHelper(object):
 ##        sys.stdout.flush()
 ##
         resp = RallyRESTResponse(self.agent, self.context, 'UserProfile', upraw, "full", 0)
-        up = resp.data[u'QueryResult'][u'Results']['UserProfile']
+        up = resp.data['QueryResult']['Results']['UserProfile']
 ##
 ##        print "got the UserProfile info..."
 ##        pprint(up)
@@ -306,7 +306,7 @@ class RallyContextHelper(object):
 ##
             if projects:
                 try:
-                    proj = projects.next()
+                    proj = next(projects)
                     proj_ref = proj._ref
                     self._defaultProject = proj.Name
                     self._currentProject = proj.Name
@@ -364,7 +364,7 @@ class RallyContextHelper(object):
                 # make sure that entity._rally_schema gets filled for this workspace
                 # this will fault and be caught if getSchemaItem raises an Exception
                 getSchemaItem(self.getWorkspace(), 'Defect')
-            except Exception, msg:
+            except Exception as msg:
                 schema_info = self.agent.getSchemaInfo(self.getWorkspace())
                 processSchemaInfo(self.getWorkspace(), schema_info)
         else:
@@ -464,7 +464,7 @@ class RallyContextHelper(object):
 ##                print "   self._workspaces augmented, now has your target workspace"
 ##                sys.stdout.flush()
 ##
-        for projName, projRef in self._project_ref[workspace].items():
+        for projName, projRef in list(self._project_ref[workspace].items()):
             projectInfo.append((projName, projRef))
         return projectInfo
 
@@ -482,12 +482,12 @@ class RallyContextHelper(object):
         current_valid_projects = self.getAccessibleProjects(self._currentWorkspace)
         proj_names = sorted([name for name, ref in current_valid_projects])
         proj_refs  = self._project_ref[self._currentWorkspace]
-        if unicode(self._defaultProject) in proj_names and unicode(self._currentProject) in proj_names:
+        if str(self._defaultProject) in proj_names and str(self._currentProject) in proj_names:
             return (self._defaultProject, proj_refs[self._defaultProject])
 
-        if unicode(self._defaultProject) not in proj_names:
+        if str(self._defaultProject) not in proj_names:
             self._defaultProject = proj_names[0]
-        if unicode(self._currentProject) not in proj_names:
+        if str(self._currentProject) not in proj_names:
             self.setProject(self._defaultProject)
         return (self._defaultProject, proj_refs[self._defaultProject])
 
@@ -643,11 +643,14 @@ class RallyContextHelper(object):
             self._projects[     workspace.Name] = []
             self._project_ref[  workspace.Name] = {}
             resp = self.agent._getResourceByOID( self.context, 'workspace', workspace.oid, _disableAugments=True)
-            response = json.loads(resp.content)
+            if resp.content.__class__ == bytes:
+                response = json.loads(resp.content.decode(encoding='utf_8'))
+            else:
+                response = json.loads(resp.content)
             # If SLM gave back consistent responses, we could use RallyRESTResponse, but no joy...
             # Carefully weasel into the response to get to the guts of what we need
             # and note we specify only the necessary fetch fields or this query takes a *lot* longer...
-            base_proj_coll_url = response['Workspace']['Projects'][u'_ref']
+            base_proj_coll_url = response['Workspace']['Projects']['_ref']
             projects_collection_url = '%s?fetch="ObjectID,Name,State"&pagesize=200&start_index=1' % base_proj_coll_url
             response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
 #not-as-bad?#            response = self.agent.get('Project', fetch="ObjectID,Name,State", workspace=workspace.Name)
