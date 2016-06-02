@@ -23,10 +23,10 @@ def main(args):
     rally.enableLogging('rally.hist.periscope')  # name of file for logging content
 
     for workspace in rally.getWorkspaces():
-        print "%s %s" % (workspace.oid, workspace.Name)
+        print("%s %s" % (workspace.oid, workspace.Name))
         for project in rally.getProjects(workspace=workspace.Name):
-            print "    %12.12s  %-36.36s   |%s|" % (project.oid, project.Name, project.State)
-        print ""
+            print("    %12.12s  %-36.36s   |%s|" % (project.oid, project.Name, project.State))
+        print("")
 
 #################################################################################################
 #################################################################################################

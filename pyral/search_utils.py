@@ -26,7 +26,7 @@ def flatten(target_dict, sort_attr, list_o_things):
         keys to be in a flat list of values.
         
     """
-    for key in sorted(target_dict.keys(), key=attrgetter(sort_attr)):
+    for key in sorted(list(target_dict.keys()), key=attrgetter(sort_attr)):
         list_o_things.append(getattr(key, sort_attr))
         value = target_dict[key]
         if isinstance(value, dict):
@@ -56,6 +56,6 @@ class MockRallyRESTResponse(object):
     def __iter__(self):
         return self.items
 
-    def next(self):
-        return self.items.next()
+    def __next__(self):
+        return next(self.items)
 
