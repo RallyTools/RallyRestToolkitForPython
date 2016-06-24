@@ -1421,7 +1421,7 @@ class Rally(object):
                 return already_attached[0]
 
         contents = ''
-        with open(filename, 'r') as af:
+        with open(filename, 'rb') as af:
             contents = base64.b64encode(af.read())
             
         # create an AttachmentContent item
