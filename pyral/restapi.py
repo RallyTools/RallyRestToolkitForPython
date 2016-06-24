@@ -571,8 +571,9 @@ class Rally(object):
             mups = [prof for prof in profiles 
                           if hasattr(user, 'UserProfile') and prof._ref == user.UserProfile._ref] 
             if not mups:
+                UserProfile = user.UserProfile if hasattr(user,'UserProfile') else "Unknown"
                 problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
-                warning("%s" % (problem % (user.DisplayName, user.UserProfile)))
+                warning("%s" % (problem % (user.DisplayName, UserProfile)))
                 continue
             else:
                 if len(mups) > 1:
@@ -1421,7 +1422,7 @@ class Rally(object):
                 return already_attached[0]
 
         contents = ''
-        with open(filename, 'r') as af:
+        with open(filename, 'rb') as af:
             contents = base64.b64encode(af.read())
             
         # create an AttachmentContent item
