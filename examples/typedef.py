@@ -59,7 +59,7 @@ def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
     if not args:
-        print "You must supply an entity name!"
+        print("You must supply an entity name!")
         sys.exit(1)
 
     query = ""
@@ -84,11 +84,11 @@ def main(args):
     typedef = rally.typedef(target)
     showAttributes(typedef.Attributes)
 
-    print ""
-    print "-" * 64
-    print ""
+    print("")
+    print("-" * 64)
+    print("")
     for ix, ancestor in enumerate(typedef.inheritanceChain()):
-        print "%s %s" % (" " * (ix*4), ancestor)
+        print("%s %s" % (" " * (ix*4), ancestor))
 
 #################################################################################################
 
@@ -129,7 +129,7 @@ def showAttributes(attributes):
             tank.append("     ...  %d more values not shown" % (len(allowedValues) - av_limit))
 
     for item in required + optional:
-        print item.encode('utf-8')
+        print(item.encode('utf-8'))
 
 #################################################################################################
 #################################################################################################

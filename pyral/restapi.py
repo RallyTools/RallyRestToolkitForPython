@@ -15,7 +15,7 @@ import sys, os
 import re
 import types
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import json
 import string
 import base64
@@ -116,7 +116,7 @@ def getCollection(context, collection_url, **kwargs):
     global _rallyCache
     rallyContext = _rallyCache.get(context, None)
     if not rallyContext:
-        ck_matches = [rck for rck in _rallyCache.keys() if rck.identity() == context.identity()]
+        ck_matches = [rck for rck in list(_rallyCache.keys()) if rck.identity() == context.identity()]
         if ck_matches:
             rck = ck_matches.pop()
             rallyContext = _rallyCache[rck]
@@ -304,7 +304,7 @@ class Rally(object):
             security_service_url = "%s/%s" % (self.service_url, AUTH_ENDPOINT)
             response = self.session.get(security_service_url)
             doc = json.loads(response.content)
-            self._sec_token = str(doc[u'OperationResult'][u'SecurityToken'])
+            self._sec_token = str(doc['OperationResult']['SecurityToken'])
 
         return self._sec_token
 
@@ -319,7 +319,7 @@ class Rally(object):
         self._log = True
         if hasattr(dest, 'write'):
             self._logDest = dest
-        elif type(dest) == types.StringType:
+        elif type(dest) == bytes:
             try:
                 mode = 'w'
                 if append:
@@ -670,7 +670,7 @@ class Rally(object):
             raise RallyRESTAPIError('%s %s' % (response.status_code, problem))
 
         response = RallyRESTResponse(self.session, context, '%s.x' % entityName, response, "full", 1)
-        item = response.next()
+        item = next(response)
         return item    # return back an instance representing the item
 
 
@@ -699,19 +699,19 @@ class Rally(object):
             Return the item_dict with any updates to COLLECTIONS attributes that
             needed "greasing".
         """
-        collection_attributes = [attr_name for attr_name in item_data.keys()
+        collection_attributes = [attr_name for attr_name in list(item_data.keys())
                                             if attr_name.lower == 'children'
                                             or attr_name[-1] == 's'
                                 ]
         if not collection_attributes:
             return item_data
         for attr_name in collection_attributes:
-            if type(item_data[attr_name]) != types.ListType:
+            if type(item_data[attr_name]) != list:
                 continue
             obj_list = []
             for value in item_data[attr_name]:
                 # is value like "someentityname/34223214" ?
-                if type(value) == types.StringType and '/' in value \
+                if type(value) == bytes and '/' in value \
                 and re.match('^\d+$', value.split('/')[-1]):
                     obj_list.append({"_ref" : value})  # transform to a dict instance
                 else:
@@ -748,11 +748,11 @@ class Rally(object):
         elif fetch in ['false', 'False', False]:
             fetch = 'false'
             self.hydration = "shell"
-        elif type(fetch) == types.StringType and fetch.lower() != 'false':
+        elif type(fetch) == bytes and fetch.lower() != 'false':
             self.hydration = "full"
-        elif type(fetch) in [types.ListType, types.TupleType]:
+        elif type(fetch) in [list, tuple]:
             attr_info = self.validateAttributeNames(entity, dict([(attr_name,True) for attr_name in fetch])) 
-            fetch = ",".join(k for k in attr_info.keys())
+            fetch = ",".join(k for k in list(attr_info.keys()))
             self.hydration = "full"
 
         entity = self._officialRallyEntityName(entity)
@@ -870,13 +870,13 @@ class Rally(object):
 
         if self._log: 
             #urllib.unquote the resource for enhanced readability
-            self._logDest.write('%s GET %s\n' % (timestamp(), urllib.unquote(resource)))
+            self._logDest.write('%s GET %s\n' % (timestamp(), urllib.parse.unquote(resource)))
             self._logDest.flush()
 
         response = self._getRequestResponse(context, full_resource_url, limit)
             
         if kwargs and 'instance' in kwargs and kwargs['instance'] == True and response.resultCount == 1:
-            return response.next()
+            return next(response)
         return response
 
     find = get # offer interface approximately matching Ruby Rally REST API, App SDK Javascript RallyDataSource
@@ -952,8 +952,8 @@ class Rally(object):
                 self._logDest.flush()
             raise RallyRESTAPIError('%s %s' % (response.status_code, desc))
 
-        item = response.content[u'CreateResult'][u'Object']
-        ref  = str(item[u'_ref'])
+        item = response.content['CreateResult']['Object']
+        ref  = str(item['_ref'])
         item_oid = int(ref.split('/')[-1])
         desc = "created %s OID: %s" % (entityName, item_oid)
         if self._log:
@@ -995,7 +995,7 @@ class Rally(object):
             if response.status_code != HTTP_REQUEST_SUCCESS_CODE or response.resultCount == 0:
                 raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, formattedID))
                 
-            target = response.next()
+            target = next(response)
             oid = target.ObjectID
 ##
 ##            print "target OID: %s" % oid
@@ -1054,7 +1054,7 @@ class Rally(object):
             if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
                 raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, itemIdent))
                 
-            target = response.next()
+            target = next(response)
             objectID = target.ObjectID
 ##
 ##            if kwargs.get('debug', False):
@@ -1142,9 +1142,9 @@ class Rally(object):
         kwargs['_slug'] = "/search"
         kwargs['pagesize'] = 200
         kwargs['searchScope'] = 'project'
-        if not kwargs.has_key('projectScopeUp'):
+        if 'projectScopeUp' not in kwargs:
             kwargs['projectScopeUp'] = False
-        if not kwargs.has_key('projectScopeDown'):
+        if 'projectScopeDown' not in kwargs:
             kwargs['projectScopeDown'] = False
 
         # unfortunately, the WSAPI seems to not recognize/operate on projectScopeX, searchScopeX parameters...
@@ -1167,16 +1167,16 @@ class Rally(object):
         #resource_url = "%s&pagesize=%s" % (left, right)
 
         url, query_string = resource_url.split('?', 1)
-        resource_url = "%s?keywords=%s&%s" % (url, urllib.quote(keywords), query_string)
+        resource_url = "%s?keywords=%s&%s" % (url, urllib.parse.quote(keywords), query_string)
 ##
-        print resource_url
+        print(resource_url)
 ##
         response = self._getRequestResponse(context, resource_url, limit)
         if response.errors:
             error_text = response.errors[0]
             raise RallyRESTAPIError(error_text)
 ##
-        print response.data
+        print(response.data)
 ##
 
         # since the WSAPI apparently doesn't pay attention to scoping (projectScopeUp, projectScopeDown, searchScopeUp, searchScopeDown)
@@ -1245,7 +1245,7 @@ class Rally(object):
         # We don't use it here as we don't account for the potential of a _really_ long winded process during which
         # Rally schema changes may be made.
         #print response.content
-        return json.loads(response.content)[u'QueryResult'][u'Results']
+        return json.loads(response.content)['QueryResult']['Results']
 
 
     def typedef(self, target_type):
@@ -1284,7 +1284,7 @@ class Rally(object):
         #             ElementName, lower case ElementName, lower case Name
         txfmed_item_data = {}
         invalid_attrs = []
-        for item_attr_name, item_attr_value in itemData.items():
+        for item_attr_name, item_attr_value in list(itemData.items()):
             eln_hits = [eln for eln, ell, anl in attr_forms if item_attr_name == eln]
             if eln_hits:  # is the item_attr_name an exact match for an Attribute.ElementName ?
                 txfmed_item_data[item_attr_name] = item_attr_value
@@ -1353,7 +1353,7 @@ class Rally(object):
         state_ix = {}
         for state in [item for item in response]:
             state_ix[(state.OrderIndex, state.Name)] = state
-        state_keys = sorted(state_ix.keys(), key=itemgetter(0))
+        state_keys = sorted(list(state_ix.keys()), key=itemgetter(0))
         states = [state_ix[key] for key in state_keys]
         return states
 
@@ -1415,7 +1415,7 @@ class Rally(object):
 
         response = self.get('Attachment', fetch=True, query='Name = "%s"' % attachment_file_name)
         if response.resultCount:
-            attachment = response.next()
+            attachment = next(response)
             already_attached = [att for att in current_attachments if att.oid == attachment.oid]
             if already_attached:
                 return already_attached[0]
@@ -1469,7 +1469,7 @@ class Rally(object):
             ct_item =     attachment.get('mime_type',    None) or attachment.get('MimeType',    None) \
                       or  attachment.get('content_type', None) or attachment.get('ContentType', None)
             if not ct_item:
-                print "Bypassing attachment for %s, no mime_type/ContentType setting..." % att_name
+                print("Bypassing attachment for %s, no mime_type/ContentType setting..." % att_name)
                 continue
             candidates.append(att_name)
             upd_artifact = self.addAttachment(artifact, att_name, mime_type=ct_item)
@@ -1512,7 +1512,7 @@ class Rally(object):
         response = RallyRESTResponse(self.session, context, "AttachmentContent.x", resp, "full", 1)
         if response.errors or response.resultCount != 1:
             return None
-        att_content = response.next()
+        att_content = next(response)
         att.Content = base64.decodestring(att_content.Content)  # maybe further txfm to Unicode ?
         return att
 
@@ -1561,12 +1561,12 @@ class Rally(object):
         if attachment.Content and attachment.Content.oid:
             success = self.delete('AttachmentContent', attachment.Content.oid, project=None)
             if not success:
-                print "ERROR: Unable to delete AttachmentContent item for %s" % attachment.Name
+                print("ERROR: Unable to delete AttachmentContent item for %s" % attachment.Name)
                 return False
 
         deleted = self.delete('Attachment', attachment.oid, project=None)
         if not deleted:
-            print "ERROR: Unable to delete Attachment for %s" % attachment.Name
+            print("ERROR: Unable to delete Attachment for %s" % attachment.Name)
             return False
         remaining_attachments = [att for att in current_attachments if att.ref != attachment.ref]
         att_refs = [dict(_ref=str(att.ref)) for att in remaining_attachments]
@@ -1602,7 +1602,7 @@ class Rally(object):
             art_type = self.ARTIFACT_TYPE[prefix]
             response = self.get(art_type, fetch=True, query='FormattedID = %s' % artifact)
             if response.resultCount == 1:
-                artifact = response.next()
+                artifact = next(response)
             else:
                 art_type = False
         else: # artifact isn't anything we can deal with here...

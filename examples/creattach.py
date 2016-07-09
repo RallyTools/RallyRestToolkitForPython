@@ -72,7 +72,7 @@ def main(args):
     #print "%s user oid: %s" % (user, me.oid)
 
     att = rally.addAttachment(artifact, attachment_file_name)
-    print "created Attachment: %s for %s" % (attachment_file_name, target)
+    print("created Attachment: %s for %s" % (attachment_file_name, target))
 
 #################################################################################################
 
@@ -102,7 +102,7 @@ def validateTarget(rally, target):
         errout('ERROR: more than 1 item returned matching your criteria for the target\n')
         sys.exit(6)
     
-    artifact = response.next()
+    artifact = next(response)
 
     return artifact
 
