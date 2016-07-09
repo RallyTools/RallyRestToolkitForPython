@@ -643,7 +643,7 @@ class RallyContextHelper(object):
             self._projects[     workspace.Name] = []
             self._project_ref[  workspace.Name] = {}
             resp = self.agent._getResourceByOID( self.context, 'workspace', workspace.oid, _disableAugments=True)
-            response = json.loads(resp.content)
+            response = json.loads(resp.content.decode("utf-8"))
             # If SLM gave back consistent responses, we could use RallyRESTResponse, but no joy...
             # Carefully weasel into the response to get to the guts of what we need
             # and note we specify only the necessary fetch fields or this query takes a *lot* longer...

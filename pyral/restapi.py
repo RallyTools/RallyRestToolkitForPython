@@ -303,7 +303,7 @@ class Rally(object):
         if not self._sec_token:
             security_service_url = "%s/%s" % (self.service_url, AUTH_ENDPOINT)
             response = self.session.get(security_service_url)
-            doc = json.loads(response.content)
+            doc = json.loads(response.content.decode("utf-8"))
             self._sec_token = str(doc['OperationResult']['SecurityToken'])
 
         return self._sec_token
@@ -1245,7 +1245,7 @@ class Rally(object):
         # We don't use it here as we don't account for the potential of a _really_ long winded process during which
         # Rally schema changes may be made.
         #print response.content
-        return json.loads(response.content)['QueryResult']['Results']
+        return json.loads(response.content.decode("utf-8"))['QueryResult']['Results']
 
 
     def typedef(self, target_type):

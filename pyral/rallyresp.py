@@ -114,7 +114,7 @@ class RallyRESTResponse(object):
             return
 
         self._stdFormat  = True
-        self.content     = json.loads(response.content)
+        self.content     = json.loads(response.content.decode("utf-8"))
 ##
 ##        print "response content: %s" % self.content
 ##
@@ -353,7 +353,7 @@ class RallyRESTResponse(object):
             sys.exit(9)
             return []
 
-        content = json.loads(response.content)
+        content = json.loads(response.content.decode("utf-8"))
         return content['QueryResult']['Results']
 
 
