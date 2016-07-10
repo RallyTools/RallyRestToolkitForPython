@@ -15,7 +15,13 @@ import sys, os
 import re
 import types
 import time
-import urllib.request, urllib.parse, urllib.error
+if sys.version_info < (3, 0):
+    import urllib # for errors
+    from urllib import quote, unquote
+else: # 3.0+
+    from urllib.parse import quote, unquote
+    import urllib.request
+    import urllib.error # for errors
 import json
 import string
 import base64
@@ -870,7 +876,7 @@ class Rally(object):
 
         if self._log: 
             #urllib.unquote the resource for enhanced readability
-            self._logDest.write('%s GET %s\n' % (timestamp(), urllib.parse.unquote(resource)))
+            self._logDest.write('%s GET %s\n' % (timestamp(), unquote(resource)))
             self._logDest.flush()
 
         response = self._getRequestResponse(context, full_resource_url, limit)
@@ -1167,7 +1173,7 @@ class Rally(object):
         #resource_url = "%s&pagesize=%s" % (left, right)
 
         url, query_string = resource_url.split('?', 1)
-        resource_url = "%s?keywords=%s&%s" % (url, urllib.parse.quote(keywords), query_string)
+        resource_url = "%s?keywords=%s&%s" % (url, quote(keywords), query_string)
 ##
         print(resource_url)
 ##

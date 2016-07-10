@@ -2,7 +2,13 @@
 
 import sys, os
 import types
-import urllib.request, urllib.parse, urllib.error
+if sys.version_info < (3, 0):
+    import urllib # for errors
+    from urllib import quote, unquote
+else: # 3.0+
+    from urllib.parse import quote, unquote
+    import urllib.request
+    import urllib.error # for errors
 import py
 
 from pyral import Rally
@@ -354,19 +360,19 @@ def test_query_target_value_with_ampersand():
     """
     criteria = ['Project.Name = R&D']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.parse.unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
 
     criteria = ['Project.Name = "R&D"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.parse.unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
 
     criteria = ['Project.Name contains "R&D"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.parse.unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
 
     criteria = 'Railhead.Company.Name != "Atchison Topeka & Santa Fe & Cunard Lines"'
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.parse.unquote(result) == criteria.replace('&', '%26')
+    assert unquote(result) == criteria.replace('&', '%26')
 
 
 def test_query_target_value_with_and():

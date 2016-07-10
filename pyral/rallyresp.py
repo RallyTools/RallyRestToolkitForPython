@@ -74,8 +74,8 @@ class RallyRESTResponse(object):
         self.data     = None
         request_path_elements = request.split('?')[0].split('/')
 ##
-##        print "RRR.init request: =  %s " % request
-##        print "RRR.init request_path_elements =  %s " % repr(request_path_elements)
+##        print("RRR.init request: =  %s " % request)
+##        print("RRR.init request_path_elements =  %s " % repr(request_path_elements))
 ##
         self.target = request_path_elements[-1]
         if re.match('^\d+$', self.target):
@@ -87,9 +87,9 @@ class RallyRESTResponse(object):
         self.warnings = []
         self._item_type  = self.target
 ##
-##        print "+" * 85
-##        print "resource: ", self.resource
-##        print "response is a %s" % type(response)
+##        print("+" * 85)
+##        print("resource: ", self.resource)
+##        print("response is a %s" % type(response))
 ##        # with attributes of status_code, content, data
 ##        # The content is a string that needs to be turned into a json object
 ##        # the json dict should have a key named 'QueryResult' or 'CreateResult' or
@@ -98,14 +98,14 @@ class RallyRESTResponse(object):
         self.status_code = response.status_code
         self.headers     = response.headers
 ##
-##        print "RallyRESTResponse.status_code is %s" % self.status_code
-##        print "RallyRESTResponse.headers: %s" % repr(self.headers)
+##        print("RallyRESTResponse.status_code is %s" % self.status_code)
+##        print("RallyRESTResponse.headers: %s" % repr(self.headers))
 ##        # response has these keys: url, status_code, headers, raw, _content, encoding, reason, elapsed, history, connection
 ##
 ##        if self.status_code == 405:
-##            print "RallyRESTResponse.status_code is %s" % self.status_code
-##            print response.content
-##            print "x" * 80
+##            print("RallyRESTResponse.status_code is %s" % self.status_code)
+##            print(response.content)
+##            print("x" * 80)
 ##
         if isinstance(response, ErrorResponse):
             if 'OperationResult' in response.content:
@@ -116,11 +116,11 @@ class RallyRESTResponse(object):
         self._stdFormat  = True
         self.content     = json.loads(response.content.decode("utf-8"))
 ##
-##        print "response content: %s" % self.content
+##        print("response content: %s" % self.content)
 ##
         self.request_type, self.data = self._determineRequestResponseType(request)
 ##
-##        print "RallyRESTResponse request_type: %s for %s" % (self.request_type, self._item_type)
+##        print("RallyRESTResponse request_type: %s for %s" % (self.request_type, self._item_type))
 ##
 
         if self.request_type == 'ImpliedQuery':
@@ -131,8 +131,8 @@ class RallyRESTResponse(object):
             if target.endswith('.x'):
                 target = target[:-2]
 ##
-##            print "ImpliedQuery presumed target: |%s|" % target
-##            print ""
+##            print("ImpliedQuery presumed target: |%s|" % target)
+##            print("")
 ##
             if target not in list(self.content.keys()):
                 # check to see if there is a case-insensitive match before upchucking...
@@ -171,13 +171,13 @@ class RallyRESTResponse(object):
             if 'QueryResult' in qr and 'Results' in qr['QueryResult']:
                 self._page = qr['QueryResult']['Results']
 ##
-##        print "initial page has %d items" % len(self._page)
+##        print("initial page has %d items" % len(self._page))
 ##
 
         if qr.get('Object', None):
             self._page = qr['Object']['_ref']
 ##
-##        print "%d items in the results starting at index: %d" % (self.resultCount, self.startIndex)
+##        print("%d items in the results starting at index: %d" % (self.resultCount, self.startIndex))
 ##
 
         # for whatever reason, some queries where a start index is unspecified
@@ -196,12 +196,12 @@ class RallyRESTResponse(object):
             # transform the status code to an error code indicating an Unprocessable Entity if not already an error code
             self.status_code = 422 if self.status_code == 200 else self.status_code
 ##
-##        print "RallyRESTResponse, self.target: |%s|" % self.target
-##        print "RallyRESTResponse._page: %s" % self._page
-##        print "RallyRESTResponse, self.resultCount: |%s|" % self.resultCount
-##        print "RallyRESTResponse, self.startIndex : |%s|" % self.startIndex
-##        print "RallyRESTResponse, self._servable  : |%s|" % self._servable
-##        print ""
+##        print("RallyRESTResponse, self.target: |%s|" % self.target)
+##        print("RallyRESTResponse._page: %s" % self._page)
+##        print("RallyRESTResponse, self.resultCount: |%s|" % self.resultCount)
+##        print("RallyRESTResponse, self.startIndex : |%s|" % self.startIndex)
+##        print("RallyRESTResponse, self._servable  : |%s|" % self._servable)
+##        print("")
 ##
 
     def _determineRequestResponseType(self, request):
@@ -219,9 +219,9 @@ class RallyRESTResponse(object):
             return 'Create', self.content
         else:
 ##
-##            print "????? request type an ImpliedQuery?: %s" % request
-##            print self.content
-##            print "=" * 80
+##            print("????? request type an ImpliedQuery?: %s" % request)
+##            print(self.content)
+##            print("=" * 80)
 ##
             return 'ImpliedQuery', self.content
 
@@ -256,16 +256,16 @@ class RallyRESTResponse(object):
             of startIndex + pageSize.  raise the IteratorException when there are no more instances
             that can be manufactured (self._curIndex > self.resultCount)
         """
-##
-##        print "RallyRestResponse for %s, _stdFormat?: %s, _servable: %d  _limit: %d  _served: %d " % \
-##              (self.target, self._stdFormat, self._servable, self._limit, self._served)
-##
+
+##        print("RallyRestResponse for %s, _stdFormat?: %s, _servable: %d  _limit: %d  _served: %d " % \
+##              (self.target, self._stdFormat, self._servable, self._limit, self._served))
+
         if (self._served >= self._servable) or (self._limit and self._served >= self._limit):
             raise StopIteration
 
         if self._stdFormat:
 ##
-##            print "RallyRESTResponse.next, _stdFormat detected"
+##            print("RallyRESTResponse.next, _stdFormat detected")
 ##
             if self._curIndex == self.pageSize:
                 self._page[:]  = self.__retrieveNextPage()
@@ -303,7 +303,7 @@ class RallyRESTResponse(object):
         else:  # the Response had a non-std format
 ##
 ##            blurb = "item from page is a %s, but Response was not in std-format" % self._item_type
-##            print "RallyRESTResponse.next: %s" % blurb
+##            print("RallyRESTResponse.next: %s" % blurb)
 ##
             #
             # have to stuff the item type into the item dict like it is for the _stdFormat responses
@@ -316,20 +316,23 @@ class RallyRESTResponse(object):
         del item['_rallyAPIMajor']
         del item['_rallyAPIMinor']
 ##
-##        print " next item served is a %s" % self._item_type
-##        print "RallyRESTResponse.next, item before call to to hydrator.hydrateInstance"
+##        print(" next item served is a %s" % self._item_type)
+##        print("RallyRESTResponse.next, item before call to to hydrator.hydrateInstance")
 ##        for key in sorted(item.keys()):
-##            print "    %20.20s: %s" % (key, item[key])
-##        print "+ " * 30
+##            print("    %20.20s: %s" % (key, item[key]))
+##        print("+ " * 30)
 ##
         entityInstance = self.hydrator.hydrateInstance(item)
         self._curIndex += 1
         self._served   += 1
 ##
-##        print " next item served is a %s" % entityInstance._type
+##        print(" next item served is a %s" % entityInstance._type)
 ##
         return entityInstance
 
+    # python2 compatibility for iterators
+    if sys.version_info < (3, 0):
+        next = __next__
 
     def __retrieveNextPage(self):
         """
@@ -340,9 +343,9 @@ class RallyRESTResponse(object):
         if not nextPageUrl.startswith('http'):
             nextPageUrl = '%s/%s' % (self.context.serviceURL(), nextPageUrl)
 ##
-##        print ""
-##        print "full URL for next page of data:\n    %s" % nextPageUrl
-##        print ""
+##        print("")
+##        print("full URL for next page of data:\n    %s" % nextPageUrl)
+##        print("")
 ##
         try:
             response = self.session.get(nextPageUrl)

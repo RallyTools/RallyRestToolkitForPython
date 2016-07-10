@@ -9,8 +9,15 @@
 __version__ = (1, 1, 1)
 
 import re
+import sys
 import types
-import urllib.request, urllib.parse, urllib.error
+if sys.version_info < (3, 0):
+    import urllib # for errors
+    from urllib import quote, unquote
+else: # 3.0+
+    from urllib.parse import quote, unquote
+    import urllib.request
+    import urllib.error # for errors
 
 ###################################################################################################
 
@@ -62,7 +69,7 @@ class RallyUrlBuilder(object):
 ##
             qualifiers.append("query=(%s)" % query_string)
         if self.order:
-            qualifiers.append("order=%s" % urllib.parse.quote(self.order))
+            qualifiers.append("order=%s" % quote(self.order))
         if self.workspace:
             qualifiers.append(self.workspace)
         if self.project:
@@ -138,9 +145,9 @@ class RallyQueryFormatter(object):
             """
             first_last = "%s%s" % (condition[0], condition[-1])
             if first_last == "()":
-                url_encoded = urllib.parse.quote(condition)
+                url_encoded = quote(condition)
             else:
-                url_encoded = '(%s)' % urllib.parse.quote(condition)
+                url_encoded = '(%s)' % quote(condition)
 
             # replace the %xx encodings for '=', '(', ')', '!', and double quote characters
             readable_encoded =      url_encoded.replace("%3D", '=')
@@ -195,7 +202,7 @@ class RallyQueryFormatter(object):
         # if no CONJUNCTION is in parts, use the condition as is (simple case)
         conjunctions = [p for p in parts if p in RallyQueryFormatter.CONJUNCTIONS]
         if not conjunctions:
-            expression = urllib.parse.quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
+            expression = quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
 ##
 ##            print "RallyQueryFormatter.no_conjunctions: |%s|" % expression
 ##
@@ -209,7 +216,7 @@ class RallyQueryFormatter(object):
                 conj = item
                 binary_expression = "%s (%s)" % (conj, binary_expression)
             else:
-                cond = urllib.parse.quote(item)
+                cond = quote(item)
                 binary_expression = "(%s) %s" % (cond, binary_expression)
 
         final_expression = binary_expression.replace('%28', '(')
