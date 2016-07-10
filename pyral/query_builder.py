@@ -9,8 +9,15 @@
 __version__ = (1, 1, 1)
 
 import re
+import sys
 import types
-import urllib
+if sys.version_info < (3, 0):
+    import urllib # for errors
+    from urllib import quote, unquote
+else: # 3.0+
+    from urllib.parse import quote, unquote
+    import urllib.request
+    import urllib.error # for errors
 
 ###################################################################################################
 
@@ -54,15 +61,15 @@ class RallyUrlBuilder(object):
         qualifiers = ['fetch=%s' % self.fetch]
         if self.query:
 ##
-##            print "RallyQueryFormatter raw query: %s" % self.query
+##            print("RallyQueryFormatter raw query: %s" % self.query)
 ##
             query_string = RallyQueryFormatter.parenGroups(self.query)
 ##
-##            print "query_string: |query=(%s)|" % query_string
+##            print("query_string: |query=(%s)|" % query_string)
 ##
             qualifiers.append("query=(%s)" % query_string)
         if self.order:
-            qualifiers.append("order=%s" % urllib.quote(self.order))
+            qualifiers.append("order=%s" % quote(self.order))
         if self.workspace:
             qualifiers.append(self.workspace)
         if self.project:
@@ -80,7 +87,7 @@ class RallyUrlBuilder(object):
 
         resource += "&".join(qualifiers)
 ##
-##        print "RallyUrlBuilder.build: resource= %s" % resource
+##        print("RallyUrlBuilder.build: resource= %s" % resource)
 ##
         return resource
 
@@ -138,9 +145,9 @@ class RallyQueryFormatter(object):
             """
             first_last = "%s%s" % (condition[0], condition[-1])
             if first_last == "()":
-                url_encoded = urllib.quote(condition)
+                url_encoded = quote(condition)
             else:
-                url_encoded = '(%s)' % urllib.quote(condition)
+                url_encoded = '(%s)' % quote(condition)
 
             # replace the %xx encodings for '=', '(', ')', '!', and double quote characters
             readable_encoded =      url_encoded.replace("%3D", '=')
@@ -150,23 +157,23 @@ class RallyQueryFormatter(object):
             readable_encoded = readable_encoded.replace("%21", '!')
             return readable_encoded
 ##
-##        print "RallyQueryFormatter.parenGroups criteria parm: |%s|" % repr(criteria)
+##        print("RallyQueryFormatter.parenGroups criteria parm: |%s|" % repr(criteria))
 ##
         
-        if type(criteria) in [types.ListType, types.TupleType]:
+        if type(criteria) in [list, tuple]:
             # by fiat (and until requested by a paying customer), we assume the criteria expressions are AND'ed
             #conditions = [_encode(expression) for expression in criteria] 
             conditions = [expression for expression in criteria] 
             criteria = " AND ".join(conditions)
 ##
-##            print "RallyQueryFormatter: criteria is sequence type resulting in |%s|" % criteria
+##            print("RallyQueryFormatter: criteria is sequence type resulting in |%s|" % criteria)
 ##
 
-        if type(criteria) == types.DictType:  
+        if type(criteria) == dict:  
             expressions = []
-            for field, value in criteria.items():
+            for field, value in list(criteria.items()):
                 # have to enclose string value in double quotes, otherwise turn whatever the value is into a string
-                tval = '"%s"' % value if type(value) == types.StringType else '%s' % value
+                tval = '"%s"' % value if type(value) == bytes else '%s' % value
                 expression = ('%s = %s' % (field, tval))
                 if len(criteria) == 1:
                     return expression.replace(' ', '%20')
@@ -189,15 +196,15 @@ class RallyQueryFormatter(object):
         criteria = criteria.replace('&', '%26')        
         parts = RallyQueryFormatter.CONJUNCTION_PATT.split(criteria.strip())
 ##
-##        print "RallyQueryFormatter parts: %s" % repr(parts)
+##        print("RallyQueryFormatter parts: %s" % repr(parts))
 ##
         
         # if no CONJUNCTION is in parts, use the condition as is (simple case)
         conjunctions = [p for p in parts if p in RallyQueryFormatter.CONJUNCTIONS]
         if not conjunctions:
-            expression = urllib.quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
+            expression = quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
 ##
-##            print "RallyQueryFormatter.no_conjunctions: |%s|" % expression
+##            print("RallyQueryFormatter.no_conjunctions: |%s|" % expression)
 ##
             return expression
 
@@ -209,14 +216,14 @@ class RallyQueryFormatter(object):
                 conj = item
                 binary_expression = "%s (%s)" % (conj, binary_expression)
             else:
-                cond = urllib.quote(item)
+                cond = quote(item)
                 binary_expression = "(%s) %s" % (cond, binary_expression)
 
         final_expression = binary_expression.replace('%28', '(')
         final_expression =  final_expression.replace('%29', ')')
 ##
-##        print "RallyQueryFormatter.final_expression: |%s|" % final_expression
-##        print "=============================================="
+##        print("RallyQueryFormatter.final_expression: |%s|" % final_expression)
+##        print("==============================================")
 ##
         final_expression = final_expression.replace(' ', '%20')
         return final_expression
@@ -242,7 +249,7 @@ class RallyQueryFormatter(object):
                     front = part + " "
 
         if not valid_parts:
-            raise Exception, "Invalid query expression syntax in: %s" % (" ".join(parts))
+            raise Exception("Invalid query expression syntax in: %s" % (" ".join(parts)))
         
         return valid_parts
     

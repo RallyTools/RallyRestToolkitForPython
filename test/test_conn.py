@@ -111,11 +111,11 @@ def test_nonexistent_server():
     """
     bogus_server = "bogus.notreally.bug"
     expectedErrMsg = "ping: cannot resolve %s: Unknown host" % bogus_server
-    #print expectedErrMsg
+    #print(expectedErrMsg)
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bogus_server)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    #print actualErrVerbiage
+    #print(actualErrVerbiage)
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     #assert actualErrVerbiage == expectedErrMsg
     assert expectedErrMsg in actualErrVerbiage
@@ -156,8 +156,8 @@ def test_non_rally_server():
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=non_rally_server, timeout=5)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    #print "     expectedErrMsg: %s" % expectedErrMsg
-    #print "  actualErrVerbiage: %s" % actualErrVerbiage
+    #print("     expectedErrMsg: %s" % expectedErrMsg)
+    #print("  actualErrVerbiage: %s" % actualErrVerbiage)
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert (actualErrVerbiage == expectedErrMsg or actualErrVerbiage == timeoutMsg)
 
@@ -221,7 +221,7 @@ def test_insuff_credentials():
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert expectedErrMsg in actualErrVerbiage
-    #print "detected valid user, missing password condition"
+    #print("detected valid user, missing password condition")
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
@@ -230,7 +230,7 @@ def test_insuff_credentials():
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert expectedErrMsg in actualErrVerbiage
-    #print "detected blank user, invalid password condition"
+    #print("detected blank user, invalid password condition")
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
@@ -239,7 +239,7 @@ def test_insuff_credentials():
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert expectedErrMsg in actualErrVerbiage
-    #print "detected blank user and password condition"
+    #print("detected blank user and password condition")
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
@@ -248,7 +248,7 @@ def test_insuff_credentials():
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert expectedErrMsg in actualErrVerbiage
-    #print "detected invalid user, blank password condition"
+    #print("detected invalid user, blank password condition")
     time.sleep(1)
     
     with py.test.raises(RallyRESTAPIError) as excinfo:
@@ -257,7 +257,7 @@ def test_insuff_credentials():
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert expectedErrMsg in actualErrVerbiage
-    #print "detected invalid user, invalid password condition"
+    #print("detected invalid user, invalid password condition")
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
@@ -266,7 +266,7 @@ def test_insuff_credentials():
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert expectedErrMsg in actualErrVerbiage
-    #print "detected invalid user, missing password condition"
+    #print("detected invalid user, missing password condition")
 
 ##########################################################################################
 

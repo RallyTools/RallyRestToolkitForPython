@@ -21,14 +21,14 @@ def test_getSchemaInfo():
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     schema_info = rally.getSchemaInfo(rally.getWorkspace())
-    assert type(schema_info) == types.ListType
+    assert type(schema_info) == list
     assert len(schema_info) > 50
     subs_schema = [item for item in schema_info if item['Name'] == 'Subscription']
     assert subs_schema != None
     assert len(subs_schema) == 1
-    assert type(subs_schema) == types.ListType
-    assert u'Attributes' in subs_schema[0]
-    assert len(subs_schema[0][u'Attributes']) > 15
+    assert type(subs_schema) == list
+    assert 'Attributes' in subs_schema[0]
+    assert len(subs_schema[0]['Attributes']) > 15
 
 def test_getWorkspace():
     """
@@ -56,10 +56,10 @@ def test_getProject():
     assert response.warnings == []
 
     assert response.resultCount > 0
-    proj_rec = response.next()
-    #print proj_rec._ref
-    #print proj_rec.ref
-    #print proj_rec.oid
+    proj_rec = next(response)
+    #print(proj_rec._ref)
+    #print(proj_rec.ref)
+    #print(proj_rec.oid)
     assert proj_rec.oid > 0
 
 def test_getUserInfo_query():
@@ -100,8 +100,8 @@ def test_getAllowedValues_query():
     avs = rally.getAllowedValues('Defect', 'State')
     assert len(avs) > 0
     assert len(avs) == 6
-    assert u'Open' in avs
-    assert u'Closed' in avs
+    assert 'Open' in avs
+    assert 'Closed' in avs
 
 def test_typedef():
     """

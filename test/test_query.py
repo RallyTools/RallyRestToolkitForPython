@@ -2,7 +2,13 @@
 
 import sys, os
 import types
-import urllib
+if sys.version_info < (3, 0):
+    import urllib # for errors
+    from urllib import quote, unquote
+else: # 3.0+
+    from urllib.parse import quote, unquote
+    import urllib.request
+    import urllib.error # for errors
 import py
 
 from pyral import Rally
@@ -89,7 +95,7 @@ def test_good_and_bad_fields_query():
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Project', fetch="Owner,State,Fabulote,GammaRays", limit=10)
-    project = response.next()
+    project = next(response)
     name  = None
     state = None
     fabulote  = None
@@ -161,15 +167,15 @@ def test_defects_revision_history():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Defect', fetch=True,  limit=10)
     
-    defect1 = response.next()
-    defect2 = response.next()
+    defect1 = next(response)
+    defect2 = next(response)
     assert defect1.oid != defect2.oid
 
     d1_revs = defect1.RevisionHistory.Revisions
     d2_revs = defect2.RevisionHistory.Revisions
 
-    assert type(d1_revs) == types.ListType
-    assert type(d2_revs) == types.ListType
+    assert type(d1_revs) == list
+    assert type(d2_revs) == list
 
     d1_rev1 = d1_revs.pop()  # now the revs are in stack order, newest first, original the last
     d2_rev1 = d2_revs.pop()  # ditto
@@ -354,19 +360,19 @@ def test_query_target_value_with_ampersand():
     """
     criteria = ['Project.Name = R&D']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
 
     criteria = ['Project.Name = "R&D"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
 
     criteria = ['Project.Name contains "R&D"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
 
     criteria = 'Railhead.Company.Name != "Atchison Topeka & Santa Fe & Cunard Lines"'
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.unquote(result) == criteria.replace('&', '%26')
+    assert unquote(result) == criteria.replace('&', '%26')
 
 
 def test_query_target_value_with_and():
@@ -443,7 +449,7 @@ def test_query_with_matched_parens_in_condition_value():
     assert response.errors   == []
     assert response.warnings == []
     assert response.resultCount >= 1
-    release = response.next()
+    release = next(response)
     assert release.Name == '8.5 (Blah and Stuff)'
 
 

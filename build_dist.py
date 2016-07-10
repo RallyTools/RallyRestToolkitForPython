@@ -73,17 +73,17 @@ TEST_FILES = ['test/rally_targets.py',
 
 def main(args):
     tarball = make_tarball(PACKAGE_NAME, VERSION, AUX_FILES, EXAMPLES, DOC_FILES)
-    print tarball
+    print(tarball)
 
     zipped = make_zipfile(PACKAGE_NAME, VERSION, AUX_FILES, EXAMPLES, DOC_FILES)
-    print zipped
+    print(zipped)
 
     zf = zipfile.ZipFile(zipped, 'r')
     for info in zf.infolist():
-        #print info.filename, info.date_time, info.file_size, info.compress_size
+        #print(info.filename, info.date_time, info.file_size, info.compress_size)
         reduction_fraction = float(info.compress_size) / float(info.file_size)
         reduction_pct = int(reduction_fraction * 100)
-        print "%-52.52s   %6d (%2d%%)" % (info.filename, info.compress_size, reduction_pct)
+        print("%-52.52s   %6d (%2d%%)" % (info.filename, info.compress_size, reduction_pct))
 
 ################################################################################
 

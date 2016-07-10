@@ -127,7 +127,7 @@ class RallyContextHelper(object):
             the user.
         """
 ##
-##        print " RallyContextHelper.check starting ..."
+##        print(" RallyContextHelper.check starting ...")
 ##        sys.stdout.flush()
 ##
         socket.setdefaulttimeout(INITIAL_REQUEST_TIME_LIMIT)
@@ -152,7 +152,7 @@ class RallyContextHelper(object):
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
 ##
-##        print "user_name_query: |%s|" % user_name_query
+##        print("user_name_query: |%s|" % user_name_query)
 ##
         try:
             timer_start = time.time()
@@ -163,8 +163,8 @@ class RallyContextHelper(object):
             timer_stop = time.time()
         except Exception as ex:
 ##
-            print "-----"
-            print str(ex)
+            print("-----")
+            print(str(ex))
 ##
             if str(ex.args[0]).startswith('404 Service unavailable'):
                 # TODO: discern whether we should mention server or target_host as the culprit
@@ -174,8 +174,8 @@ class RallyContextHelper(object):
         elapsed = timer_stop - timer_start
         if response.status_code != 200:
 ##
-##            print "context check response:\n%s\n" % response
-##            print "request attempt elapsed time: %6.2f" % elapsed
+##            print("context check response:\n%s\n" % response)
+##            print("request attempt elapsed time: %6.2f" % elapsed)
 ##
             if response.status_code == 401:
                 raise RallyRESTAPIError("Invalid credentials")
@@ -198,9 +198,9 @@ class RallyContextHelper(object):
                     problem = "404 Target host: '%s' doesn't support the Rally WSAPI" % server
             else:  # might be a 401 No Authentication or 401 The username or password you entered is incorrect.
 ##
-##                print response.status_code
-##                print response.headers
-##                print response.errors
+##                print(response.status_code)
+##                print(response.headers)
+##                print(response.errors)
 ##
                 if 'The username or password you entered is incorrect.' in response.errors[0]:
                     problem = "Invalid credentials"
@@ -209,13 +209,13 @@ class RallyContextHelper(object):
                     problem = "%s %s" % (response.status_code, error_blurb)
             raise RallyRESTAPIError(problem)
 ##
-##        print " RallyContextHelper.check got the User info ..."
-##        print "response    resource: %s" % response.resource
-##        print "response status code: %s" % response.status_code
-##        print "response     headers: %s" % response.headers
-##        print "response      errors: %s" % response.errors
-##        print "response    warnings: %s" % response.warnings
-##        print "response resultCount: %s" % response.resultCount
+##        print(" RallyContextHelper.check got the User info ...")
+##        print("response    resource: %s" % response.resource)
+##        print("response status code: %s" % response.status_code)
+##        print("response     headers: %s" % response.headers)
+##        print("response      errors: %s" % response.errors)
+##        print("response    warnings: %s" % response.warnings)
+##        print("response resultCount: %s" % response.resultCount)
 ##        sys.stdout.flush()
 ##
         self._loadSubscription()
@@ -230,7 +230,7 @@ class RallyContextHelper(object):
         sub = self.agent.get('Subscription', fetch=True, _disableAugments=True)
         if sub.errors:
             raise Exception(sub.errors[0])
-        subscription = sub.next()
+        subscription = next(sub)
         self._subs_name = subscription.Name
         self.context.subs_name = subscription.Name
         wksp_coll_ref_base = "%s/Workspaces" % subscription._ref
@@ -239,12 +239,12 @@ class RallyContextHelper(object):
         subscription.Workspaces = [wksp for wksp in workspaces]
 ##
 ##        num_wksps = len(subscription.Workspaces)
-##        print "Subscription has %d active Workspaces" % num_wksps
+##        print("Subscription has %d active Workspaces" % num_wksps)
 ##
         self._subs_workspaces  = subscription.Workspaces
         self._defaultWorkspace = subscription.Workspaces[0]
 ##
-##        print "Subscription default Workspace: %s" % self._defaultWorkspace.Name
+##        print("Subscription default Workspace: %s" % self._defaultWorkspace.Name)
 ##
 
     def _getDefaults(self, response):
@@ -255,35 +255,35 @@ class RallyContextHelper(object):
             and handling the response (wrapped in a RallyRESTResponse).
         """
 ##
-##        print "in RallyContextHelper._getDefaults, response arg has:"
+##        print("in RallyContextHelper._getDefaults, response arg has:")
 ##        #pprint(response.data[u'Results'])
 ##        pprint(response.data)
 ##
-        user = response.next()
+        user = next(response)
 ##
-##        print user.details()
+##        print(user.details())
 ##
         self.user_oid = user.oid
 ##
-##        print " RallyContextHelper._getDefaults calling _getResourceByOID to get UserProfile info..."
+##        print(" RallyContextHelper._getDefaults calling _getResourceByOID to get UserProfile info...")
 ##        sys.stdout.flush()
 ##
         upraw = self.agent._getResourceByOID(self.context, 'UserProfile', user.UserProfile.oid, _disableAugments=True) 
 ##
-##        print " RallyContextHelper._getDefaults got the raw UserProfile info via _getResourceByOID..."
+##        print(" RallyContextHelper._getDefaults got the raw UserProfile info via _getResourceByOID...")
 ##        sys.stdout.flush()
 ##
         resp = RallyRESTResponse(self.agent, self.context, 'UserProfile', upraw, "full", 0)
-        up = resp.data[u'QueryResult'][u'Results']['UserProfile']
+        up = resp.data['QueryResult']['Results']['UserProfile']
 ##
-##        print "got the UserProfile info..."
+##        print("got the UserProfile info...")
 ##        pprint(up)
-##        print "+" * 80
+##        print("+" * 80)
 ##
         if up['DefaultWorkspace']:
             self._defaultWorkspace = up['DefaultWorkspace']['_refObjectName']
 ##
-##            print "  set _defaultWorkspace to: %s" % self._defaultWorkspace
+##            print("  set _defaultWorkspace to: %s" % self._defaultWorkspace)
 ##
             self._currentWorkspace = self._defaultWorkspace
             wkspace_ref = up['DefaultWorkspace']['_ref']
@@ -302,19 +302,19 @@ class RallyContextHelper(object):
             proj_ref = ""
             projects = self.agent.get('Project', fetch="Name", workspace=self._defaultWorkspace)
 ##
-##            print projects.content
+##            print(projects.content)
 ##
             if projects:
                 try:
-                    proj = projects.next()
+                    proj = next(projects)
                     proj_ref = proj._ref
                     self._defaultProject = proj.Name
                     self._currentProject = proj.Name
                 except StopIteration:  # the default Workspace might not have any projects
                     pass
 ##
-##        print "   Default Workspace : %s" % self._defaultWorkspace
-##        print "   Default Project   : %s" % self._defaultProject
+##        print("   Default Workspace : %s" % self._defaultWorkspace)
+##        print("   Default Project   : %s" % self._defaultProject)
 ##
 
         if not self._workspaces:
@@ -336,7 +336,7 @@ class RallyContextHelper(object):
                                            project=self._defaultProject)
         self.context = self.defaultContext 
 ##
-##        print " completed _getDefaults processing..."
+##        print(" completed _getDefaults processing...")
 ##
 
 
@@ -345,7 +345,7 @@ class RallyContextHelper(object):
 
     def setWorkspace(self, workspace_name):
 ##
-##        print "in setWorkspace, exising workspace: %s  OID: %s" % (self._currentWorkspace, self.currentWorkspaceRef())
+##        print("in setWorkspace, exising workspace: %s  OID: %s" % (self._currentWorkspace, self.currentWorkspaceRef()))
 ##
         if self.isAccessibleWorkspaceName(workspace_name):
             if workspace_name not in self._workspaces:
@@ -354,17 +354,17 @@ class RallyContextHelper(object):
             self._currentWorkspace = workspace_name
             self.context.workspace = workspace_name
 ##
-##            print "  current workspace set to: %s  OID: %s" % (workspace_name, self.currentWorkspaceRef())
+##            print("  current workspace set to: %s  OID: %s" % (workspace_name, self.currentWorkspaceRef()))
 ##
             self.resetDefaultProject()
 ##
-##            print "  context project set to: %s" % self._currentProject
+##            print("  context project set to: %s" % self._currentProject)
 ##
             try:
                 # make sure that entity._rally_schema gets filled for this workspace
                 # this will fault and be caught if getSchemaItem raises an Exception
                 getSchemaItem(self.getWorkspace(), 'Defect')
-            except Exception, msg:
+            except Exception as msg:
                 schema_info = self.agent.getSchemaInfo(self.getWorkspace())
                 processSchemaInfo(self.getWorkspace(), schema_info)
         else:
@@ -416,8 +416,8 @@ class RallyContextHelper(object):
             Return the ref associated with the current workspace if you can find one
         """
 ##
-##        print "default workspace: %s" % self._defaultWorkspace
-##        print "current workspace: %s" % self._currentWorkspace
+##        print("default workspace: %s" % self._defaultWorkspace)
+##        print("current workspace: %s" % self._currentWorkspace)
 ##
         if self._currentWorkspace:
             return self._workspace_ref[self._currentWorkspace]    
@@ -461,10 +461,10 @@ class RallyContextHelper(object):
             if workspace not in self._workspaces:
                 return projectInfo
 ##            else:
-##                print "   self._workspaces augmented, now has your target workspace"
+##                print("   self._workspaces augmented, now has your target workspace")
 ##                sys.stdout.flush()
 ##
-        for projName, projRef in self._project_ref[workspace].items():
+        for projName, projRef in list(self._project_ref[workspace].items()):
             projectInfo.append((projName, projRef))
         return projectInfo
 
@@ -482,12 +482,12 @@ class RallyContextHelper(object):
         current_valid_projects = self.getAccessibleProjects(self._currentWorkspace)
         proj_names = sorted([name for name, ref in current_valid_projects])
         proj_refs  = self._project_ref[self._currentWorkspace]
-        if unicode(self._defaultProject) in proj_names and unicode(self._currentProject) in proj_names:
+        if str(self._defaultProject) in proj_names and str(self._currentProject) in proj_names:
             return (self._defaultProject, proj_refs[self._defaultProject])
 
-        if unicode(self._defaultProject) not in proj_names:
+        if str(self._defaultProject) not in proj_names:
             self._defaultProject = proj_names[0]
-        if unicode(self._currentProject) not in proj_names:
+        if str(self._currentProject) not in proj_names:
             self.setProject(self._defaultProject)
         return (self._defaultProject, proj_refs[self._defaultProject])
 
@@ -503,10 +503,10 @@ class RallyContextHelper(object):
             return ""
 
 ##
-##        print " currentProjectRef() ... "
-##        print "    _currentWorkspace: '%s'"  % self._currentWorkspace
-##        print "    _currentProject  : '%s'"  % self._currentProject
-##        print "    _project_ref keys: %s" %  repr(self._project_ref.keys())
+##        print(" currentProjectRef() ... ")
+##        print("    _currentWorkspace: '%s'"  % self._currentWorkspace)
+##        print("    _currentProject  : '%s'"  % self._currentProject)
+##        print("    _project_ref keys: %s" %  repr(self._project_ref.keys()))
 ##
 
         #
@@ -531,7 +531,7 @@ class RallyContextHelper(object):
         if kwargs and 'project' in kwargs:
             project = kwargs['project']
 ##
-##        print "_establishContext calling _getWorkspacesAndProjects(workspace=%s, project=%s)" % (workspace, project)  
+##        print("_establishContext calling _getWorkspacesAndProjects(workspace=%s, project=%s)" % (workspace, project)  )
 ##
         self._getWorkspacesAndProjects(workspace=workspace, project=project)
         if workspace:
@@ -544,7 +544,7 @@ class RallyContextHelper(object):
             Return back a tuple of (RallyContext instance, augment list with hrefs)
         """
 ##
-##        print "... RallyContextHelper.identifyContext kwargs: %s" % repr(kwargs)
+##        print("... RallyContextHelper.identifyContext kwargs: %s" % repr(kwargs))
 ##        sys.stdout.flush()
 ##
         augments = []
@@ -620,10 +620,10 @@ class RallyContextHelper(object):
                 if target_workspace == '*':  # wild card value to specify all workspaces
                     target_workspace = None
 ##    
-##        print "in _getWorkspacesAndProjects(%s)" % repr(kwargs)
-##        print "_getWorkspacesAndProjects, target_workspace: %s" % target_workspace
-##        print "_getWorkspacesAndProjects, self._currentWorkspace: %s" % self._currentWorkspace
-##        print "_getWorkspacesAndProjects, self._defaultWorkspace: %s" % self._defaultWorkspace
+##        print("in _getWorkspacesAndProjects(%s)" % repr(kwargs))
+##        print("_getWorkspacesAndProjects, target_workspace: %s" % target_workspace)
+##        print("_getWorkspacesAndProjects, self._currentWorkspace: %s" % self._currentWorkspace)
+##        print("_getWorkspacesAndProjects, self._defaultWorkspace: %s" % self._defaultWorkspace)
 ##    
             
         for workspace in self._subs_workspaces:
@@ -633,7 +633,7 @@ class RallyContextHelper(object):
             if self._workspace_inflated.get(workspace.Name, False) == True:
                 continue
 ##
-##            print workspace.Name, workspace.oid
+##            print(workspace.Name, workspace.oid)
 ##
             # fill out self._workspaces and self._workspace_ref
             if workspace.Name not in self._workspaces:
@@ -643,19 +643,19 @@ class RallyContextHelper(object):
             self._projects[     workspace.Name] = []
             self._project_ref[  workspace.Name] = {}
             resp = self.agent._getResourceByOID( self.context, 'workspace', workspace.oid, _disableAugments=True)
-            response = json.loads(resp.content)
+            response = json.loads(resp.content.decode("utf-8"))
             # If SLM gave back consistent responses, we could use RallyRESTResponse, but no joy...
             # Carefully weasel into the response to get to the guts of what we need
             # and note we specify only the necessary fetch fields or this query takes a *lot* longer...
-            base_proj_coll_url = response['Workspace']['Projects'][u'_ref']
+            base_proj_coll_url = response['Workspace']['Projects']['_ref']
             projects_collection_url = '%s?fetch="ObjectID,Name,State"&pagesize=200&start_index=1' % base_proj_coll_url
             response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
 #not-as-bad?#            response = self.agent.get('Project', fetch="ObjectID,Name,State", workspace=workspace.Name)
 
 ##
-##            print "  Number of Projects: %d" % response.data[u'TotalResultCount']
+##            print("  Number of Projects: %d" % response.data[u'TotalResultCount'])
 ##            for item in response.data[u'Results']:
-##                print "    %-36.36s" % (item[u'_refObjectName'], )
+##                print("    %-36.36s" % (item[u'_refObjectName'], ))
 ##
             for project in response:
                 projName = project.Name
@@ -670,12 +670,12 @@ class RallyContextHelper(object):
                 if 'workspace' in kwargs and kwargs['workspace']:
                     self._inflated = 'narrow'
 ##
-##                    print "setting _inflated to 'narrow'"
+##                    print("setting _inflated to 'narrow'")
 ##
                 else:
                     self._inflated = 'wide'
 ##
-##                    print "setting _inflated to 'wide'"
+##                    print("setting _inflated to 'wide'")
 ##
 
     def getSchemaItem(self, entity_name):

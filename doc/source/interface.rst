@@ -108,7 +108,7 @@ Example use::
 
     options = [opt for opt in sys.argv[1:] if opt.startswith('--')]
     server, user, password, workspace, project = rallySettings(options)
-    print " ".join(['|%|' % opt for opt in [server, user, password, workspace, project]]
+    print(" ".join(['|%|' % opt for opt in [server, user, password, workspace, project]])
 
 
     % python basic.py --config=current --rallyPassword='*****' --rallyProject="Livestock Mgmt"
@@ -227,7 +227,7 @@ Example use::
 
     options = [opt for opt in sys.argv[1:] if opt.startswith('--')]
     server, user, password, apikey, workspace, project = rallyWorkset(options)
-    print " ".join(['|%|' % opt for opt in [server, user, password, apikey, workspace, project]]
+    print(" ".join(['|%|' % opt for opt in [server, user, password, apikey, workspace, project]])
 
 
     % python basic.py --config=current --rallyProject="Livestock Mgmt"
@@ -617,7 +617,7 @@ Examples::
    # regular for loop
 
    response = rally.get('Defect', query=..., ...)
-   for item in response: print item
+   for item in response: print(item)
 
    # in a list comprehension
 
@@ -678,7 +678,7 @@ Item Attributes
     if not response.errors:
         for story in response:
             for task in story.Tasks:
-                print task.oid, task.Name, task.ActualHours
+                print(task.oid, task.Name, task.ActualHours)
 
 
 .. method:: details()
@@ -691,7 +691,7 @@ Example::
 
     response = rally.get('UserStory', fetch=True, query='FormattedID = S321')
     story1 = response.next()
-    print story1.details()
+    print(story1.details())
 
     HierarchicalRequirement
         oid               : 12345678

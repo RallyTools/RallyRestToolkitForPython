@@ -129,8 +129,8 @@ def rallySettings(args):
         if target_version_config in entries:
             server_creds = snarfSettings(target_version_config, server_creds)
         else:
-            print "Ignoring non-matching version of Rally config settings: %s (working version: %s)" % \
-                  (entries.pop(), WS_API_VERSION)
+            print("Ignoring non-matching version of Rally config settings: %s (working version: %s)" % \
+                  (entries.pop(), WS_API_VERSION))
 
     # #3
     # if there is a RALLY_CONFIG environment variable pointing to a file, load with contents of file
@@ -258,8 +258,8 @@ def rallyWorkset(args):
         if target_version_config in entries:
             server_creds = snarfSettings(target_version_config, server_creds)
         else:
-            print "Ignoring non-matching version of Rally config settings: %s (working version: %s)" % \
-                  (entries.pop(), WS_API_VERSION)
+            print("Ignoring non-matching version of Rally config settings: %s (working version: %s)" % \
+                  (entries.pop(), WS_API_VERSION))
 
     # #3
     # if there is a RALLY_CONFIG environment variable pointing to a file, load with contents of file

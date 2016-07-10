@@ -67,7 +67,7 @@ def test_default_workspace_non_valid_project():
         An exception should be raised.
     """
     project = 'Halfling Leaf Pipe'
-    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, DEFAULT_WORKSPACE)
+    expectedErrMsg = "Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, DEFAULT_WORKSPACE)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       project=project)
@@ -128,7 +128,7 @@ def test_named_default_workspace_named_invalid_project():
         An exception should be raised.
     """
     project = 'Sailor Sami'
-    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, DEFAULT_WORKSPACE)
+    expectedErrMsg = "Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, DEFAULT_WORKSPACE)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       workspace=DEFAULT_WORKSPACE, project=project)
@@ -186,7 +186,7 @@ def test_named_non_default_workspace_named_invalid_project():
     """
     workspace = 'JIRA Manual Testing'
     project   = 'Barney Rubble'
-    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, workspace)
+    expectedErrMsg = "Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, workspace)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project, timeout=10)

@@ -74,7 +74,7 @@ assigned to the name **story**, the following code iterates over the tasks.
 ::
 
     for task in story.Tasks:
-       print task.Name
+       print(task.Name)
 
 There is no need to make a separate call to fetch all the tasks for the story.
 When you follow domain model attributes in the Python code, the Python toolkit for 
@@ -114,8 +114,8 @@ Show a TestCase identified by the **FormattedID** value.
         sys.stdout.write("\n".join(errors))
         sys.exit(1)
     for testCase in response:  # there should only be one qualifying TestCase  
-        print "%s %s %s %s" % (testCase.Name, testCase.Type,  
-                               testCase.DefectStatus, testCase.LastVerdict)
+        print("%s %s %s %s" % (testCase.Name, testCase.Type,
+                               testCase.DefectStatus, testCase.LastVerdict))
  
 - Run it by providing the FormattedID value of your targeted TestCase as a command line argument
 
@@ -128,10 +128,10 @@ Get a list of workspaces and projects for your subscription
 
    workspaces = rally.getWorkspaces()
    for wksp in workspaces:
-       print "%s %s" % (wksp.oid, wksp.Name)
+       print("%s %s" % (wksp.oid, wksp.Name))
        projects = rally.getProjects(workspace=wksp.Name)
        for proj in projects:
-           print "    %12.12s  %s" % (proj.oid, proj.Name)
+           print("    %12.12s  %s" % (proj.oid, proj.Name))
 
 - Run the script
 
@@ -172,7 +172,7 @@ Create a new Defect
     except Exception, details:
         sys.stderr.write('ERROR: %s \n' % details)
         sys.exit(1)
-    print "Defect created, ObjectID: %s  FormattedID: %s" % (defect.oid, defect.FormattedID)
+    print("Defect created, ObjectID: %s  FormattedID: %s" % (defect.oid, defect.FormattedID))
   
 - Run the script
 
@@ -200,7 +200,7 @@ Update an existing Defect
        sys.stderr.write('ERROR: %s \n' % details) 
        sys.exit(1)
 
-   print "Defect %s updated" % defect.FormattedID
+   print("Defect %s updated" % defect.FormattedID)
 
 - Run the script
 

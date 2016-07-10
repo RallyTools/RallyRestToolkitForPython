@@ -45,8 +45,8 @@ Here's a prototype of simple use of the **pyral** package.::
     for release in response:
         rlsStart = rls.ReleaseStartDate.split('T')[0]  # just need the date part
         rlsDate  = rls.ReleaseDate.split('T')[0]       # ditto
-        print "%-6.6s  %-16.16s   %s  -->  %s" % \
-              (rls.Project.Name, rls.Name, rlsStart, rlsDate)
+        print("%-6.6s  %-16.16s   %s  -->  %s" % \
+              (rls.Project.Name, rls.Name, rlsStart, rlsDate))
 
 
 Rally Data Model
