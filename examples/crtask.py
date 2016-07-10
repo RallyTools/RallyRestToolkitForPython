@@ -90,7 +90,7 @@ def queryForTasks(rally):
     # a response has status_code, content and data attributes
 
     for task in response:
-        #print "%s  %s  %s  %s" % (task.__class__.__name__, task.oid, task.name, task._ref)
+        #print("%s  %s  %s  %s" % (task.__class__.__name__, task.oid, task.name, task._ref))
         print("%s  %s  %s  %s  %s  %s" % (task.FormattedID,    task.Name, 
                                           task.Workspace.Name, task.Project.Name,
                                           task.Release.Name,   task.Iteration.Name))

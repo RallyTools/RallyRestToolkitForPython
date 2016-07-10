@@ -39,9 +39,9 @@ class EntityHydrator(object):
 
     def _attributes(self, item):
 ##
-##        print "in hydrateInstance, item contents:"
+##        print("in hydrateInstance, item contents:")
 ##        pprint(item)
-##        print ""
+##        print("")
 ##
         return [attr for attr in list(item.keys()) 
                       if attr not in MINIMAL_ATTRIBUTES
@@ -70,8 +70,8 @@ class EntityHydrator(object):
         if self.hydration == "full":
             instance._hydrated = True
 ##
-##        print "hydrated %s has these attributes: %s, hydration setting: %s" % \
-##              (instance._type, instance.attributes(), self.hydration)
+##        print("hydrated %s has these attributes: %s, hydration setting: %s" % \
+##              (instance._type, instance.attributes(), self.hydration))
 ##
         return instance
 
@@ -84,7 +84,7 @@ class EntityHydrator(object):
         """
         itemType = item.get('_type', "CustomField")
 ##
-##        print "in EntityHydrator.hydrateInstance, _basicInstance to create a %s" % itemType
+##        print("in EntityHydrator.hydrateInstance, _basicInstance to create a %s" % itemType)
 ##
         name = item.get('_refObjectName', "Unknown")
         if itemType == 'AllowedQueryOperator':
@@ -122,14 +122,14 @@ class EntityHydrator(object):
             instance.Name  = 'AllowedValue'
             instance.value = item['StringValue']
 ##
-##        print "in EntityHydrator.hydrateInstance, _basicInstance returning a %s" % instance._type
+##        print("in EntityHydrator.hydrateInstance, _basicInstance returning a %s" % instance._type)
 ##
         return instance
 
     def _setAppropriateAttrValueForType(self, instance, attrName, attrValue, level=0):
 ##
 ##        indent = "  " * level
-##        print "%s attr level: %d  attrName |%s| attrValue: |%s|" % (indent, level, attrName, attrValue)
+##        print("%s attr level: %d  attrName |%s| attrValue: |%s|" % (indent, level, attrName, attrValue))
 ##
         if attrValue == None:
             setattr(instance, attrName, attrValue)

@@ -80,7 +80,7 @@ def main(args):
 
     zf = zipfile.ZipFile(zipped, 'r')
     for info in zf.infolist():
-        #print info.filename, info.date_time, info.file_size, info.compress_size
+        #print(info.filename, info.date_time, info.file_size, info.compress_size)
         reduction_fraction = float(info.compress_size) / float(info.file_size)
         reduction_pct = int(reduction_fraction * 100)
         print("%-52.52s   %6d (%2d%%)" % (info.filename, info.compress_size, reduction_pct))

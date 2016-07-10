@@ -69,7 +69,7 @@ def main(args):
     artifact = validateTarget(rally, target)
 
     me = rally.getUserInfo(username=user).pop(0)
-    #print "%s user oid: %s" % (user, me.oid)
+    #print("%s user oid: %s" % (user, me.oid))
 
     att = rally.addAttachment(artifact, attachment_file_name)
     print("created Attachment: %s for %s" % (attachment_file_name, target))

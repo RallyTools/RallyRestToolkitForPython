@@ -76,7 +76,7 @@ def main(args):
              "Blocked"       : "false"
            }
 
-##    print info   
+##    print(info)
 
     try:
         task = rally.update('Task', info)

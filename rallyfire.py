@@ -41,7 +41,7 @@ def main(args):
 
     project = rally.getProject()
     print("Project  : %s " % project.Name)
-    # print "Project  : %12.12s   %-18.18s    (%s)" % (project.oid, project.Name, project.ref)
+    # print("Project  : %12.12s   %-18.18s    (%s)" % (project.oid, project.Name, project.ref))
 
     # uncomment this to see all of your accessible workspaces and projects
     # workspaces = rally.getWorkspaces()

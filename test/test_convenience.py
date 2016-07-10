@@ -57,9 +57,9 @@ def test_getProject():
 
     assert response.resultCount > 0
     proj_rec = next(response)
-    #print proj_rec._ref
-    #print proj_rec.ref
-    #print proj_rec.oid
+    #print(proj_rec._ref)
+    #print(proj_rec.ref)
+    #print(proj_rec.oid)
     assert proj_rec.oid > 0
 
 def test_getUserInfo_query():

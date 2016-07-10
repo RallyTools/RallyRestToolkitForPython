@@ -115,10 +115,10 @@ def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC", sinc
 #                             workspace=workspace, project=None, 
 #                             pagesize=200, limit=limit)
 #        for change in changes:
-#            print "      %s  %s" % (change.Action, change.PathAndFilename)
+#            print("      %s  %s" % (change.Action, change.PathAndFilename))
 
         if len(cs.Artifacts) == 0:
-            #print "changeset %s - %s has no artifacts"  % (cs.SCMRepository.Name, cs.Revision)
+            #print("changeset %s - %s has no artifacts"  % (cs.SCMRepository.Name, cs.Revision))
             continue
 
         artifact_idents = []

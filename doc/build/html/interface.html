@@ -167,7 +167,7 @@ from rally import rallySettings
 
 options = [opt for opt in sys.argv[1:] if opt.startswith(&#39;--&#39;)]
 server, user, password, workspace, project = rallySettings(options)
-print &quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password, workspace, project]]
+print(&quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password, workspace, project]])
 
 
 % python basic.py --config=current --rallyPassword=&#39;*****&#39; --rallyProject=&quot;Livestock Mgmt&quot;
@@ -299,7 +299,7 @@ from rally import rallyWorkset
 
 options = [opt for opt in sys.argv[1:] if opt.startswith(&#39;--&#39;)]
 server, user, password, apikey, workspace, project = rallyWorkset(options)
-print &quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password, apikey, workspace, project]]
+print(&quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password, apikey, workspace, project]])
 
 
 % python basic.py --config=current --rallyProject=&quot;Livestock Mgmt&quot;
@@ -809,7 +809,7 @@ with the content of the instance.</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre>response = rally.get(&#39;UserStory&#39;, fetch=True, query=&#39;FormattedID = S321&#39;)
 story1 = response.next()
-print story1.details()
+print(story1.details())
 
 HierarchicalRequirement
     oid               : 12345678

@@ -109,7 +109,7 @@ class Persistable(object):
         faultTrigger = "getattr fault detected on %s instance for attribute: %s  (hydrated? %s)" % \
                        (rallyEntityTypeName, name, self._hydrated)
 ##
-##        print faultTrigger
+##        print(faultTrigger)
 ##        sys.stdout.flush()
 ##
         if not self._hydrated:
@@ -119,9 +119,9 @@ class Persistable(object):
             #
             entity_name, oid = self._ref.split(SLM_WS_VER)[-1].rsplit('/', 1)
 ##
-##            print "self._ref : %s" % self._ref
-##            print "issuing OID specific get for %s OID: %s " % (entity_name, oid)
-##            print "Entity: %s context: %s" % (rallyEntityTypeName, self._context) 
+##            print("self._ref : %s" % self._ref)
+##            print("issuing OID specific get for %s OID: %s " % (entity_name, oid))
+##            print("Entity: %s context: %s" % (rallyEntityTypeName, self._context) )
 ##            sys.stdout.flush()
 ##
             response = getResourceByOID(self._context, entity_name, self.oid, unwrap=True)
@@ -129,11 +129,11 @@ class Persistable(object):
                 raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
             if not isinstance(response, object): 
                 # TODO: would like to be specific with RallyRESTResponse here...
-                #print "bad guess on response type in __getattr__, response is a %s" % type(response)
+                #print("bad guess on response type in __getattr__, response is a %s" % type(response))
                 raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
             if response.status_code != 200:
 ##
-##                print response
+##                print(response)
 ##
                 raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
 
@@ -154,8 +154,8 @@ class Persistable(object):
         if coll_ref_field in list(self.__dict__.keys()):
             collection_ref = self.__dict__[coll_ref_field]
 ##
-##            print "  chasing %s collection ref: %s" % (name, collection_ref)
-##            print "  using this context: %s" % repr(self._context)
+##            print("  chasing %s collection ref: %s" % (name, collection_ref))
+##            print("  using this context: %s" % repr(self._context))
 ##
             collection = getCollection(self._context, collection_ref, _disableAugments=False)
             if name != "RevisionHistory":  # a "normal" Collections field ...
@@ -167,7 +167,7 @@ class Persistable(object):
         else:
             description = "%s instance has no attribute: '%s'" % (rallyEntityTypeName, name)
 ##
-##            print "Rally entity getattr fault: %s" % description
+##            print("Rally entity getattr fault: %s" % description)
 ##
             raise AttributeError(description)
 
@@ -825,7 +825,7 @@ def getEntityName(candidate):
     hits = [path for entity, path in list(_rally_entity_cache.items())
                     if '/' in path and path.split('/')[1] == candidate]
 ##
-##    print "for candidate |%s|  hits: |%s|" % (candidate, hits)
+##    print("for candidate |%s|  hits: |%s|" % (candidate, hits))
 ##
     if hits:
         official_name = hits.pop(0)

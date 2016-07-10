@@ -61,11 +61,11 @@ class RallyUrlBuilder(object):
         qualifiers = ['fetch=%s' % self.fetch]
         if self.query:
 ##
-##            print "RallyQueryFormatter raw query: %s" % self.query
+##            print("RallyQueryFormatter raw query: %s" % self.query)
 ##
             query_string = RallyQueryFormatter.parenGroups(self.query)
 ##
-##            print "query_string: |query=(%s)|" % query_string
+##            print("query_string: |query=(%s)|" % query_string)
 ##
             qualifiers.append("query=(%s)" % query_string)
         if self.order:
@@ -87,7 +87,7 @@ class RallyUrlBuilder(object):
 
         resource += "&".join(qualifiers)
 ##
-##        print "RallyUrlBuilder.build: resource= %s" % resource
+##        print("RallyUrlBuilder.build: resource= %s" % resource)
 ##
         return resource
 
@@ -157,7 +157,7 @@ class RallyQueryFormatter(object):
             readable_encoded = readable_encoded.replace("%21", '!')
             return readable_encoded
 ##
-##        print "RallyQueryFormatter.parenGroups criteria parm: |%s|" % repr(criteria)
+##        print("RallyQueryFormatter.parenGroups criteria parm: |%s|" % repr(criteria))
 ##
         
         if type(criteria) in [list, tuple]:
@@ -166,7 +166,7 @@ class RallyQueryFormatter(object):
             conditions = [expression for expression in criteria] 
             criteria = " AND ".join(conditions)
 ##
-##            print "RallyQueryFormatter: criteria is sequence type resulting in |%s|" % criteria
+##            print("RallyQueryFormatter: criteria is sequence type resulting in |%s|" % criteria)
 ##
 
         if type(criteria) == dict:  
@@ -196,7 +196,7 @@ class RallyQueryFormatter(object):
         criteria = criteria.replace('&', '%26')        
         parts = RallyQueryFormatter.CONJUNCTION_PATT.split(criteria.strip())
 ##
-##        print "RallyQueryFormatter parts: %s" % repr(parts)
+##        print("RallyQueryFormatter parts: %s" % repr(parts))
 ##
         
         # if no CONJUNCTION is in parts, use the condition as is (simple case)
@@ -204,7 +204,7 @@ class RallyQueryFormatter(object):
         if not conjunctions:
             expression = quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
 ##
-##            print "RallyQueryFormatter.no_conjunctions: |%s|" % expression
+##            print("RallyQueryFormatter.no_conjunctions: |%s|" % expression)
 ##
             return expression
 
@@ -222,8 +222,8 @@ class RallyQueryFormatter(object):
         final_expression = binary_expression.replace('%28', '(')
         final_expression =  final_expression.replace('%29', ')')
 ##
-##        print "RallyQueryFormatter.final_expression: |%s|" % final_expression
-##        print "=============================================="
+##        print("RallyQueryFormatter.final_expression: |%s|" % final_expression)
+##        print("==============================================")
 ##
         final_expression = final_expression.replace(' ', '%20')
         return final_expression

@@ -54,7 +54,7 @@ def test_add_attachment():
 
     #response = rally.get("UserStory", fetch="FormattedID,Name,Attachments")
     #for story in response:
-    #    print "%s %-48.48s %d" % (story.FormattedID, story.Name, len(story.Attachments))
+    #    print("%s %-48.48s %d" % (story.FormattedID, story.Name, len(story.Attachments)))
 
     candidate_story = "US96"
     response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", 
