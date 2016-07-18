@@ -84,7 +84,7 @@ class EntityHydrator(object):
         """
         itemType = item.get(u'_type', "CustomField")
 ##
-##        print "in EntityHydrator.hydrateInstance, _basicInstance to create a %s" % itemType
+##        print "in EntityHydrator.hydrateInstance, _basicInstance to create a %s for %s" % (itemType, item)
 ##
         name = item.get(u'_refObjectName', "Unknown")
         if itemType == 'AllowedQueryOperator':

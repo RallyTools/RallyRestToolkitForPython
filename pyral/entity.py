@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 1)
+__version__ = (1, 1, 2)
 
 import sys
 import re
@@ -66,6 +66,8 @@ class Persistable(object):
         """
             All sub-classes have an oid (Object ID), so it makes sense to provide the 
             attribute storage here.
+            All sub-classes also have a uuid (ObjectUUID), so it also makes sense
+            to provide the attribute storage here.
         """
         self.oid = oid
         self.Name = name
@@ -109,7 +111,7 @@ class Persistable(object):
         faultTrigger = "getattr fault detected on %s instance for attribute: %s  (hydrated? %s)" % \
                        (rallyEntityTypeName, name, self._hydrated)
 ##
-##        print faultTrigger
+##        print(faultTrigger)
 ##        sys.stdout.flush()
 ##
         if not self._hydrated:
@@ -119,9 +121,9 @@ class Persistable(object):
             #
             entity_name, oid = self._ref.split(SLM_WS_VER)[-1].rsplit('/', 1)
 ##
-##            print "self._ref : %s" % self._ref
-##            print "issuing OID specific get for %s OID: %s " % (entity_name, oid)
-##            print "Entity: %s context: %s" % (rallyEntityTypeName, self._context) 
+##            print("self._ref : %s" % self._ref)
+##            print("issuing OID specific get for %s OID: %s " % (entity_name, oid))
+##            print("Entity: %s context: %s" % (rallyEntityTypeName, self._context))
 ##            sys.stdout.flush()
 ##
             response = getResourceByOID(self._context, entity_name, self.oid, unwrap=True)
@@ -129,11 +131,11 @@ class Persistable(object):
                 raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
             if not isinstance(response, object): 
                 # TODO: would like to be specific with RallyRESTResponse here...
-                #print "bad guess on response type in __getattr__, response is a %s" % type(response)
+                #print("bad guess on response type in __getattr__, response is a %s" % type(response))
                 raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
             if response.status_code != 200:
 ##
-##                print response
+##                print(response)
 ##
                 raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
 
@@ -154,8 +156,8 @@ class Persistable(object):
         if coll_ref_field in self.__dict__.keys():
             collection_ref = self.__dict__[coll_ref_field]
 ##
-##            print "  chasing %s collection ref: %s" % (name, collection_ref)
-##            print "  using this context: %s" % repr(self._context)
+##            print("  chasing %s collection ref: %s" % (name, collection_ref))
+##            print("  using this context: %s" % repr(self._context))
 ##
             collection = getCollection(self._context, collection_ref, _disableAugments=False)
             if name != "RevisionHistory":  # a "normal" Collections field ...
@@ -167,7 +169,7 @@ class Persistable(object):
         else:
             description = "%s instance has no attribute: '%s'" % (rallyEntityTypeName, name)
 ##
-##            print "Rally entity getattr fault: %s" % description
+##            print("Rally entity getattr fault: %s" % description)
 ##
             raise AttributeError(description)
 
@@ -208,7 +210,7 @@ class DomainObject(Persistable):
     pass
 
 class User (DomainObject): 
-    USER_ATTRIBUTES = ['oid', 'ref', 'ObjectID', '_ref', 
+    USER_ATTRIBUTES = ['oid', 'ref', 'ObjectID', 'ObjectUUID', '_ref', 
                        '_CreatedAt', '_hydrated', 
                        'UserName', 'DisplayName', 'EmailAddress', 
                        'FirstName', 'MiddleName', 'LastName', 
@@ -248,7 +250,7 @@ class User (DomainObject):
         return "\n".join(tank)
 
 class UserProfile     (DomainObject):
-    USER_PROFILE_ATTRIBUTES = ['oid', 'ref', 'ObjectID', '_ref',
+    USER_PROFILE_ATTRIBUTES = ['oid', 'ref', 'ObjectID', 'ObjectUUID', '_ref',
                                '_CreatedAt', '_hydrated', 
                                'DefaultWorkspace', 'DefaultProject',
                                'TimeZone',
@@ -297,7 +299,7 @@ class WorkspaceDomainObject(DomainObject):
         mulitiline string representation.
     """
     COMMON_ATTRIBUTES = ['_type', 
-                         'oid', 'ref', 'ObjectID', '_ref', 
+                         'oid', 'ref', 'ObjectID', 'ObjectUUID', '_ref', 
                          '_CreatedAt', '_hydrated', 
                          'Name', 'Subscription', 'Workspace', 
                          'FormattedID'
@@ -314,6 +316,7 @@ class WorkspaceDomainObject(DomainObject):
                 _hydrated
                 _CreatedAt
                 ObjectID
+                ObjectUUID
                 Name         ** not all items will have this...
                 Subscription (oid, Name)
                 Workspace    (oid, Name)
@@ -342,6 +345,9 @@ class WorkspaceDomainObject(DomainObject):
             tank.append(anv)
         tank.append("")
         other_attributes = set(self.attributes()) - set(self.COMMON_ATTRIBUTES)
+##
+##        print("other_attributes: %s" % ", ".join(other_attributes))
+##
         for attribute_name in sorted(other_attributes):
             #value = getattr(self, attribute_name)
             #
@@ -350,6 +356,9 @@ class WorkspaceDomainObject(DomainObject):
             try: 
                 value = getattr(self, attribute_name)
             except AttributeError: 
+##
+##                print("  unable to getattr for |%s|" % attribute_name)
+##
                 continue
             attr_name = attribute_name
             if attribute_name.startswith('c_'):
@@ -825,7 +834,7 @@ def getEntityName(candidate):
     hits = [path for entity, path in _rally_entity_cache.items()
                     if '/' in path and path.split('/')[1] == candidate]
 ##
-##    print "for candidate |%s|  hits: |%s|" % (candidate, hits)
+##    print("for candidate |%s|  hits: |%s|" % (candidate, hits))
 ##
     if hits:
         official_name = hits.pop(0)

@@ -120,7 +120,7 @@ class RallyRESTResponse(object):
 ##
         self.request_type, self.data = self._determineRequestResponseType(request)
 ##
-##        print "RallyRESTResponse request_type: %s for %s" % (self.request_type, self._item_type)
+##        print("RallyRESTResponse request_type: %s for %s" % (self.request_type, self._item_type))
 ##
 
         if self.request_type == 'ImpliedQuery':

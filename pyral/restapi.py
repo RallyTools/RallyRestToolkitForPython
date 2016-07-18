@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 1)
+__version__ = (1, 1, 2)
 
 import sys, os
 import re
@@ -77,11 +77,11 @@ def getResourceByOID(context, entity, oid, **kwargs):
         that has status_code, headers and content attributes.
     """
 ##
-##    print "getResourceByOID called:"
-##    print "   context: %s" % context
-##    print "    entity: %s" % entity
-##    print "       oid: %s" % oid
-##    print "    kwargs: %s" % kwargs
+##    print("getResourceByOID called:")
+##    print("   context: %s" % context)
+##    print("    entity: %s" % entity)
+##    print("       oid: %s" % oid)
+##    print("    kwargs: %s" % kwargs)
 ##    sys.stdout.flush()
 ##
 ##    if entity == 'context':
@@ -93,12 +93,12 @@ def getResourceByOID(context, entity, oid, **kwargs):
         # raising an Exception is the only thing we can do, don't see any prospect of recovery...
         raise RallyRESTAPIError('Unable to find Rally instance for context: %s' % context)
 ##
-##        print "_rallyCache.keys:"
+##        print("_rallyCache.keys:")
 ##        for key in _rallyCache.keys():
-##            print "    -->%s<--" % key
-##        print ""
-##        print " apparently no key to match: -->%s<--" % context
-##        print " context is a %s" % type(context)
+##            print("    -->%s<--" % key)
+##        print("")
+##        print(" apparently no key to match: -->%s<--" % context)
+##        print(" context is a %s" % type(context))
 ##
     rally = rallyContext.get('rally')
     resp = rally._getResourceByOID(context, entity, oid, **kwargs)
@@ -173,12 +173,12 @@ class Rally(object):
     FORMATTED_ID_PATTERN = re.compile(r'^[A-Z]{1,2}\d+$') #S|US|DE|DS|TA|TC|TS|PI
     MAX_ATTACHMENT_SIZE = 5000000  # approx 5MB 
 
-    def __init__(self, server=SERVER, user=None, password=None, apikey=None,
+    def __init__(self, server=SERVER, user=None, password=None, apikey=None, api_key=None,
                        version=WS_API_VERSION, warn=True, **kwargs):
         self.server   = server 
         self.user     = user     or USER_NAME
         self.password = password or PASSWORD
-        self.apikey   = apikey
+        self.apikey   = apikey or api_key
         self.version  = WS_API_VERSION  # we only support v2.0 now
         self._inflated   = False
         self.service_url = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE    % self.version)
@@ -189,9 +189,9 @@ class Rally(object):
         self._logDest    = None
         self._logAttrGet = False
         self._warn       = warn
-        config = {}
-        if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
-            config['verbose'] = sys.stdout
+        #config = {}
+        #if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
+        #    config['verbose'] = sys.stdout
 
         proxy_dict = {} 
         https_proxy = os.environ.get('HTTPS_PROXY', None) or os.environ.get('https_proxy', None)
@@ -207,7 +207,9 @@ class Rally(object):
             vsc = kwargs.get('verify_ssl_cert')
             if vsc in [False, True]:
                 verify_ssl_cert = vsc
-
+##
+##        print("\n requests lib in %s" % requests.__file__)
+##
         self.session = requests.Session()
         self.session.headers = RALLY_REST_HEADERS
         if self.apikey:
@@ -219,7 +221,12 @@ class Rally(object):
         self.session.timeout = 10.0
         self.session.proxies = proxy_dict
         self.session.verify  = verify_ssl_cert
-        self.session.config  = config
+        #self.session.config = config
+##
+##        print(dir(self.session))
+##        print("")
+##        print(self.session.__dict__)
+##
         
         global _rallyCache
 
@@ -609,21 +616,21 @@ class Rally(object):
             Returns a raw response instance (with status_code, headers and content attributes).
         """
 ##
-##        print "in _getResourceByOID, OID specific resource ...", entity, oid
+##        print("in _getResourceByOID, OID specific resource ...", entity, oid)
 ##        sys.stdout.flush()
 ##
         resource = '%s/%s' % (entity, oid)
         if '_disableAugments' not in kwargs:
             contextDict = context.asDict()
 ##
-##            print "_getResourceByOID, current contextDict: %s" % repr(contextDict)
+##            print("_getResourceByOID, current contextDict: %s" % repr(contextDict))
 ##            sys.stdout.flush()
 ##
             context, augments = self.contextHelper.identifyContext(**contextDict)
             if augments:
                 resource += ("?" + "&".join(augments))
 ##
-##            print "_getResourceByOID, modified contextDict: %s" % repr(context.asDict())
+##            print("_getResourceByOID, modified contextDict: %s" % repr(context.asDict()))
 ##            sys.stdout.flush()
 ##
         full_resource_url = "%s/%s" % (self.service_url, resource)
@@ -631,7 +638,7 @@ class Rally(object):
             self._logDest.write('%s GET %s\n' % (timestamp(), resource))
             self._logDest.flush()
 ##
-##        print "issuing GET for resource: %s" % full_resource_url
+##        print("issuing GET for resource: %s" % full_resource_url)
 ##        sys.stdout.flush()
 ##
         try:
@@ -641,7 +648,7 @@ class Rally(object):
             warning("%s: %s" % (exctype, value)) 
             return None
 ##
-##        print "_getResourceByOID(%s, %s) raw_response: %s" % (entity, oid, raw_response)
+##        print("_getResourceByOID(%s, %s) raw_response: %s" % (entity, oid, raw_response))
 ##        sys.stdout.flush()
 ##
         return raw_response
@@ -652,7 +659,7 @@ class Rally(object):
             Internal method to retrieve a specific instance of an entity identified by the OID.
         """
 ##
-##        print "Rally._itemQuery('%s', %s, workspace=%s, project=%s)" % (entityName, oid, workspace, project)
+##        print("Rally._itemQuery('%s', %s, workspace=%s, project=%s)" % (entityName, oid, workspace, project))
 ##
         resource = '%s/%s' % (entityName, oid)
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
@@ -789,7 +796,7 @@ class Rally(object):
         except Exception as ex:
             if response:
 ##
-##                print "Exception detected for session.get requests, response status code: %s" % response.status_code
+##                print("Exception detected for session.get requests, response status code: %s" % response.status_code)
 ##
                 ret_code, content = response.status_code, response.content
             else:
@@ -803,7 +810,7 @@ class Rally(object):
             return response
 
 ##
-##        print "response.status_code is %s" % response.status_code
+##        print("response.status_code is %s" % response.status_code)
 ##
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             if self._log:
@@ -811,7 +818,7 @@ class Rally(object):
                 self._logDest.write('%s %s %s ...\n' % (timestamp(), code, verbiage))
                 self._logDest.flush()
 ##
-##            print response
+##            print(response)
 ##
             #if response.status_code == PAGE_NOT_FOUND_CODE:
             #    problem = "%s Service unavailable from %s, check for proper hostname" % \
@@ -892,7 +899,7 @@ class Rally(object):
         context = self.contextHelper.currentContext()
         collection_url = "%s?pagesize=%d&start=1" % (collection_url, MAX_PAGESIZE)
 ##
-##        print "Collection URL: %s" % collection_url
+##        print("Collection URL: %s" % collection_url)
 ##
         resource = collection_url
 
@@ -902,7 +909,7 @@ class Rally(object):
             project_ref   = self.contextHelper.currentProjectRef()
             resource = "%s&workspace=%s&project=%s" % (resource, workspace_ref, project_ref)
 ##
-##        print "Collection resource URL: %s" % resource
+##        print("Collection resource URL: %s" % resource)
 ##
         if self._log: 
             self._logDest.write('%s GET %s\n' % (timestamp(), resource))
@@ -998,7 +1005,7 @@ class Rally(object):
             target = response.next()
             oid = target.ObjectID
 ##
-##            print "target OID: %s" % oid
+##            print("target OID: %s" % oid)
 ##
             itemData['ObjectID'] = oid
 
@@ -1008,7 +1015,7 @@ class Rally(object):
             resource += ("&" + "&".join(augments))
         full_resource_url = "%s/%s" % (self.service_url, resource)
 ##
-##        print "resource: %s" % resource
+##        print("resource: %s" % resource)
 ##
         itemData = self.validateAttributeNames(entityName, itemData) 
         item = {entityName: self._greased(itemData)}
@@ -1058,7 +1065,7 @@ class Rally(object):
             objectID = target.ObjectID
 ##
 ##            if kwargs.get('debug', False):
-##               print "DEBUG: target OID -> %s" % objectID
+##               print("DEBUG: target OID -> %s" % objectID)
 ##
         resource = "%s/%s?key=%s" % (entityName.lower(), objectID, auth_token)
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
@@ -1075,7 +1082,7 @@ class Rally(object):
                 self._logDest.flush()
 ##
 ##            if kwargs.get('debug', False):
-##                print response.status_code, response.headers, response.content
+##                print(response.status_code, response.headers, response.content)
 ##
             errorResponse = ErrorResponse(response.status_code, response.content)
             response = RallyRESTResponse(self.session, context, resource, errorResponse, self.hydration, 0)
@@ -1084,7 +1091,7 @@ class Rally(object):
             raise RallyRESTAPIError(problem)
 
 ##
-##        print response.content
+##        print(response.content)
 ##
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.errors:
@@ -1169,14 +1176,14 @@ class Rally(object):
         url, query_string = resource_url.split('?', 1)
         resource_url = "%s?keywords=%s&%s" % (url, urllib.quote(keywords), query_string)
 ##
-        print resource_url
+##        print(resource_url)
 ##
         response = self._getRequestResponse(context, resource_url, limit)
         if response.errors:
             error_text = response.errors[0]
             raise RallyRESTAPIError(error_text)
 ##
-        print response.data
+##        print(response.data)
 ##
 
         # since the WSAPI apparently doesn't pay attention to scoping (projectScopeUp, projectScopeDown, searchScopeUp, searchScopeDown)
@@ -1244,7 +1251,7 @@ class Rally(object):
         # Rally has to go pull the information again which could take somewhat longer.
         # We don't use it here as we don't account for the potential of a _really_ long winded process during which
         # Rally schema changes may be made.
-        #print response.content
+        #print(response.content)
         return json.loads(response.content)[u'QueryResult'][u'Results']
 
 
@@ -1274,10 +1281,10 @@ class Rally(object):
         entity_def = self.typedef(entity_name)
         entity_attributes = entity_def.Attributes 
 ##
-##        print "%s attributes:"
+##        print("%s attributes:")
 ##        for attr in entity_attributes:
-##            print "  |%s|" % attr.ElementName
-##        print ""
+##            print("  |%s|" % attr.ElementName)
+##        print("")
 ##
         attr_forms = [(attr.ElementName, attr.ElementName.lower(), attr.Name.lower().replace(' ', '')) 
                       for attr in entity_attributes]
@@ -1469,7 +1476,7 @@ class Rally(object):
             ct_item =     attachment.get('mime_type',    None) or attachment.get('MimeType',    None) \
                       or  attachment.get('content_type', None) or attachment.get('ContentType', None)
             if not ct_item:
-                print "Bypassing attachment for %s, no mime_type/ContentType setting..." % att_name
+                print("Bypassing attachment for %s, no mime_type/ContentType setting..." % att_name)
                 continue
             candidates.append(att_name)
             upd_artifact = self.addAttachment(artifact, att_name, mime_type=ct_item)
@@ -1556,19 +1563,12 @@ class Rally(object):
         # get the target Attachment and the associated AttachmentContent item
         attachment = hits.pop(0)
 ##
-##        print attachment.details()
+##        print(attachment.details())
 ##
         if attachment.Content and attachment.Content.oid:
             success = self.delete('AttachmentContent', attachment.Content.oid, project=None)
             if not success:
-                print "ERROR: Unable to delete AttachmentContent item for %s" % attachment.Name
-                return False
-
-        deleted = self.delete('Attachment', attachment.oid, project=None)
-        if not deleted:
-            print "ERROR: Unable to delete Attachment for %s" % attachment.Name
-            return False
-        remaining_attachments = [att for att in current_attachments if att.ref != attachment.ref]
+                print("ERROR: Unable to delete AttachmentContent item for %s" % attachment.Name)
         att_refs = [dict(_ref=str(att.ref)) for att in remaining_attachments]
         artifact_info = { 'ObjectID'    : artifact.ObjectID,
                           'Attachments' : att_refs,
