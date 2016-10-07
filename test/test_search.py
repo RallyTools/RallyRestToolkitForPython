@@ -21,7 +21,7 @@ from rally_targets import DEFAULT_WORKSPACE, NON_DEFAULT_PROJECT
 def test_basic_search():
     """
         Using a known valid Rally server and known valid access credentials,
-        issue a simple search query (basic qualifying criteria) targeting RecycleBinEntry items.
+        issue a simple search query (basic qualifying criteria).
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     #
@@ -37,9 +37,9 @@ def test_basic_search():
     assert response.errors   == []
     assert response.warnings == []
     assert response.resultCount > 0
-    print response.resultCount
+    print(response.resultCount)
     for entry in response:
-        print entry.ObjectID, entry.FormattedID, entry.Name
+        print(entry.ObjectID, entry.FormattedID, entry.Name)
 
 
 #def test_simple_named_fields_query():

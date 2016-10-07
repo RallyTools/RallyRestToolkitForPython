@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/local/bin/python3.5
 
 ###################################################################################################
 #
@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 2)
+__version__ = (1, 2, 0)
 
 import datetime
 import os
@@ -35,12 +35,12 @@ RALLY_REST_HEADERS = \
     {
       #'X-RallyIntegrationName'     : 'Python toolkit for Rally REST API', # although syntactically this is the more correct
       'X-RallyIntegrationName'     : 'Rally REST API toolkit for Python',  # this matches the format of the other language toolkits
-      'X-RallyIntegrationVendor'   : 'Rally Software Development', 
+      'X-RallyIntegrationVendor'   : 'CA Technologies', 
       'X-RallyIntegrationVersion'  :       '%s.%s.%s' % __version__,
       'X-RallyIntegrationLibrary'  : 'pyral-%s.%s.%s' % __version__,
       'X-RallyIntegrationPlatform' : 'Python %s' % platform.python_version(),
       'X-RallyIntegrationOS'       : platform.platform(),
-      'User-Agent'                 : 'Pyral Rally WebServices Agent',
+      'User-Agent'                 : 'Pyral Agile Central WebServices Agent',
       'Content-Type'               : 'application/json',
       'Accept-Encoding'            : 'gzip'
     }

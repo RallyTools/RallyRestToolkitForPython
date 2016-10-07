@@ -49,21 +49,21 @@ def main(args):
         workspaces = hits
 
     for wksp in workspaces:
-        print wksp.Name
-        print "=" * len(wksp.Name)
+        print(wksp.Name)
+        print("=" * len(wksp.Name))
         rally.setWorkspace(wksp.Name)
         projects = [None]
         if byproject:
             projects = rally.getProjects(workspace=wksp.Name)
         for project in projects:
             if project:
-                print ""
-                print "    %s" % project.Name
-                print "    %s" % ('-' * len(project.Name))
+                print("")
+                print("    %s" % project.Name)
+                print("    %s" % ('-' * len(project.Name)))
             for artifact_type in art_types:
                 count = getArtifactCount(rally, artifact_type, project=project)
-                print "       %-16.16s : %4d items" % (artifact_type, count)
-        print ""
+                print("       %-16.16s : %4d items" % (artifact_type, count))
+        print("")
 
 ###################################################################################################
 
@@ -112,7 +112,7 @@ def getArtifactCount(rally, artifact_type, project=None):
                                             project=None,
                                             projectScopeUp=False, projectScopeDown=False)
     if response.errors:
-        print "Blarrggghhh! %s query error %s" % (artifact_type, response.errors[0])
+        print("Blarrggghhh! %s query error %s" % (artifact_type, response.errors[0]))
         return 0
 
     return response.resultCount

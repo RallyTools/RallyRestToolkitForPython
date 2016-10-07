@@ -27,25 +27,25 @@ def main(args):
 
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, apikey, workspace, project = rallyWorkset(options)
-    rally = Rally(server, user, password, apikey=apikey, workspace=workspace)
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    rally = Rally(server, username, password, apikey=apikey, workspace=workspace)
     wksp = rally.getWorkspace()
-    print "Workspace: %s" % wksp.Name
-    print "=" * (len(wksp.Name) + 12)
-    print ""
+    print("Workspace: %s" % wksp.Name)
+    print("=" * (len(wksp.Name) + 12))
+    print("")
 
     for project in PROJECTS:
         rally.setProject(project)
-        print "  %s" % project
-        print "  %s" % ('-' * len(project))
-        print ""
+        print("  %s" % project)
+        print("  %s" % ('-' * len(project)))
+        print("")
         response = getSchedulableArtifacts(rally)
         showSchedulableArtifacts(response)
-        print ""
-        print "-" * 80
-        print ""
-        print "%d items" % response.resultCount
-        print ""
+        print("")
+        print("-" * 80)
+        print("")
+        print("%d items" % response.resultCount)
+        print("")
 
 #################################################################################################
 
@@ -75,8 +75,8 @@ def showSchedulableArtifacts(items):
             release   = sched_art.Release.Name   if sched_art.Release   else ""
             iteration = sched_art.Iteration.Name if sched_art.Iteration else ""
             accepted  = sched_art.AcceptedDate   if hasattr(sched_art, 'AcceptedDate') else ""
-        print "    %-7.7s  %-64.64s   %-12.12s   %16.16s   %s" % \
-                  (sched_art.FormattedID, sched_art.Name, release, iteration, accepted)
+        print("    %-7.7s  %-64.64s   %-12.12s   %16.16s   %s" % \
+                  (sched_art.FormattedID, sched_art.Name, release, iteration, accepted))
 
 #################################################################################################
 #################################################################################################

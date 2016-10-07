@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/local/bin/python3.5
 
 ###################################################################################################
 #
@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 1, 2)
+__version__ = (1, 2, 0)
 
 import sys, os
 import platform
@@ -18,6 +18,8 @@ import socket
 import json
 import re  # we use compile, match
 from pprint import pprint
+
+#import six
 
 # intra-package imports
 from .rallyresp import RallyRESTResponse
@@ -90,11 +92,12 @@ class RallyContext(object):
 
 class RallyContextHelper(object):
 
-    def __init__(self, agent, server, user, password):
+    def __init__(self, agent, server, user, password, server_ping):
         self.agent  = agent
         self.server = server
         self.user   = user
         self.password = password
+        self.server_ping = server_ping
 
         # capture this user's User, UserProfile, Subscription records to extract 
         # the workspaces and projects this user has access to (and their defaults)
@@ -111,11 +114,12 @@ class RallyContextHelper(object):
         self._project_ref      = {}  # key by workspace name with dict of project_name: project_ref
         self._defaultProject   = None
         self._currentProject   = None
-        self.context        = RallyContext(server, user, password, self.agent.serviceURL())
-        self.defaultContext = self.context # to be updated on check call 
+        self.context           = RallyContext(server, user, password, self.agent.serviceURL())
+        self.defaultContext    = self.context # to be updated on check call 
+        self.operatingContext  = self.context # to be updated on check call
 
 
-    def check(self, server):
+    def check(self, server, workspace, project, isolated_workspace):
         """
             Make an initial attempt to contact the Rally web server and retrieve info
             for the user associated with the credentials supplied upon instantiation.
@@ -132,6 +136,7 @@ class RallyContextHelper(object):
 ##
         socket.setdefaulttimeout(INITIAL_REQUEST_TIME_LIMIT)
         target_host = server
+        self.isolated_workspace = isolated_workspace
 
         big_proxy   = os.environ.get('HTTPS_PROXY', False)
         small_proxy = os.environ.get('https_proxy', False)
@@ -151,23 +156,58 @@ class RallyContextHelper(object):
 ##
         target_host = proxy_host or server
 
-        reachable, problem = Pinger.ping(target_host)
-        if not reachable:
-             if not problem:
-                 problem = "host: '%s' non-existent or unreachable"  % target_host
-             raise RallyRESTAPIError(problem)
+        if self.server_ping:
+            reachable, problem = Pinger.ping(target_host)
+            if not reachable:
+                if not problem:
+                    problem = "host: '%s' non-existent or unreachable"  % target_host
+                raise RallyRESTAPIError(problem)
 
+        user_response = self._getUserInfo()
+        subscription = self._loadSubscription()
+        # caller must either specify a valid workspace/project 
+        #  or must have a DefaultWorkspace/DefaultProject in their UserProfile
+        self._getDefaults(user_response)
+
+        if workspace:
+            workspaces = self._getSubscriptionWorkspaces(subscription, workspace=workspace, limit=10)
+            if not workspaces:
+                problem = "Specified workspace of '%s' either does not exist or the user does not have permission to access that workspace" 
+                raise RallyRESTAPIError(problem % workspace)
+            if len(workspaces) > 1:
+                problem = "Multiple workspaces (%d) found with the same name of '%s'.  "  +\
+                          "You must specify a workspace with a unique name."
+                raise RallyRESTAPIError(problem % (len(workspaces), workspace))
+            self._currentWorkspace = workspaces[0].Name
+
+        if not workspace and not self._defaultWorkspace:
+            problem = "No Workspace was specified and there is no DefaultWorkspace setting for the user"
+            raise RallyRESTAPIError(problem)
+
+        if not workspace and self._defaultWorkspace:
+            workspaces = self._getSubscriptionWorkspaces(subscription, workspace=self._defaultWorkspace, limit=10)
+
+        if not self.isolated_workspace:
+            self._getSubscriptionWorkspaces(subscription, limit=0)
+        self._getWorkspacesAndProjects(workspace=self._currentWorkspace, project=self._defaultProject)
+        self._setOperatingContext(project)
+        schema_info = self.agent.getSchemaInfo(self._currentWorkspace)
+        processSchemaInfo(self.getWorkspace(), schema_info)
+
+
+    def _getUserInfo(self):
         # note the use of the _disableAugments keyword arg in the call
         user_name_query = 'UserName = "%s"' % self.user
 ##
 ##        print("user_name_query: |%s|" % user_name_query)
 ##
+        basic_user_fields = "ObjectID,UserName,DisplayName,FirstName,LastName,Disabled,UserProfile"
         try:
             timer_start = time.time()
             if self.user:
-                response = self.agent.get('User', fetch=True, query=user_name_query, _disableAugments=True)
+                response = self.agent.get('User', fetch=basic_user_fields, query=user_name_query, _disableAugments=True)
             else:
-                response = self.agent.get('User', fetch=True, _disableAugments=True)
+                response = self.agent.get('User', fetch=basic_user_fields, _disableAugments=True)
             timer_stop = time.time()
         except Exception as ex:
 ##
@@ -176,7 +216,7 @@ class RallyContextHelper(object):
 ##
             if str(ex.args[0]).startswith('404 Service unavailable'):
                 # TODO: discern whether we should mention server or target_host as the culprit
-                raise RallyRESTAPIError("hostname: '%s' non-existent or unreachable" % server)
+                raise RallyRESTAPIError("hostname: '%s' non-existent or unreachable" % self.server)
             else:
                 raise 
         elapsed = timer_stop - timer_start
@@ -189,35 +229,42 @@ class RallyContextHelper(object):
                 raise RallyRESTAPIError("Invalid credentials")
                 
             if response.status_code == 404:
+##
+##                print("response.errors: {0}".format(response.errors[0]))
+##
                 if elapsed >= float(INITIAL_REQUEST_TIME_LIMIT):
-                    problem = "Request timed out on attempt to reach %s" % server
-                elif response.errors and 'certificate verify failed' in response.errors[0]:
+                    problem = "Request timed out on attempt to reach %s" % self.server
+                elif response.errors and 'certificate verify failed' in str(response.errors[0]):
                     problem = "SSL certificate verification failed"
-                elif response.errors and 'Max retries exceeded with url' in response.errors[0]:
-                    problem = "Target Rally host: '%s' non-existent or unreachable" % server
-                elif response.errors and 'NoneType' in response.errors[0]:
-                    problem = "Target Rally host: '%s' non-existent or unreachable" % server
+                elif response.errors and 'ProxyError' in str(response.errors[0]):
+                    mo = re.search(r'ProxyError\((.+)\)$', response.errors[0])
+                    problem = mo.groups()[0][:-1]
+                    problem = re.sub(r'NewConnectionError.+>:', '', problem)[:-3]
+                elif response.errors and 'Max retries exceeded with url' in str(response.errors[0]):
+                    problem = "Target Rally host: '%s' non-existent or unreachable" % self.server
+                elif response.errors and 'NoneType' in str(response.errors[0]):
+                    problem = "Target Rally host: '%s' non-existent or unreachable" % self.server
                 else:
                     sys.stderr.write("404 Response for request\n")
-                    sys.stderr.write("\n".join(response.errors) + "\n")
+                   #sys.stderr.write("\n".join(str(response.errors)) + "\n")
                     if response.warnings:
-                        sys.stderr.write("\n".join(response.warnings) + "\n")
+                        sys.stderr.write("\n".join(str(response.warnings)) + "\n")
                     sys.stderr.flush()
-                    problem = "404 Target host: '%s' doesn't support the Rally WSAPI" % server
+                    problem = "404 Target host: '%s' is either not reachable or doesn't support the Rally WSAPI" % self.server
             else:  # might be a 401 No Authentication or 401 The username or password you entered is incorrect.
 ##
 ##                print(response.status_code)
 ##                print(response.headers)
 ##                print(response.errors)
 ##
-                if 'The username or password you entered is incorrect.' in response.errors[0]:
+                if 'The username or password you entered is incorrect.' in str(response.errors[0]):
                     problem = "Invalid credentials"
                 else:
                     error_blurb = response.errors[0][:80] if response.errors else ""
                     problem = "%s %s" % (response.status_code, error_blurb)
             raise RallyRESTAPIError(problem)
 ##
-##        print(" RallyContextHelper.check got the User info ...")
+##        print(" RallyContextHelper.check -> _getUserInfo got the User info request response...")
 ##        print("response    resource: %s" % response.resource)
 ##        print("response status code: %s" % response.status_code)
 ##        print("response     headers: %s" % response.headers)
@@ -226,13 +273,8 @@ class RallyContextHelper(object):
 ##        print("response resultCount: %s" % response.resultCount)
 ##        sys.stdout.flush()
 ##
-        self._loadSubscription()
-        self._getDefaults(response)
-        self._getWorkspacesAndProjects(workspace=self._defaultWorkspace, project=self._defaultProject)
-        # TODO: slurp in all schema for the default workspace and get this into the entity.py 
-        schema_info = self.agent.getSchemaInfo(self._defaultWorkspace)
-        processSchemaInfo(self.getWorkspace(), schema_info)
-        self.inflated = 'minimal'
+        return response
+
 
     def _loadSubscription(self):
         sub = self.agent.get('Subscription', fetch=True, _disableAugments=True)
@@ -241,91 +283,57 @@ class RallyContextHelper(object):
         subscription = sub.next()
         self._subs_name = subscription.Name
         self.context.subs_name = subscription.Name
-        wksp_coll_ref_base = "%s/Workspaces" % subscription._ref
-        workspaces_collection_url = '%s?fetch=true&query=(State = Open)&pagesize=200&start_index=1' % wksp_coll_ref_base
-        workspaces = self.agent.getCollection(workspaces_collection_url, _disableAugments=True)
-        subscription.Workspaces = [wksp for wksp in workspaces]
-##
-##        num_wksps = len(subscription.Workspaces)
-##        print("Subscription has %d active Workspaces" % num_wksps)
-##
-        self._subs_workspaces  = subscription.Workspaces
-        self._defaultWorkspace = subscription.Workspaces[0]
-##
-##        print("Subscription default Workspace: %s" % self._defaultWorkspace.Name)
-##
+        return subscription
 
-    def _getDefaults(self, response):
+    def _setOperatingContext(self, project_name):
         """
-            We have to circumvent the normal machinery as this is part of setting up the
-            normal machinery.  So, once having obtained the User object, we grab the 
-            User.UserProfile.OID value and issue a GET for that using _getResourceByOID
-            and handling the response (wrapped in a RallyRESTResponse).
+            This is called after we've determined that there is access to what is now
+            in self._defaultWorkspace.  Query for projects in the self._defaultWorkspace.
+            Set the self._defaultProject arbitrarily to the first Project.Name in the returned set,
+            and then thereafter reset that to the project_name parameter value if a match for that
+            exists in the returned set.  If the project_name parameter is non-None and there is NOT
+            a match in the returned set raise an Exception stating that fact.
         """
+        #result = self.agent.get('Project', fetch="Name", workspace=self._defaultWorkspace)
+        result = self.agent.get('Project', fetch="Name", workspace=self._currentWorkspace)
 ##
-##        print("in RallyContextHelper._getDefaults, response arg has:")
-##        #pprint(response.data[u'Results'])
-##        pprint(response.data)
+##        print(result.content)
 ##
-        user = response.next()
-##
-##        print(user.details())
-##
-        self.user_oid = user.oid
-##
-##        print(" RallyContextHelper._getDefaults calling _getResourceByOID to get UserProfile info...")
-##        sys.stdout.flush()
-##
-        upraw = self.agent._getResourceByOID(self.context, 'UserProfile', user.UserProfile.oid, _disableAugments=True) 
-##
-##        print(" RallyContextHelper._getDefaults got the raw UserProfile info via _getResourceByOID...")
-##        sys.stdout.flush()
-##
-        resp = RallyRESTResponse(self.agent, self.context, 'UserProfile', upraw, "full", 0)
-        up = resp.data[u'QueryResult'][u'Results']['UserProfile']
-##
-##        print("got the UserProfile info...")
-##        pprint(up)
-##        print("+" * 80)
-##
-        if up['DefaultWorkspace']:
-            self._defaultWorkspace = up['DefaultWorkspace']['_refObjectName']
-##
-##            print("  set _defaultWorkspace to: %s" % self._defaultWorkspace)
-##
-            self._currentWorkspace = self._defaultWorkspace
-            wkspace_ref = up['DefaultWorkspace']['_ref']
-        else:
-            self._currentWorkspace = self._defaultWorkspace.Name
-            wkspace_ref            = self._defaultWorkspace._ref
-            self._defaultWorkspace = self._defaultWorkspace.Name
+        if not result or result.resultCount == 0:
+            problem = "No Projects found in the Workspace '%s'" % self._defaultWorkspace
+            raise RallyRESTAPIError(problem)
 
-        if up['DefaultProject']:
-            self._defaultProject  = up['DefaultProject']['_refObjectName']
-            self._currentProject  = self._defaultProject
-            proj_ref = up['DefaultProject']['_ref']
+        try:
+            projects = [proj for proj in result]
+        except:
+            problem = "Unable to obtain Project Name values for projects in the '%s' Workspace"
+            raise RallyRESTAPIError(problem % self._defaultWorkspace)
+
+        match_for_default_project = [project for project in projects if project.Name == self._defaultProject]
+        match_for_named_project   = [project for project in projects if project.Name == project_name]
+
+        if project_name:
+            if not match_for_named_project:
+                problem = "No valid Project with the name '%s' found in the Workspace '%s'"
+                raise RallyRESTAPIError(problem % (project_name, self._currentWorkspace))
+            else:
+                project = match_for_named_project[0]
+                proj_ref = project._ref
+                self._defaultProject = project.Name
+                self._currentProject = project.Name
         else:
-            self._defaultProject  = ""
-            self._currentProject  = ""
-            proj_ref = ""
-            projects = self.agent.get('Project', fetch="Name", workspace=self._defaultWorkspace)
-##
-##            print(projects.content)
-##
-            if projects:
-                try:
-                    proj = projects.next()
-                    proj_ref = proj._ref
-                    self._defaultProject = proj.Name
-                    self._currentProject = proj.Name
-                except StopIteration:  # the default Workspace might not have any projects
-                    pass
+            if not match_for_default_project:
+                problem = "Default Project with the name '%s' was not found in the Workspace '%s'"
+                raise RallyRESTAPIError(problem % (self._defaultProject, self._defaultWorkspace))
+            else:
+                project = match_for_default_project[0]
+                proj_ref = project._ref
+                self._defaultProject = project.Name
+                self._currentProject = project.Name
 ##
 ##        print("   Default Workspace : %s" % self._defaultWorkspace)
 ##        print("   Default Project   : %s" % self._defaultProject)
 ##
-##
-
         if not self._workspaces:
             self._workspaces    = [self._defaultWorkspace]
         if not self._projects:
@@ -343,10 +351,108 @@ class RallyContextHelper(object):
                                            subscription=self._subs_name,
                                            workspace=self._defaultWorkspace, 
                                            project=self._defaultProject)
-        self.context = self.defaultContext 
+        self.operatingContext = RallyContext(self.server,
+                                           self.user, 
+                                           self.password,
+                                           self.agent.serviceURL(),
+                                           subscription=self._subs_name,
+                                           workspace=self._currentWorkspace, 
+                                           project=self._currentProject)
+        self.context = self.operatingContext 
 ##
-##        print(" completed _getDefaults processing...")
+##        print(" completed _setOperatingContext processing...")
 ##
+
+    def _getDefaults(self, user_response):
+        """
+            We have to circumvent the normal machinery as this is part of setting up the
+            normal machinery.  So, once having obtained the User object, we grab the 
+            User.UserProfile.OID value and issue a GET for that using _getResourceByOID
+            and handling the response (wrapped in a RallyRESTResponse).
+        """
+##
+##        print("in RallyContextHelper._getDefaults, response arg has:")
+##        #pprint(response.data[u'Results'])
+##        pprint(response.data)
+##
+        user = user_response.next()
+##
+##        pprint(response.data[u'Results'][0])
+##
+        self.user_oid = user.oid
+##
+##        print(" RallyContextHelper._getDefaults calling _getResourceByOID to get UserProfile info...")
+##        sys.stdout.flush()
+##
+        upraw = self.agent._getResourceByOID(self.context, 'UserProfile', user.UserProfile.oid, _disableAugments=True) 
+##
+##        print(" RallyContextHelper._getDefaults got the raw UserProfile info via _getResourceByOID...")
+##        print(upraw.status_code)
+##        print(upraw.content)
+##        sys.stdout.flush()
+##
+        resp = RallyRESTResponse(self.agent, self.context, 'UserProfile', upraw, "full", 0)
+        up = resp.data['QueryResult']['Results']['UserProfile']
+##
+##        print("got the UserProfile info...")
+##        pprint(up)
+##        print("+" * 80)
+##
+        if up['DefaultWorkspace']:
+            self._defaultWorkspace = up['DefaultWorkspace']['_refObjectName']
+##
+##            print("  set _defaultWorkspace to: %s" % self._defaultWorkspace)
+##
+            self._currentWorkspace = self._defaultWorkspace[:]
+            wkspace_ref = up['DefaultWorkspace']['_ref']
+        else:
+            #self._currentWorkspace = self._defaultWorkspace.Name
+            #wkspace_ref            = self._defaultWorkspace._ref
+            #self._defaultWorkspace = self._defaultWorkspace.Name
+            self._defaultWorkspace = None
+            self._currentWorkspace = None
+            wkspace_ref            = None
+
+        if up['DefaultProject']:
+            self._defaultProject  = up['DefaultProject']['_refObjectName']
+            self._currentProject  = self._defaultProject[:]
+            proj_ref = up['DefaultProject']['_ref']
+        else:
+            self._defaultProject  = None
+            self._currentProject  = None
+            proj_ref              = None
+##
+##        print("   Default Workspace : %s" % self._defaultWorkspace)
+##        print("   Default Project   : %s" % self._defaultProject)
+##
+
+
+    def _getSubscriptionWorkspaces(self, subscription, workspace=None, limit=0):
+        wksp_coll_ref_base = "%s/Workspaces" % subscription._ref
+        criteria = "(State = Open)"
+        # if workspace then augment the query
+        if isinstance(workspace, str) and len(workspace) > 0:
+            criteria = '((Name = "%s") AND %s)' % (workspace, criteria)
+        workspaces_collection_url = '%s?fetch=true&query=%s&pagesize=200&start=1' % \
+                (wksp_coll_ref_base, criteria)
+        timer_start = time.time()
+        workspaces = self.agent.getCollection(workspaces_collection_url, _disableAugments=True)
+        timer_stop  = time.time()
+        elapsed = timer_stop - timer_start
+##
+##        print("getting the Workspace collection took %5.3f seconds" % elapsed)
+##
+        subscription.Workspaces = [wksp for wksp in workspaces]
+##
+##        num_wksps = len(subscription.Workspaces)
+##        if not limit: print("Subscription %s has %d active Workspaces" % (subscription.Name, num_wksps))
+##
+        self._subs_workspaces  = subscription.Workspaces
+       #self._defaultWorkspace = subscription.Workspaces[0]
+##
+##        print("Subscription default Workspace: %s" % self._defaultWorkspace.Name)
+##
+        return subscription.Workspaces
 
 
     def currentContext(self):
@@ -373,7 +479,7 @@ class RallyContextHelper(object):
                 # make sure that entity._rally_schema gets filled for this workspace
                 # this will fault and be caught if getSchemaItem raises an Exception
                 getSchemaItem(self.getWorkspace(), 'Defect')
-            except Exception, msg:
+            except Exception as msg:
                 schema_info = self.agent.getSchemaInfo(self.getWorkspace())
                 processSchemaInfo(self.getWorkspace(), schema_info)
         else:
@@ -473,7 +579,7 @@ class RallyContextHelper(object):
 ##                print("   self._workspaces augmented, now has your target workspace")
 ##                sys.stdout.flush()
 ##
-        for projName, projRef in self._project_ref[workspace].items():
+        for projName, projRef in list(self._project_ref[workspace].items()):
             projectInfo.append((projName, projRef))
         return projectInfo
 
@@ -491,12 +597,12 @@ class RallyContextHelper(object):
         current_valid_projects = self.getAccessibleProjects(self._currentWorkspace)
         proj_names = sorted([name for name, ref in current_valid_projects])
         proj_refs  = self._project_ref[self._currentWorkspace]
-        if unicode(self._defaultProject) in proj_names and unicode(self._currentProject) in proj_names:
+        if str(self._defaultProject) in proj_names and str(self._currentProject) in proj_names:
             return (self._defaultProject, proj_refs[self._defaultProject])
 
-        if unicode(self._defaultProject) not in proj_names:
+        if str(self._defaultProject) not in proj_names:
             self._defaultProject = proj_names[0]
-        if unicode(self._currentProject) not in proj_names:
+        if str(self._currentProject) not in proj_names:
             self.setProject(self._defaultProject)
         return (self._defaultProject, proj_refs[self._defaultProject])
 
@@ -510,14 +616,12 @@ class RallyContextHelper(object):
             return ""
         if not self._currentProject:
             return ""
-
 ##
 ##        print(" currentProjectRef() ... ")
 ##        print("    _currentWorkspace: '%s'"  % self._currentWorkspace)
 ##        print("    _currentProject  : '%s'"  % self._currentProject)
 ##        print("    _project_ref keys: %s" %  repr(self._project_ref.keys()))
 ##
-
         #
         # this next condition could be True in limited circumstances, like on initialization
         # when info for the _currentProject hasn't yet been retrieved,
@@ -572,7 +676,7 @@ class RallyContextHelper(object):
 
             if workspace not in eligible_workspace_names:
                 problem = 'Workspace specified: "%s" not accessible with current credentials'
-                raise RallyRESTAPIError(problem % workspace)
+                raise RallyRESTAPIError(problem % workspace.Name)
             if workspace not in self._workspaces and self._inflated != 'wide':  
                 ec_kwargs = {'workspace' : workspace}
                 self._establishContext(ec_kwargs)
@@ -614,8 +718,14 @@ class RallyContextHelper(object):
                 augments.append("projectScopeDown=true")
 
         if not workspace and project:
-            self.context = self.defaultContext
+            #self.context = self.defaultContext
+            self.context = self.operatingContext
 
+        # check to see if the _current_project is actually in the _current_workspace
+        if self._currentProject not in self._projects[self._currentWorkspace]:
+            problem = "the current Workspace |%s| does not contain a Project that matches the current setting of the Project: %s" % (self._currentWorkspace, self._currentProject)
+            raise RallyRESTAPIError(problem)
+##
         return self.context, augments
 
 
@@ -634,7 +744,6 @@ class RallyContextHelper(object):
 ##        print("_getWorkspacesAndProjects, self._currentWorkspace: %s" % self._currentWorkspace)
 ##        print("_getWorkspacesAndProjects, self._defaultWorkspace: %s" % self._defaultWorkspace)
 ##    
-            
         for workspace in self._subs_workspaces:
             # short-circuit issuing any WS calls if we don't need to 
             if target_workspace and workspace.Name != target_workspace:
@@ -652,12 +761,12 @@ class RallyContextHelper(object):
             self._projects[     workspace.Name] = []
             self._project_ref[  workspace.Name] = {}
             resp = self.agent._getResourceByOID( self.context, 'workspace', workspace.oid, _disableAugments=True)
-            response = json.loads(resp.content)
+            response = resp.json()
             # If SLM gave back consistent responses, we could use RallyRESTResponse, but no joy...
             # Carefully weasel into the response to get to the guts of what we need
             # and note we specify only the necessary fetch fields or this query takes a *lot* longer...
-            base_proj_coll_url = response['Workspace']['Projects'][u'_ref']
-            projects_collection_url = '%s?fetch="ObjectID,Name,State"&pagesize=200&start_index=1' % base_proj_coll_url
+            base_proj_coll_url = response['Workspace']['Projects']['_ref']
+            projects_collection_url = '%s?fetch="ObjectID,Name,State"&pagesize=200&start=1' % base_proj_coll_url
             response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
 #not-as-bad?#            response = self.agent.get('Project', fetch="ObjectID,Name,State", workspace=workspace.Name)
 
@@ -695,6 +804,7 @@ class RallyContextHelper(object):
         items = []
         items.append('%s = %s' % ('server',             self.server))
         items.append('%s = %s' % ('defaultContext',     self.defaultContext))
+        items.append('%s = %s' % ('operatingContext',   self.operatingContext))
         items.append('%s = %s' % ('_subs_name',         self._subs_name))
         items.append('%s = %s' % ('_workspaces',        repr(self._workspaces)))
         items.append('%s = %s' % ('_projects',          repr(self._projects)))
@@ -746,7 +856,7 @@ class Pinger(object):
                 rc = subprocess.call(vector, stdout=sink, stderr=sink)
         except:
             stuff = sys.exc_info()
-            print(stuff)
+           #print(stuff)
             result = stuff[1]
         finally:
             with open(bucket, 'r') as of:

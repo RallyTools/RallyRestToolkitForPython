@@ -3,6 +3,7 @@
 import sys, os
 import types
 import pprint
+import six
 
 from pyral import Rally
 
@@ -21,12 +22,12 @@ def test_getSchemaInfo():
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     schema_info = rally.getSchemaInfo(rally.getWorkspace())
-    assert type(schema_info) == types.ListType
+    assert type(schema_info) == list
     assert len(schema_info) > 50
     subs_schema = [item for item in schema_info if item['Name'] == 'Subscription']
     assert subs_schema != None
     assert len(subs_schema) == 1
-    assert type(subs_schema) == types.ListType
+    assert type(subs_schema) == list
     assert u'Attributes' in subs_schema[0]
     assert len(subs_schema[0][u'Attributes']) > 15
 
@@ -56,6 +57,7 @@ def test_getProject():
     assert response.warnings == []
 
     assert response.resultCount > 0
+    #proj_rec = six.next(response)
     proj_rec = response.next()
     #print proj_rec._ref
     #print proj_rec.ref
@@ -89,7 +91,7 @@ def test_getAllUsers_query():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     everybody = rally.getAllUsers()
     assert len(everybody) > 0
-    assert len([user for user in everybody if user.DisplayName == 'Integrations Test']) == 1
+    assert len([user for user in everybody if user.DisplayName == 'da Kipster']) == 1
 
 def test_getAllowedValues_query():
     """
@@ -99,7 +101,7 @@ def test_getAllowedValues_query():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     avs = rally.getAllowedValues('Defect', 'State')
     assert len(avs) > 0
-    assert len(avs) == 6
+    assert len(avs) >= 4
     assert u'Open' in avs
     assert u'Closed' in avs
 
@@ -120,11 +122,11 @@ def test_typedef():
 def test_getStates():
     """
         Using a known valid Rally server and known valid access credentials,
-        get all the State entity instances for Thme via the
+        get all the State entity instances for Initiative via the
         Rally.getStates convenience method.
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    target_entity = 'Theme'
+    target_entity = 'Initiative'
     states = rally.getStates(target_entity)
     assert len(states) == 4
     discovering = [state.Name for state in states if state.Name == "Discovering"]
@@ -144,8 +146,13 @@ def test_getCollection():
     response = rally.getCollection(proj_collection_url)
     assert response.__class__.__name__ == 'RallyRESTResponse'
     projects = [proj for proj in response]
-    assert len(projects) > 30
+    assert len(projects) >= 2
     assert projects.pop(0).__class__.__name__ == 'Project'
+    for project in projects:
+        print(project.details())
+        print('')
+        print('--------------------------------------------------------')
+        print('')
     
 
 #test_getSchemaInfo()

@@ -72,3 +72,18 @@
     Added ability to query RecycleBin entries.
     Added basic search method to Rally instance.
 
+1.1.2 - February 2016
+    internal release only
+    minor style mods for Pinger
+    fixed handling of proxy value under some edge conditions
+    exploratory support for Python 3.5
+
+1.2.0 - Oct 2016
+    support for Python 3.5
+    allow instantiation option to bypass use of Pinger
+    changed header to reflect change of company name to CA Technologies
+    added ranking convenience methods
+    modified handling of attribute allowedValues for better create/update performance
+    allow instantiation option to work with only one workspace for better performance for Subscriptions with large number of Workspaces
+    fix addAttachment handling to allow binary files and increase size limit to 50MB.
+
