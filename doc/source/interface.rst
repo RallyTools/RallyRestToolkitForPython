@@ -709,7 +709,7 @@ Item Attributes
     the standard dot (.) notation.  The names are identical to those documented in the 
     `Rally WS API`_.
 
-.. _Rally WS API: https://rally.rallydev.com/slm/doc/webservice 
+.. _Rally WS API: https://rally1.rallydev.com/slm/doc/webservice 
 
     Generally, every concrete instance in the Rally system will have a Name attribute.
     You can use the **attributes()** method on an instance to obtain the names of all of the 
