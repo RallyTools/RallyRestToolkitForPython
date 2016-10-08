@@ -10,6 +10,7 @@
 import sys
 
 from pyral import Rally, rallyWorkset
+from pyral import context
 
 #################################################################################################
 
@@ -41,21 +42,21 @@ def main(args):
 
     project = rally.getProject()
     print("Project  : %s " % project.Name)
-    #print "Project  : %12.12s   %-18.18s    (%s)" % (project.oid, project.Name, project.ref)
+    #print("Project  : %12.12s   %-18.18s    (%s)" % (project.oid, project.Name, project.ref))
 
     # uncomment this to see all of your accessible workspaces and projects
 #    workspaces = rally.getWorkspaces()
 #    for workspace in workspaces:
-#        print " ", workspace.Name
+#        print(" ", workspace.Name)
 #        projects = rally.getProjects(workspace=workspace.Name)
 #        if projects:
-#            print ""
-#            print "    Projects:"
+#            print("")
+#            print("    Projects:")
 #            for project in projects:
-#                print "     ", project.Name
+#                print("     ", project.Name)
 #        else:
-#            print "  No projects"
-#        print ""
+#            print("  No projects")
+#        print("")
 
     sys.exit(0)
 

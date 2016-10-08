@@ -825,6 +825,7 @@ class Pinger(object):
         Response to the ping command results in the ping method returning True,
         otherwise a False is returned
     """
+    called = False
     MAX_PING_ATTEMPTS    = 2
     DEFAULT_PING_TIMEOUT = 6
     ping_timeout = os.getenv('PYRAL_PING_TIMEOUT', None)
@@ -843,6 +844,7 @@ class Pinger(object):
 
     @classmethod
     def ping(self, target):
+        Pinger.called = True
         plat_ident = platform.system()
         if plat_ident.startswith('CYGWIN'):
             plat_ident = 'Cygwin'

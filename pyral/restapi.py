@@ -175,23 +175,28 @@ class Rally(object):
     MAX_ATTACHMENT_SIZE = 50000000  # approx 50 MB 
 
     def __init__(self, server=SERVER, user=None, password=None, apikey=None,
-                       version=WS_API_VERSION, warn=True, server_ping=True, 
+                       version=WS_API_VERSION, warn=True, server_ping=None, 
                        isolated_workspace=False, **kwargs):
-        self.server   = server 
-        self.user     = user     or USER_NAME
-        self.password = password or PASSWORD
-        self.apikey   = apikey
-        self.version  = WS_API_VERSION  # we only support v2.0 now
-        self._inflated   = False
-        self.service_url = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE    % self.version)
-        self.schema_url  = "%s://%s/%s" % (PROTOCOL, self.server, SCHEMA_SERVICE % self.version)
-        self.hydration   = "full"
-        self._sec_token  = None
-        self._log        = False
-        self._logDest    = None
-        self._logAttrGet = False
-        self._warn       = warn
-        self._server_ping = server_ping
+        self.server       = server 
+        self.user         = user     or USER_NAME
+        self.password     = password or PASSWORD
+        self.apikey       = apikey
+        self.version      = WS_API_VERSION  # we only support v2.0 now
+        self._inflated    = False
+        self.service_url  = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE    % self.version)
+        self.schema_url   = "%s://%s/%s" % (PROTOCOL, self.server, SCHEMA_SERVICE % self.version)
+        self.hydration    = "full"
+        self._sec_token   = None
+        self._log         = False
+        self._logDest     = None
+        self._logAttrGet  = False
+        self._warn        = warn
+        self._server_ping = True   # this is the default for 1.2.0
+        if 'RALLY_PING' in os.environ:
+            if os.environ['RALLY_PING'].lower() in ['f', 'false', 'n', 'no', '0']:
+                self._server_ping = False
+        if server_ping == False:
+            self._server_ping = False
         self.isolated_workspace = isolated_workspace
         config = {}
         if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
@@ -229,7 +234,8 @@ class Rally(object):
         
         global _rallyCache
 
-        self.contextHelper = RallyContextHelper(self, self.server, self.user, self.password or self.apikey, self._server_ping)
+        self.contextHelper = RallyContextHelper(self, self.server, self.user, self.password or self.apikey, 
+                                                      self._server_ping)
         _rallyCache[self.contextHelper.context] = {'rally' : self }
         wksp = None
         proj = None

@@ -36,7 +36,8 @@ EXAMPLES   = ['getitem.py',
               'get_attachments.py',
               'get_schedulable_artifacts.py',
               'add_tcrs.py',
-              'defrevs.py'
+              'defrevs.py',
+              'updtag.py'
              ]
 DOC_FILES  = ['doc/Makefile',
               'doc/source/conf.py',
@@ -67,6 +68,8 @@ TEST_FILES = ['test/rally_targets.py',
               'test/test_search.py',
               'test/test_wksprj_setting.py',
               'test/test_attachments.py',
+              'test/test_workspaces.py'
+              'test/test_ranking.py'
              ]
 
 ################################################################################
