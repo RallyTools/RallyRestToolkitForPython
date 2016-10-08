@@ -76,12 +76,12 @@ def show_counts(rally, artifact_type, state, state_values, av_time):
         response = rally.get(artifact_type, fetch="FormattedID", query='%s = %s' % (state, state_value),
                                             projectScopeUp=False, projectScopeDown=False)
         if response.errors:
-            print "ERROR detected %s" % response.errors[0]
+            print("ERROR detected %s" % response.errors[0])
             sys.exit(1)
         output.append("%16s : %5d" % (state_value, response.resultCount))
 
     for line in output:
-        print line
+        print(line)
 
 ###################################################################################################
 ###################################################################################################

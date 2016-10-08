@@ -20,7 +20,7 @@ Requirements
 The pyral package requires the use of Kenneth Reitz's requests package using version 2.0.0 or better.
 As of requests version 2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.1.1) has been tested with requests 2.3.0.
+The most recent release of pyral (1.2.0) has been tested with requests 2.8.1.
 
 
 Installation
@@ -48,5 +48,5 @@ Documentation
 Obtain the zip file containing the HTML and CSS files comprising the document set for pyral.
 Unzip in a suitable location and point your web browser to the doc/build/html/index.html file
 
-The rendered documentation is also available at http://readthedocs.org/docs/pyral .
+  DISABLED: The rendered documentation is also available at http://readthedocs.org/docs/pyral .
 

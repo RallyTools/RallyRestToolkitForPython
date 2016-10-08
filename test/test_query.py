@@ -5,6 +5,11 @@ import types
 import urllib
 import py
 
+try:
+    from urllib import unquote
+except:
+    from urllib.parse import unquote
+
 from pyral import Rally
 import pyral
 
@@ -14,7 +19,7 @@ from pyral.query_builder import RallyUrlBuilder, RallyQueryFormatter
 ##################################################################################################
 
 from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
-from rally_targets import DEFAULT_WORKSPACE, NON_DEFAULT_PROJECT
+from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 
 ##################################################################################################
 
@@ -55,8 +60,7 @@ def test_all_fields_query():
     response = rally.get('Project', fetch=True, limit=10)
     assert response.status_code == 200
     assert len(response.errors) ==   0
-    #assert len(response._page)  ==   12
-    assert response.resultCount > 12
+    assert response.resultCount > 1
     for project in response:
         assert project.oid > 0
         assert len(project.Name) > 0
@@ -128,7 +132,7 @@ def test_multiple_entities_query():
     multiple_entities = "Project,Workspace"
     with py.test.raises(InvalidRallyTypeNameError) as excinfo:
         response = rally.get(multiple_entities, fetch=False, limit=10)
-    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    actualErrVerbiage = excinfo.value.args[0]
     assert excinfo.value.__class__.__name__ == 'InvalidRallyTypeNameError'
     assert actualErrVerbiage == multiple_entities
 
@@ -144,6 +148,7 @@ def test_multiple_page_response_query():
     count = 0
     for ix, bugger in enumerate(response):
         count += 1
+
     assert response.resultCount > 5
     assert count <= response.resultCount
     assert count == 15
@@ -168,8 +173,8 @@ def test_defects_revision_history():
     d1_revs = defect1.RevisionHistory.Revisions
     d2_revs = defect2.RevisionHistory.Revisions
 
-    assert type(d1_revs) == types.ListType
-    assert type(d2_revs) == types.ListType
+    assert type(d1_revs) == list
+    assert type(d2_revs) == list
 
     d1_rev1 = d1_revs.pop()  # now the revs are in stack order, newest first, original the last
     d2_rev1 = d2_revs.pop()  # ditto
@@ -279,8 +284,8 @@ def test_three_condition_query_in_list():
 def test_five_condition_query_in_list():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     qualifiers = ["State = Submitted",
-                  "FormattedID < DE6000",
-                  "FormattedID != DE5986",
+                  "FormattedID < DE22",
+                  "FormattedID != DE17",
                   'Priority = "High Attention"',
                   "Severity != Cosmetic"
                  ]
@@ -323,30 +328,31 @@ def test_limit_query():
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     qualifier = "State = Submitted"
-    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=200, limit=80)
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=100, limit=30)
     items = [item for item in response]
-    assert len(items) == 80
+    assert len(items) == 30
 
 def test_start_value_query():
     """
-        Use a pagesize of 200 and a start index value of 300 in the params in the URL
+        Use a pagesize of 200 and a start index value of 10 in the params in the URL
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     qualifier = "State = Submitted"
-    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=200, start=2000)
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=200, start=10)
     items = [item for item in response]
-    assert len(items) > 200 
-    assert len(items) < 600
+    assert len(items) > 20 
+    assert len(items) < 1000
 
 def test_start_and_limit_query():
     """
-        Use a pagesize of 50 and a start index value of 20 and a limit of 60 in the params in the URL
+        Use a pagesize of 50 and a start index value of 10 and a limit of 40 in the params in the URL
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     qualifier = "State = Submitted"
-    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=50, start=20,limit=60)
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=50, start=10,limit=40)
     items = [item for item in response]
-    assert len(items) == 60
+    assert len(items) >  10
+    assert len(items) <= 40
 
 def test_query_target_value_with_ampersand():
     """
@@ -354,19 +360,19 @@ def test_query_target_value_with_ampersand():
     """
     criteria = ['Project.Name = R&D']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
 
     criteria = ['Project.Name = "R&D"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
 
     criteria = ['Project.Name contains "R&D"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
 
     criteria = 'Railhead.Company.Name != "Atchison Topeka & Santa Fe & Cunard Lines"'
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert urllib.unquote(result) == criteria.replace('&', '%26')
+    assert unquote(result) == criteria.replace('&', '%26')
 
 
 def test_query_target_value_with_and():
@@ -383,12 +389,12 @@ def test_query_target_value_with_and():
 
 def test_query_with_special_chars_in_criteria():
     """
-       DE3228 in DEFAULT_WORKSPACE / NON_DEFAULT_PROJECT has Name = Special chars:/!@#$%^&*()-=+[]{};:./<>?/ 
+       DE3228 in DEFAULT_WORKSPACE / DEFAULT_PROJECT has Name = Special chars:/!@#$%^&*()-=+[]{};:./<>?/ 
        query for it by looking for it by the name value
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     rally.setWorkspace(DEFAULT_WORKSPACE)
-    rally.setProject(NON_DEFAULT_PROJECT)
+    rally.setProject(DEFAULT_PROJECT)
     rally.enableLogging('spec_char_query')
     criteria = 'Name = "distinctive criteria of -32% degradation in rust protection"'
     response = rally.get('Defect', fetch=True, query=criteria, limit=10)
@@ -405,7 +411,7 @@ def test_query_with_special_chars_in_criteria():
     assert response.warnings == []
     assert response.resultCount == 1
 
-    special_chars = "/!@#$%^*_-+=?{}[]:;,<>"
+    special_chars = "/!@#$%^*_-+=?{}[]:;,.<>"
     # characters that break the RallyQueryFormatter and/or WSAPI: ( ) ~ & | backslash
     for character in special_chars:
         criteria = 'Name contains "%s"' % character
@@ -416,7 +422,7 @@ def test_query_with_special_chars_in_criteria():
         assert response.warnings == []
         assert response.resultCount >= 1
 
-    criteria = 'Name = "Special chars:/!@#$%^*-=+[]{};:.<>? in the name field"'
+    criteria = 'Name = "Special chars:/!@#$%^*-=+[]{};:,.<>? in the name field"'
     response = rally.get('Defect', fetch=True, query=criteria, limit=10)
     assert response.__class__.__name__ == 'RallyRESTResponse'
     assert response.status_code == 200
@@ -426,13 +432,10 @@ def test_query_with_special_chars_in_criteria():
 
 def test_query_with_matched_parens_in_condition_value():
     """
-        'REST Toolkit Testing' / 'Sample Project' has a Release in it whose name contains a matched paren pair
+        The default workspace and project has  a Release in it whose name contains a matched paren pair
         make sure a query containing a condition looking for the Release by this name succeeds.
     """
-    target_workspace = 'REST Toolkit Testing'
-    target_project   = 'Sample Project'
-
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=target_workspace, project=target_project)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     rally.enableLogging('query_condition_value_has_matched_internal_parens')
 
     criteria = 'Name = "8.5 (Blah and Stuff)"'

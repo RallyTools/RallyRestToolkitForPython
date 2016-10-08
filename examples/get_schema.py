@@ -67,11 +67,15 @@ def main(args):
         errout("ERROR: You must supply an entity name!\n")
         sys.exit(1)
 
-    server, user, password, apikey, workspace, project = rallyWorkset(options)
-    if apikey:
-        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
-    else:
-        rally = Rally(server, user=username, password=password, workspace=workspace, project=project) 
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    try:
+        if apikey:
+            rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+        else:
+            rally = Rally(server, user=username, password=password, workspace=workspace, project=project) 
+    except Exception as ex:
+        errout(str(ex.args[0]))       
+        sys.exit(1)
 
     entity = args[0]
     if entity in ['UserStory', 'User Story', 'Story']:
@@ -79,14 +83,8 @@ def main(args):
     #if '/' in entity:
     #    parent, entity = entity.split('/', 1)
 
-    try:
-        rally = Rally(server, user=user, password=password)
-    except Exception as ex:
-        errout(str(ex.args[0]))       
-        sys.exit(1)
-
     schema_item = rally.typedef(entity)
-    print schema_item
+    print(schema_item)
 
 #################################################################################################
 #################################################################################################

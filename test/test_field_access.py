@@ -41,7 +41,7 @@ def test_defect_fields():
     assert response.status_code == 200
     defect = response.next()
     assert defect.NumberofCases == 4
-    assert defect.AffectedCustomers == 'def, jkl, qrs, uvw'
+    assert 'def, jkl, qrs, uvw' in defect.AffectedCustomers
 
 #def test_task_fields():
 #    """

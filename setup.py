@@ -12,7 +12,7 @@ except:
         from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '1.1.1'
+VERSION       = '1.2.0'
 OFFICIAL_NAME = 'Python toolkit for Rally REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (Rally Software Development)'
@@ -21,7 +21,7 @@ GITHUB_SITE   = 'https://github.com/RallyTools/RallyRestToolkitForPython'
 GITHUB_DISTS  = '%s/blob/master/dists' % GITHUB_SITE
 DOWNLOADABLE_ZIP = '%s/%s-%s.zip' % (GITHUB_DISTS, PACKAGE, VERSION)
 
-MINIMUM_REQUESTS_VERSION = '2.0.0'
+MINIMUM_REQUESTS_VERSION = '2.3.0'
 
 setup(name=PACKAGE,
       version=VERSION,
@@ -33,7 +33,7 @@ setup(name=PACKAGE,
       long_description=open('README.rst').read(),
       packages=[PACKAGE],
       license='BSD',
-      requires=["python (< 3.0)"],
+      #requires=["python"],
       #install_requires=['requests>=%s' % MINIMUM_REQUESTS_VERSION],
       classifiers=[
             'Development Status :: 5 - Production/Stable',
@@ -44,6 +44,7 @@ setup(name=PACKAGE,
             'Programming Language :: Python',
             'Programming Language :: Python :: 2.6',
             'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3.5',
             'Topic :: Internet :: WWW/HTTP',
             'Topic :: Software Development :: Libraries',
         ],

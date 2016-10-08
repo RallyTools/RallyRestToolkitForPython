@@ -8,6 +8,11 @@ and productive Python language.
 The ``pyral`` package provides a smooth and easy to use veneer on top
 of the Rally REST Web Services API using JSON.
 
+As of July 2015, the Rally Software Development company was acquired by CA Technologies.
+The Rally product itself has been rebranded as 'Agile Central'.  Over time, the documentation
+will transition from using the term 'Rally' to using 'Agile Central'.
+
+
 .. contents::
 
 Getting started
@@ -34,7 +39,7 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.1.1) has been tested using requests 2.3.0.
+The most recent release of pyral (1.2.0) has been tested using requests 2.8.1.
 
 
 Unpack the ``pyral`` distribution file (zip or tar.gz) and then install the pyral_ package. 
@@ -56,11 +61,11 @@ relevant packages.
 :: 
 
    $ python
-   Python 2.7.5 [other Python interpreter info elided ...]
+   Python 2.7.11 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 1, 1)
+   (1, 2, 0)
 
 
 
@@ -254,42 +259,63 @@ The item names in config files **are** case sensitive.
 Prerequisites
 -------------
 
- * Python 2.6 or 2.7 (2.7 is preferred)
+ * Python 2.6 or 2.7 (2.7 is preferred) OR
+ * Python 3.5 (this package not tested with earlier versions of Python 3.x)
  * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy),
-   requests 2.3.0 is recommended.
+   requests 2.8.1 is recommended.
 
 .. _requests: http://github.com/kennethreitz/requests
 
 Versions
 --------
 
+   1.2.0
+       Support for Python 3.5.x
+       Begin deprecation sequence for pinging the Rally server before the connection attempt, 
+             initially with this version, allow option on instantiation to bypass ping.
+       Added ability to rankAbove, rankBelow, rankToTop, rankToBottom for an Artifact.
+       Fixed defect where user has no default workspace or project.
+
+       addAttachment now correctly handles binary file, attachment size limit increased to 50MB to match Agile Central limit.
+       Exception generated when running getAllUsers when credentials are for non Subscription/Workspace Administrator has been fixed.
+       Added ability to work with a single Workspace, which has beneficial performance effect for Subscriptions with a large number of Workspaces.
+       Modified internal attribute handling to limit calls to get attribute's allowed values to qualifying attribute types.
+       Added examples/updtag.py script.
+
+
    1.1.1 
-       - Modified entity.py to allow it to pass back PortfolioItem sub type instances.
-       - Modified rallyresp.py defect referencing non-existing req_type instance var by changing reference to request_type. 
-       - Modified restapi.py to use user, dropped auth_user.
-       - Modified restapi.py to be more defensive when user has no associated UserProfile.
-       - Modified context.py to account for use of Cygwin in Pinger code.
-       - Modified restapi.py to handle encoding of attachment content to match Rally expectations.
-       - Modified restapi.py/entity.py to handle querying of SchedulableArtifact instances.
-       - Modified restapi.py to handle querying and hydrating of PortfolioItem instances more completely.
-       - Modified restapi.py/entity.py to provide rudimentary support for querying of RecycleBin entries.
-       - Modified restapi.py and added search_utils.py to provide a search method for pyral Rally instances.
-       - Modified rallyresp.py to better handle some boundary conditions when response body item counts differ from what is stated in the TotalResultCount.
-       - Modified context.py to account for scenario where user's default workspace has no projects.
-       - Modified restapi.py/getProject to return correct project.
+       Modified entity.py to allow it to pass back PortfolioItem sub type instances.
+       Modified rallyresp.py defect referencing non-existing req_type instance var by changing 
+                reference to request_type. 
+       Modified restapi.py to use user, dropped auth_user.
+       Modified restapi.py to be more defensive when user has no associated UserProfile.
+       Modified context.py to account for use of Cygwin in Pinger code.
+       Modified restapi.py to handle encoding of attachment content to match Rally expectations.
+       Modified restapi.py/entity.py to handle querying of SchedulableArtifact instances.
+       Modified restapi.py to handle querying and hydrating of PortfolioItem instances more completely.
+       Modified restapi.py/entity.py to provide rudimentary support for querying of RecycleBin entries.
+       Modified restapi.py and added search_utils.py to provide a search method for pyral Rally instances.
+       Modified rallyresp.py to better handle some boundary conditions when response body item counts 
+                differ from what is stated in the TotalResultCount.
+       Modified context.py to account for scenario where user's default workspace has no projects.
+       Modified restapi.py/getProject to return correct project.
 
    1.1.0 
-       - Introduction of support to use Rally API Key and rallyWorkset (supercedes rallySettings). 
-       - Two relatively minor defects fixed dealing with internalizing environment vars for initialization and in retrieving Rally entity attribute allowed values.
+       Introduction of support to use Rally API Key and rallyWorkset (supercedes rallySettings). 
+       Two relatively minor defects fixed dealing with internalizing environment
+       vars for initialization and in retrieving Rally entity attribute allowed values.
 
    1.0.1
-       - Patch to address defect with Rally WSAPI v2.0 projects collection endpoint providing conflicting information.
+       Patch to address defect with Rally WSAPI v2.0 projects collection endpoint
+       providing conflicting information.
 
    1.0.0
-       - Default WSAPI version in config is v2.0. This version is not compatible with Rally WSAPI version 1.x.  
-       - Adjusted the RallyUrlBuilder (via RallyQueryFormatter) to be more resilient with respect to many more "special" characters (non-alphanumeric).
-       - Retrieving the meta data uses the v2.0 schema endpoint.
-       - No longer support a version keyword argument when obtaining a Rally instance.
+       Default WSAPI version in config is v2.0. This version is not compatible 
+       with Rally WSAPI version 1.x.  
+       Adjusted the RallyUrlBuilder (via RallyQueryFormatter) to be more resilient
+       with respect to many more "special" characters (non-alphanumeric).
+       Retrieving the meta data uses the v2.0 schema endpoint.
+       No longer support a version keyword argument when obtaining a Rally instance.
 
    0.9.4
        Adjusted Rally __init__ to accommodate using requests 0.x, 1.x, 2.x versions.
@@ -355,15 +381,14 @@ Versions
 
 TODO
 ----
-* Rework the distribution to be pip installable
+* Investigate permanent location for web-access to rendered documentation
 * Dynamically construct the Rally schema hierarchy economically.
-* Python 3.3+ support
 
 
 License
 -------
 
-BSD3-style license. Copyright (c) 2010-2015 Rally Software Development.
+BSD3-style license. Copyright (c) 2015-2016 CA Technologies, 2010-2015 Rally Software Development.
 
 See the LICENSE file provided with the source distribution for full details.
 

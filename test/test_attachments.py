@@ -56,10 +56,10 @@ def test_add_attachment():
     #for story in response:
     #    print "%s %-48.48s %d" % (story.FormattedID, story.Name, len(story.Attachments))
 
-    candidate_story = "US96"
+    candidate_story = "US1" #  was "US96" in trial
     response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", 
                                    query='FormattedID = "%s"' % candidate_story)
-    print response.resultCount
+  ##print(response.resultCount)
     story = response.next()
     assert len(story.Attachments) == 0
 
@@ -80,7 +80,7 @@ def test_get_attachment():
     """
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    candidate_story = "US80"
+    candidate_story = "US2" # was this in trial -> "US80"
     target = 'FormattedID = "%s"' % candidate_story
     response = rally.get("UserStory", fetch=True, query=target, project=None)
     assert response.resultCount == 1
@@ -115,8 +115,8 @@ def test_add_tcr_attachment():
     response = rally.get('Project', fetch=False, limit=10)
     assert response != None
     assert response.status_code == 200
-    proj = rally.getProject()  # proj.Name == My Project
-    assert proj.Name == 'My Project'
+    proj = rally.getProject()  # proj.Name == Sample Project
+    assert proj.Name == 'Sample Project'
 
     tc_info = { "Workspace"    : wksp.ref,
                 "Project"      : proj.ref,
@@ -124,16 +124,16 @@ def test_add_tcr_attachment():
                 "Type"         : "Functional",
               }
     test_case = rally.create('TestCase', tc_info)
-    assert test_case.oid > 0
+    assert int(test_case.oid) > 0
 
     tcr_info = { "Workspace" : wksp.ref,
                  "TestCase"  : test_case.ref,
-                 "Date"      : "2014-05-17T14:30:28.000Z",
-                 "Build"     : 27,
+                 "Date"      : "2016-05-17T14:30:28.000Z",
+                 "Build"     : 17,
                  "Verdict"   : "Pass"
                }
     tcr = rally.create('TestCaseResult', tcr_info)
-    assert tcr.oid > 0
+    assert int(tcr.oid) > 0
 
     attachment_name = "Addendum.txt"
     att_ok = conjureUpAttachmentFile(attachment_name)
@@ -148,7 +148,7 @@ def test_detach_attachment():
         This is the counterpart test for test_add_attachment
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    candidate_story = "US96"
+    candidate_story = "US1"   # "US96"
     target = 'FormattedID = "%s"' % candidate_story
 
     response = rally.get("UserStory", fetch=True, query=target, project=None)

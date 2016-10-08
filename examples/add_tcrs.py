@@ -54,8 +54,8 @@ def main(args):
     test_case = rally.get('TestCase', query="FormattedID = %s" % test_case_id,
                           workspace=workspace, project=None, instance=True)
     if not test_case or hasattr(test_case, 'resultCount'):
-        print "Sorry, unable to find a TestCase with a FormattedID of %s in the %s workspace" % \
-              (test_case_id, workspace)
+        print("Sorry, unable to find a TestCase with a FormattedID of %s in the %s workspace" % \
+              (test_case_id, workspace))
         sys.exit(3)
 
     wksp = rally.getWorkspace()
@@ -69,12 +69,12 @@ def main(args):
                    }
         try:
             tcr = rally.create('TestCaseResult', tcr_data)
-        except RallyRESTAPIError, details:
+        except RallyRESTAPIError as details:
             sys.stderr.write('ERROR: %s \n' % details)
             sys.exit(4)
         
-        print "Created  TestCaseResult OID: %s  TestCase: %s  Build: %s  Date: %s  Verdict: %s" % \
-               (tcr.oid, test_case.FormattedID, tcr.Build, tcr.Date, tcr.Verdict)
+        print("Created  TestCaseResult OID: %s  TestCase: %s  Build: %s  Date: %s  Verdict: %s" % \
+               (tcr.oid, test_case.FormattedID, tcr.Build, tcr.Date, tcr.Verdict))
 
 #################################################################################################
 #################################################################################################

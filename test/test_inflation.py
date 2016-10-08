@@ -10,6 +10,7 @@ from pyral import Rally, RallyRESTAPIError
 ##################################################################################################
 
 from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD, DEFAULT_WORKSPACE, DEFAULT_PROJECT
+from rally_targets import ALTERNATE_WORKSPACE
 
 ##################################################################################################
 
@@ -67,12 +68,12 @@ def test_default_workspace_non_valid_project():
         An exception should be raised.
     """
     project = 'Halfling Leaf Pipe'
-    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, DEFAULT_WORKSPACE)
+    expectedErrMsg = u"No valid Project with the name '%s' found in the Workspace '%s'" % (project, DEFAULT_WORKSPACE)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       project=project)
-    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    assert excinfo.value.__class__.__name__ == 'Exception'
+    actualErrVerbiage = excinfo.value.args[0] 
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert actualErrVerbiage == expectedErrMsg
 
 def test_named_default_workspace_use_default_project():
@@ -114,7 +115,7 @@ def test_named_default_workspace_named_valid_project():
     """
     project   = 'My Project'
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
-                  workspace=DEFAULT_PROJECT, project=project)
+                  workspace=DEFAULT_WORKSPACE, project=project)
     response = rally.get('Project')
     assert response != None
     assert response.status_code == 200
@@ -128,12 +129,12 @@ def test_named_default_workspace_named_invalid_project():
         An exception should be raised.
     """
     project = 'Sailor Sami'
-    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, DEFAULT_WORKSPACE)
+    expectedErrMsg = "No valid Project with the name '%s' found in the Workspace '%s'" % (project, DEFAULT_WORKSPACE)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       workspace=DEFAULT_WORKSPACE, project=project)
-    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    assert excinfo.value.__class__.__name__ == 'Exception'
+    actualErrVerbiage = excinfo.value.args[0] 
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert actualErrVerbiage == expectedErrMsg
 
 def test_named_non_default_workspace_use_default_project():
@@ -150,17 +151,18 @@ def test_named_non_default_workspace_use_default_project():
                 in the named non-default workspace
               
     """
-    workspace = 'SCM Workspace'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, 
+                  workspace=ALTERNATE_WORKSPACE, warn=False)
     ai_proj = rally.getProject()
     assert str(ai_proj.Name) == 'Sample Project'  
     assert rally._wpCacheStatus() == 'narrow'
 
-    workspace = 'JIRA Testing'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
-    ai_proj = rally.getProject()
-    assert str(ai_proj.Name) == 'GData Testing'   # is valid only in 'JIRA Testing'
-    assert rally._wpCacheStatus() == 'narrow'
+    #alt_project   = "Modus Operandi"
+    #rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, 
+    #              workspace=ALTERNATE_WORKSPACE,  project=alt_project, warn=False)
+    #ai_proj = rally.getProject()
+    #assert str(ai_proj.Name) == alt_project # is valid only in ALTERNATE_WORKSPACE
+    #assert rally._wpCacheStatus() == 'narrow'
 
 def test_named_non_default_workspace_named_valid_project():
     """
@@ -169,14 +171,18 @@ def test_named_non_default_workspace_named_valid_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    workspace = 'JIRA Manual Testing'
-    project   = 'Another Sample Project'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
-                  workspace=workspace, project=project)
+    workspace   = "Kip's Playground"
+    alt_project = 'Modus Operandi'
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
     response = rally.get('Project')
     assert response != None
     assert response.status_code == 200
     assert rally._wpCacheStatus() == 'narrow'
+
+    rally.setProject(alt_project)
+    proj = rally.getProject()
+    assert proj.Name == alt_project
+    
 
 def test_named_non_default_workspace_named_invalid_project():
     """
@@ -184,15 +190,15 @@ def test_named_non_default_workspace_named_invalid_project():
         a valid non-default workspace and an invalid project.
         An exception should be raised.
     """
-    workspace = 'JIRA Manual Testing'
+    workspace = ALTERNATE_WORKSPACE
     project   = 'Barney Rubble'
-    expectedErrMsg = u"Unable to use your project specification of '%s', that value is not associated with current workspace setting of: '%s'" % (project, workspace)
+    expectedErrMsg = u"No valid Project with the name '%s' found in the Workspace '%s'" % (project, workspace)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project, timeout=10)
         response = rally.get('Project', fetch=False, limit=5)
-    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    assert excinfo.value.__class__.__name__ == 'Exception'
+    actualErrVerbiage = excinfo.value.args[0] 
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert actualErrVerbiage == expectedErrMsg 
 
 ########################################################################################
