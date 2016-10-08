@@ -2,7 +2,6 @@
 
 import sys, os
 import py
-import six
 
 from pyral import Rally
 import pyral
@@ -23,7 +22,7 @@ def test_story_fields():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Story', fetch=True, query=['NumberofCases = 9', 'AffectedCustomers = "abc, xyz"'])
     assert response.status_code == 200
-    story = six.next(response)
+    story = response.next()
 
     assert story.NumberofCases == 9
     assert story.AffectedCustomers == 'abc, xyz'
@@ -40,7 +39,7 @@ def test_defect_fields():
     cust_field_criteria = {"BugzillaID" : 7224, "JiraKey" : "SLO-109", "QCDefectID" : 5724}
     response = rally.get('Defect', fetch=True, query=cust_field_criteria)
     assert response.status_code == 200
-    defect = six.next(response)
+    defect = response.next()
     assert defect.NumberofCases == 4
     assert 'def, jkl, qrs, uvw' in defect.AffectedCustomers
 

@@ -10,7 +10,6 @@
 import sys
 
 from pyral import Rally, rallyWorkset
-from pyral import context
 
 #################################################################################################
 

@@ -5,8 +5,6 @@ import types
 import urllib
 import py
 
-import six
-
 try:
     from urllib import unquote
 except:
@@ -95,7 +93,7 @@ def test_good_and_bad_fields_query():
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Project', fetch="Owner,State,Fabulote,GammaRays", limit=10)
-    project = six.next(response)
+    project = response.next()
     name  = None
     state = None
     fabulote  = None
@@ -168,8 +166,8 @@ def test_defects_revision_history():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     response = rally.get('Defect', fetch=True,  limit=10)
     
-    defect1 = six.next(response)
-    defect2 = six.next(response)
+    defect1 = response.next()
+    defect2 = response.next()
     assert defect1.oid != defect2.oid
 
     d1_revs = defect1.RevisionHistory.Revisions
@@ -448,7 +446,7 @@ def test_query_with_matched_parens_in_condition_value():
     assert response.errors   == []
     assert response.warnings == []
     assert response.resultCount >= 1
-    release = six.next(response)
+    release = response.next()
     assert release.Name == '8.5 (Blah and Stuff)'
 
 

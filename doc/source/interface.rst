@@ -131,7 +131,7 @@ Example use::
     print " ".join(['|%|' % opt for opt in [server, user, password, apikey, workspace, project]]
 
 
-    % python basic.py --config=current --rallyProject="Livestock Mgmt" --no-ping
+    % python basic.py --config=current --rallyProject="Livestock Mgmt" --ping=no
 
     |rally1.rallydev.com| |wiley@acme.com| |*****| |*****| |General Products Umbrella| |Livestock Mgmt|
 

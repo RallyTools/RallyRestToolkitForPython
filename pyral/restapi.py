@@ -573,7 +573,6 @@ class Rally(object):
                       # and other UserProfile attributes
                      ]
 
-        #users_resource = 'users?fetch=true&query=&pagesize=%s&start=1&workspace=%s' % (MAX_PAGESIZE, workspace_ref)
         users_resource = 'users?fetch=%s&query=&pagesize=%s&start=1&workspace=%s' % (",".join(user_attrs), MAX_PAGESIZE, workspace_ref)
         full_resource_url = '%s/%s' % (self.service_url, users_resource)
         response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
@@ -704,7 +703,6 @@ class Rally(object):
             raise RallyRESTAPIError('%s %s' % (response.status_code, problem))
 
         response = RallyRESTResponse(self.session, context, '%s.x' % entityName, response, "full", 1)
-        #item = six.next(response)
         item = response.next()
         return item    # return back an instance representing the item
 
@@ -911,7 +909,6 @@ class Rally(object):
         response = self._getRequestResponse(context, full_resource_url, limit)
             
         if kwargs and 'instance' in kwargs and kwargs['instance'] == True and response.resultCount == 1:
-            #return six.next(response)
             return response.next()
         return response
 
@@ -1032,7 +1029,6 @@ class Rally(object):
             if response.status_code != HTTP_REQUEST_SUCCESS_CODE or response.resultCount == 0:
                 raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, formattedID))
                 
-            #target = six.next(response)
             target = response.next()
             oid = target.ObjectID
             itemData['ObjectID'] = oid
@@ -1087,7 +1083,6 @@ class Rally(object):
             if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
                 raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, itemIdent))
                 
-            #target = six.next(response)
             target = response.next()
             objectID = target.ObjectID
 ##
@@ -1458,7 +1453,6 @@ class Rally(object):
 
         response = self.get('Attachment', fetch=True, query='Name = "%s"' % attachment_file_name)
         if response.resultCount:
-            #attachment = six.next(response)
             attachment = response.next()
             already_attached = [att for att in current_attachments if att.oid == attachment.oid]
             if already_attached:
@@ -1560,7 +1554,6 @@ class Rally(object):
         response = RallyRESTResponse(self.session, context, "AttachmentContent.x", resp, "full", 1)
         if response.errors or response.resultCount != 1:
             return None
-        #att_content = six.next(response)
         att_content = response.next()
         att.Content = base64.decodestring(att_content.Content)  # maybe further txfm to Unicode ?
         return att
@@ -1604,9 +1597,6 @@ class Rally(object):
 
         # get the target Attachment and the associated AttachmentContent item
         attachment = hits.pop(0)
-##
-##        print(attachment.details())
-##
         if attachment.Content and attachment.Content.oid:
             success = self.delete('AttachmentContent', attachment.Content.oid, project=None)
             if not success:
@@ -1651,7 +1641,6 @@ class Rally(object):
             art_type = self.ARTIFACT_TYPE[prefix]
             response = self.get(art_type, fetch=True, query='FormattedID = %s' % artifact)
             if response.resultCount == 1:
-                #artifact = six.next(response)
                 artifact = response.next()
             else:
                 art_type = False
@@ -1730,7 +1719,6 @@ class Rally(object):
         workspace_ref = self.contextHelper.currentWorkspaceRef()
         auth_token = self.obtainSecurityToken()
         full_resource_url = "%s/%s&workspace=%s&key=%s" % (self.service_url, resource, workspace_ref, auth_token)
-        #print("rank%s full_resource_url: %s" % (direction, full_resource_url))
         payload = json.dumps(update_item)
         response = self.session.post(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
         context = self.contextHelper.currentContext()

@@ -19,8 +19,6 @@ import json
 import re  # we use compile, match
 from pprint import pprint
 
-#import six
-
 # intra-package imports
 from .rallyresp import RallyRESTResponse
 from .entity    import processSchemaInfo, getSchemaItem
@@ -285,20 +283,18 @@ class RallyContextHelper(object):
         self.context.subs_name = subscription.Name
         return subscription
 
+
     def _setOperatingContext(self, project_name):
         """
             This is called after we've determined that there is access to what is now
-            in self._defaultWorkspace.  Query for projects in the self._defaultWorkspace.
+            in self._currentWorkspace.  Query for projects in the self._currentWorkspace.
             Set the self._defaultProject arbitrarily to the first Project.Name in the returned set,
             and then thereafter reset that to the project_name parameter value if a match for that
             exists in the returned set.  If the project_name parameter is non-None and there is NOT
             a match in the returned set raise an Exception stating that fact.
         """
-        #result = self.agent.get('Project', fetch="Name", workspace=self._defaultWorkspace)
         result = self.agent.get('Project', fetch="Name", workspace=self._currentWorkspace)
-##
-##        print(result.content)
-##
+
         if not result or result.resultCount == 0:
             problem = "No Projects found in the Workspace '%s'" % self._defaultWorkspace
             raise RallyRESTAPIError(problem)
@@ -406,9 +402,6 @@ class RallyContextHelper(object):
             self._currentWorkspace = self._defaultWorkspace[:]
             wkspace_ref = up['DefaultWorkspace']['_ref']
         else:
-            #self._currentWorkspace = self._defaultWorkspace.Name
-            #wkspace_ref            = self._defaultWorkspace._ref
-            #self._defaultWorkspace = self._defaultWorkspace.Name
             self._defaultWorkspace = None
             self._currentWorkspace = None
             wkspace_ref            = None
@@ -448,7 +441,6 @@ class RallyContextHelper(object):
 ##        if not limit: print("Subscription %s has %d active Workspaces" % (subscription.Name, num_wksps))
 ##
         self._subs_workspaces  = subscription.Workspaces
-       #self._defaultWorkspace = subscription.Workspaces[0]
 ##
 ##        print("Subscription default Workspace: %s" % self._defaultWorkspace.Name)
 ##
@@ -718,7 +710,6 @@ class RallyContextHelper(object):
                 augments.append("projectScopeDown=true")
 
         if not workspace and project:
-            #self.context = self.defaultContext
             self.context = self.operatingContext
 
         # check to see if the _current_project is actually in the _current_workspace

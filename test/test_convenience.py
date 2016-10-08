@@ -3,7 +3,6 @@
 import sys, os
 import types
 import pprint
-import six
 
 from pyral import Rally
 
@@ -57,7 +56,6 @@ def test_getProject():
     assert response.warnings == []
 
     assert response.resultCount > 0
-    #proj_rec = six.next(response)
     proj_rec = response.next()
     #print proj_rec._ref
     #print proj_rec.ref

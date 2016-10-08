@@ -171,12 +171,9 @@ def test_named_non_default_workspace_named_valid_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    #workspace = 'JIRA Manual Testing'
-    #project   = 'Another Sample Project'
-    workspace = "Kip's Playground"
-    alt_project   = 'Modus Operandi'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
-                  workspace=workspace)
+    workspace   = "Kip's Playground"
+    alt_project = 'Modus Operandi'
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
     response = rally.get('Project')
     assert response != None
     assert response.status_code == 200
