@@ -48,5 +48,5 @@ Documentation
 Obtain the zip file containing the HTML and CSS files comprising the document set for pyral.
 Unzip in a suitable location and point your web browser to the doc/build/html/index.html file
 
-  DISABLED: The rendered documentation is also available at http://readthedocs.org/docs/pyral .
+  The rendered documentation is also available at http://pyral.readthedocs.io/en/latest/
 

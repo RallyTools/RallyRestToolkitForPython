@@ -1,49 +1,153 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Primary pyral classes and functions &mdash; pyral 1.1.1 documentation</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.1.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral 1.1.1 documentation" href="index.html" />
-    <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
-  </head>
-  <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="overview.html" title="Python toolkit for the Rally REST API"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral 1.1.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>  
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Primary pyral classes and functions &mdash; pyral 1.2.0 documentation</title>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="pyral 1.2.0 documentation" href="index.html"/>
+        <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pyral
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Python toolkit for the Rally REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#simple-use">Simple Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#rally-data-model">Rally Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#rally-entities-and-artifacts">Rally Entities and Artifacts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#full-crud-capability">Full CRUD capability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#rally-introspection">Rally Introspection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#queries-and-results">Queries and Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#custom-fields">Custom Fields</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#introduction-of-dyna-types">Introduction of Dyna-Types</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Primary <em>pyral</em> classes and functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#rallyworkset">rallyWorkset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#rallysettings">rallySettings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#rally">Rally</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#core-rest-methods-and-crud-aliases">Core REST methods and CRUD aliases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyral-rally-instance-convenience-methods">pyral.Rally instance convenience methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#rallyrestresponse">RallyRESTResponse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#item-attributes">Item Attributes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">pyral</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Primary <em>pyral</em> classes and functions</li>
+    <li class="wy-breadcrumbs-aside">
+      
+          
+          <a href="_sources/interface.txt" rel="nofollow"> View page source</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="primary-pyral-classes-and-functions">
 <h1>Primary <em>pyral</em> classes and functions<a class="headerlink" href="#primary-pyral-classes-and-functions" title="Permalink to this headline">¶</a></h1>
@@ -61,19 +165,21 @@ of the <strong>RallyRESTResponse</strong> class.  Instances of this class allow 
 access to attributes of the representation of the Rally entity, whether the attribute is a
 simple value or a reference to another Rally entity.</p>
 </div>
-<div class="section" id="rallysettings">
-<h1>rallySettings<a class="headerlink" href="#rallysettings" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="rallyworkset">
+<h1>rallyWorkset<a class="headerlink" href="#rallyworkset" title="Permalink to this headline">¶</a></h1>
+<p>New in 1.1.0.</p>
 <p>This function takes into account your environment and arguments provided to this function
 to arrive at and return information necessary to establish a useful <em>connection</em> to the
-Rally server.</p>
+Rally server.  This convenience function differs from <strong>rallySettings</strong> by also including
+the Rally API Key in the set of values considered and returned.</p>
 <p>The process consists of a priority chain where some reasonable default information is
 established first and then overridden with subsequent steps in the chain (if they exist).
-After following the priority chain, values for server, user, password, workspace, project
-are returned to the caller.</p>
+After following the priority chain, values for server, user, password, apikey, workspace,
+project are returned to the caller.</p>
 <dl class="docutils">
 <dt>The priority chain consists of these steps:</dt>
 <dd><ul class="first last">
-<li><p class="first">establish baseline values from values defined in the module containing the rallySettings</p>
+<li><p class="first">establish baseline values from values defined in the module containing the rallyWorkset</p>
 </li>
 <li><dl class="first docutils">
 <dt>override with any environment variables present from this list:</dt>
@@ -81,8 +187,10 @@ are returned to the caller.</p>
 <li>RALLY_SERVER</li>
 <li>RALLY_USER</li>
 <li>RALLY_PASSWORD</li>
+<li>APIKEY</li>
 <li>RALLY_WORKSPACE</li>
 <li>RALLY_PROJECT</li>
+<li>RALLY_PING</li>
 </ul>
 </dd>
 </dl>
@@ -117,8 +225,10 @@ options via the &#8211;&lt;option&gt;=&lt;value&gt;.</p>
 <li>SERVER    = &lt;RallyServer&gt;</li>
 <li>USER      = &lt;validUserName&gt;</li>
 <li>PASSWORD  = &lt;validPassword&gt;</li>
+<li>APIKEY    = &lt;validAPIKey&gt;</li>
 <li>WORKSPACE = &lt;validWorkspaceName&gt;</li>
 <li>PROJECT   = &lt;validProjectName&gt;</li>
+<li>RALLY_PING = True | False</li>
 </ul>
 </dd>
 </dl>
@@ -137,8 +247,12 @@ options via the &#8211;&lt;option&gt;=&lt;value&gt;.</p>
 <p class="attribution">&mdash;rallyPassword=&lt;validRallyPassword&gt;</p>
 </div></blockquote>
 <blockquote>
-<div><p>&#8211;workspace=&lt;validWorkspaceName&gt;</p>
-<p class="attribution">&mdash;project=&lt;validProjectName&gt;</p>
+<div><p>&#8211;apikey=&lt;validRallyAPIKeyValue&gt;</p>
+<p class="attribution">&mdash;workspace=&lt;validWorkspaceName&gt;</p>
+</div></blockquote>
+<blockquote>
+<div><p>&#8211;project=&lt;validProjectName&gt;</p>
+<p class="attribution">&mdash;ping=True|False|true|false|yes|no|1|0</p>
 </div></blockquote>
 </div></blockquote>
 <p>This mechanism provides the ability to centrally locate a configuration file that can
@@ -146,6 +260,14 @@ be used by many members of a team where server, workspace, project are common to
 and each individual can have their own appropriately secured config file with their credentials.
 Using this mechanism can save tedious and error-prone entry of target information and credentials
 on the command line or having credential information in clear text in unsecured files.</p>
+<p>The use of a Rally API Key value for identification/authentication is new in pyral 1.1.x.
+If used, you do not need to provide a username / password combination.
+In order to use this, you must first obtain a valid API Key value from the Rally Application
+Manager (API Keys) that you can access from <a class="reference external" href="https://rally1.rallydev.com/login">https://rally1.rallydev.com/login</a>.
+Once obtained, you should treat the key with the same level of protection as you would
+any user/password information; once presented to Rally via the Rally Web Services API,
+a connection has all the rights associated with the user whose key was presented.
+Consult the Rally help documentation for further information.</p>
 <p>Example use:</p>
 <div class="highlight-python"><div class="highlight"><pre>% export RALLY_SERVER=&quot;rally1.rallydev.com&quot;
 % export RALLY_USER=&quot;crazedwiley@acmeproducts.com&quot;
@@ -163,37 +285,37 @@ on the command line or having credential information in clear text in unsecured 
 % cat basic.py
 
 import sys
-from rally import rallySettings
+from rally import rallyWorkset
 
 options = [opt for opt in sys.argv[1:] if opt.startswith(&#39;--&#39;)]
-server, user, password, workspace, project = rallySettings(options)
-print &quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password, workspace, project]]
+server, user, password, apikey, workspace, project = rallyWorkset(options)
+print &quot; &quot;.join([&#39;|%|&#39; % opt for opt in [server, user, password, apikey, workspace, project]]
 
 
-% python basic.py --config=current --rallyPassword=&#39;*****&#39; --rallyProject=&quot;Livestock Mgmt&quot;
+% python basic.py --config=current --rallyProject=&quot;Livestock Mgmt&quot; --ping=no
 
-|rally1.rallydev.com| |wiley@acme.com| |*****| |General Products Umbrella| |Livestock Mgmt|
+|rally1.rallydev.com| |wiley@acme.com| |*****| |*****| |General Products Umbrella| |Livestock Mgmt|
 </pre></div>
 </div>
 <p>Note that for convenience purposes a configuration file name may be fully specified
 or you may elect to not specify the &#8216;.cfg&#8217; suffix.</p>
-<p>Returns a tuple of (server, username, password, workspace, project)</p>
+<p>Returns a tuple of (server, username, password, apikey, workspace, project)</p>
 </div>
-<div class="section" id="rallyworkset">
-<h1>rallyWorkset<a class="headerlink" href="#rallyworkset" title="Permalink to this headline">¶</a></h1>
-<p>New in 1.1.0.</p>
+<div class="section" id="rallysettings">
+<h1>rallySettings<a class="headerlink" href="#rallysettings" title="Permalink to this headline">¶</a></h1>
+<p>This is deprecated as of v1.2.0. The preferred function is <strong>rallyWorkset</strong> which will have
+ongoing support.  The <strong>rallySettings</strong> function will be removed in v2.0.0.</p>
 <p>This function takes into account your environment and arguments provided to this function
 to arrive at and return information necessary to establish a useful <em>connection</em> to the
-Rally server.  This convenience function differs from <strong>rallySettings</strong> by also including
-the Rally API Key in the set of values considered and returned.</p>
+Rally server.</p>
 <p>The process consists of a priority chain where some reasonable default information is
 established first and then overridden with subsequent steps in the chain (if they exist).
-After following the priority chain, values for server, user, password, apikey, workspace,
-project are returned to the caller.</p>
+After following the priority chain, values for server, user, password, workspace, project
+are returned to the caller.</p>
 <dl class="docutils">
 <dt>The priority chain consists of these steps:</dt>
 <dd><ul class="first last">
-<li><p class="first">establish baseline values from values defined in the module containing the rallyWorkset</p>
+<li><p class="first">establish baseline values from values defined in the module containing the rallySettings</p>
 </li>
 <li><dl class="first docutils">
 <dt>override with any environment variables present from this list:</dt>
@@ -201,7 +323,6 @@ project are returned to the caller.</p>
 <li>RALLY_SERVER</li>
 <li>RALLY_USER</li>
 <li>RALLY_PASSWORD</li>
-<li>APIKEY</li>
 <li>RALLY_WORKSPACE</li>
 <li>RALLY_PROJECT</li>
 </ul>
@@ -347,6 +468,37 @@ Under those conditions, the project is changed to the first project
 </dd>
 </dl>
 </li>
+<li><dl class="first docutils">
+<dt>server_ping     (True or False, default in v1.2.0 is True)</dt>
+<dd><p class="first last">Specifies whether a ping attempt will be made to confirm network connectivity
+to the Rally server prior to making a Rally WSAPI REST request.
+Organizations may have disabled the ability to make ICMP requests so the ping
+attempt may fail even though there is network connectivity to the Rally server.
+For this reason, the use of the ping=True option is discouraged going forward.
+The next minor point release of pyral (v1.3.0) will have the default value
+for this option inverted to be False.
+The the ping operation itself will be dropped in the next major release (2.0.0).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>isolated_workspace  (True or False, default in v1.2.0 is False)</dt>
+<dd><p class="first last">Specifies that the Rally instance will only be used for interacting with
+a single workspace (either the user&#8217;s default workspace or the named workspace).
+Using isolated_workspace=True provides performance benefits for a subscription
+with many workspaces, but it also means you cannot change the workspace you
+are working within a single instance of a Rally class, nor can you provide
+a workspace keyword argument to a get, create, update or delete methods that
+differs from the workspace identified at instantiation time.
+For subscriptions with a small to moderate number of workspaces (up to a few dozen),
+the performance savings will be relatively minor when using isolated_workspace=True
+vs. isolated_workspace=False.  However, for subscriptions with a large number of
+workspaces, using isolated_workspace=False results in a request to AgileCentral
+for each workspace, which can result in a noticeable lag before the instantiation
+statement returns a ready-for-use Rally instance.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </dd>
 </dl>
@@ -363,7 +515,7 @@ BasicAuth (username and password) or the API Key to authenticate to Rally.</p>
 </div>
 <dl class="class">
 <dt id="Rally">
-<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user=None</em>, <em>password=None</em>, <em>apikey=None</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">Rally</tt><big>(</big><em>server</em>, <em>user=None</em>, <em>password=None</em>, <em>apikey=None</em>, <em>workspace=None</em>, <em>project=None</em>, <em>warn=True</em>, <em>server_ping=True</em><big>)</big><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Examples:</p>
@@ -376,6 +528,8 @@ BasicAuth (username and password) or the API Key to authenticate to Rally.</p>
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;Brontoville&#39;</span><span class="p">,</span> <span class="n">verify_ssl_cert</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">apikey</span><span class="o">=</span><span class="s">&quot;_some-more-numbers&quot;</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s">&#39;RockLobster&#39;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s">&#39;Fence Posts&#39;</span><span class="p">)</span>
+
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">server_ping</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="core-rest-methods-and-crud-aliases">
@@ -618,7 +772,10 @@ the keyword argument used to identify the user target.</p>
 <tt class="descname">getAllUsers</tt><big>(</big><em>workspace=None</em><big>)</big><a class="headerlink" href="#getAllUsers" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method offers a convenient one-stop means of obtaining usable information
 about all users in the named workspace.
-If no workspace is specified, then the current context&#8217;s workspace is used.</p>
+If no workspace is specified, then the current context&#8217;s workspace is used.
+NOTE: Unless you are using credentials associated with a SubscriptionAdministrator
+or WorkspaceAdministrator, you will not be able to access a user&#8217;s UserProfile
+other than yourself.</p>
 <p>Return a list of User instances (fully hydrated for scalar attributes)
 whose ref and collection attributes will be lazy eval&#8217;ed upon access.</p>
 </dd></dl>
@@ -631,6 +788,16 @@ The is handy for occasions where you need identify a specific entity
 for something like &#8216;Feature&#8217; or &#8216;Theme&#8217; when creating or updating a
 PortfolioItem subclass.  Intended usage is to use the return <em>.ref</em> attribute.
 For example, within an info dict, &#8220;PortfolioItemType&#8221; : rally.typedef(&#8216;Feature&#8217;).ref .</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getCollection">
+<tt class="descname">getCollection</tt><big>(</big><em>collection_url</em><big>)</big><a class="headerlink" href="#getCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a collection_url of the form:</p>
+<blockquote>
+<div>http(s)://&lt;server&gt;(:&lt;port&gt;)/slm/webservice/v2.0/&lt;entity&gt;/OID/&lt;attribute&gt;</div></blockquote>
+<p>issue a request for the url and return back a list of hydrated instances
+for each item in the collection.</p>
 </dd></dl>
 
 <dl class="method">
@@ -709,6 +876,32 @@ Each Attachment record will look like a Rally WSAPI Attachment with
 the additional Content attribute that will contain the decoded AttachmentContent.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rankAbove">
+<tt class="descname">rankAbove</tt><big>(</big><em>reference_artifact</em>, <em>target_artifact</em><big>)</big><a class="headerlink" href="#rankAbove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rank the target_artifact above the reference_artifact.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rankBelow">
+<tt class="descname">rankBelow</tt><big>(</big><em>reference_artifact</em>, <em>target_artifact</em><big>)</big><a class="headerlink" href="#rankBelow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rank the target_artifact below the reference_artifact.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rankTop">
+<tt class="descname">rankTop</tt><big>(</big><em>target_artifact</em><big>)</big><a class="headerlink" href="#rankTop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rank the target_artifact at the top of the list of ranked Artifacts
+that the target_artifact exists in.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rankBottom">
+<tt class="descname">rankBottom</tt><big>(</big><em>target_artifact</em><big>)</big><a class="headerlink" href="#rankBottom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rank the target_artifact at the bottom of the list of ranked Artifacts
+that the target_artifact exists in.</p>
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="rallyrestresponse">
@@ -772,7 +965,7 @@ generates a StopIteration exception.</p>
 <div>Item instances returned from iterating on a RallyRESTResponse object are
 representations of Rally items.  The attributes of each item are accessible via
 the standard dot (.) notation.  The names are identical to those documented in the
-<a class="reference external" href="https://rally.rallydev.com/slm/doc/webservice">Rally WS API</a>.</div></blockquote>
+<a class="reference external" href="https://rally1.rallydev.com/slm/doc/webservice">Rally WS API</a>.</div></blockquote>
 <blockquote>
 <div><p>Generally, every concrete instance in the Rally system will have a Name attribute.
 You can use the <strong>attributes()</strong> method on an instance to obtain the names of all of the
@@ -815,7 +1008,7 @@ HierarchicalRequirement
     oid               : 12345678
     ref               : hierarchicalrequirement/12345678
     ObjectID          : 12345678
-    _ref              : https://rallydev.rallydev.com/slm/webservice/1.30/hierarchicalrequirement/12345678.js
+    _ref              : https://rallydev.rallydev.com/slm/webservice/v2.0/hierarchicalrequirement/412345678
     _CreatedAt        : today at 3:14 am
     _hydrated         : True
     Name              : Filbert nuts should be added to all energy bars
@@ -833,82 +1026,86 @@ HierarchicalRequirement
     Capitalizable     : None
     Changesets        : []
     Children          : []
-    CreationDate      : 2012-07-12T09:14:35.852Z
+    CreationDate      : 2016-07-12T09:14:35.852Z
     DefectStatus      : NONE
     Defects           : []
     Description       : As a health conscious PO, I want better nutritional content in all bars
     Discussion        : []
     IdeaURL           : &lt;pyral.entity.CustomField object at 0x101931290&gt;
     IdeaVotes         : None
-    InProgressDate    : 2012-07-12T09:14:36.098Z
+    InProgressDate    : 2016-07-12T09:14:36.098Z
     Iteration         : Iteration.ref               (OID  1242381  Name Iteration 5 (Summer))
     KanbanState       : Accepted
-    LastUpdateDate    : 2012-07-12T09:14:36.237Z
+    LastUpdateDate    : 2016-07-12T09:14:36.237Z
     ...
 </pre></div>
 </div>
 </div>
 
 
+           </div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Primary <em>pyral</em> classes and functions</a></li>
-<li><a class="reference internal" href="#rallysettings">rallySettings</a></li>
-<li><a class="reference internal" href="#rallyworkset">rallyWorkset</a></li>
-<li><a class="reference internal" href="#rally">Rally</a><ul>
-<li><a class="reference internal" href="#core-rest-methods-and-crud-aliases">Core REST methods and CRUD aliases</a></li>
-<li><a class="reference internal" href="#pyral-rally-instance-convenience-methods">pyral.Rally instance convenience methods</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#rallyrestresponse">RallyRESTResponse</a></li>
-<li><a class="reference internal" href="#item-attributes">Item Attributes</a></li>
-</ul>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="overview.html" class="btn btn-neutral" title="Python toolkit for the Rally REST API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="overview.html"
-                        title="previous chapter">Python toolkit for the Rally REST API</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/interface.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright Rally Software Development 2010-2015, CA Technologies 2016.
+
     </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="overview.html" title="Python toolkit for the Rally REST API"
-             >previous</a> |</li>
-        <li><a href="index.html">pyral 1.1.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
-        &copy; Copyright Rally Software Development 2010-2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
-    </div>
-  </body>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.2.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>
