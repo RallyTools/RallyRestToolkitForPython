@@ -381,10 +381,8 @@ Versions
 
 TODO
 ----
-* Rework the distribution to be pip installable
-     Seeking expertise for this ...
-* Dynamically construct the Rally schema hierarchy economically.
 * Investigate permanent location for web-access to rendered documentation
+* Dynamically construct the Rally schema hierarchy economically.
 
 
 License
