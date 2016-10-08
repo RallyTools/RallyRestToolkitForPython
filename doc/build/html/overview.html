@@ -1,53 +1,150 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Python toolkit for the Rally REST API &mdash; pyral 1.1.1 documentation</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.1.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="pyral 1.1.1 documentation" href="index.html" />
-    <link rel="next" title="Primary pyral classes and functions" href="interface.html" />
-    <link rel="prev" title="Python toolkit for the Rally REST API" href="index.html" /> 
-  </head>
-  <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="interface.html" title="Primary pyral classes and functions"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="index.html" title="Python toolkit for the Rally REST API"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pyral 1.1.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>  
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Python toolkit for the Rally REST API &mdash; pyral 1.2.0 documentation</title>
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="pyral 1.2.0 documentation" href="index.html"/>
+        <link rel="next" title="Primary pyral classes and functions" href="interface.html"/>
+        <link rel="prev" title="Python toolkit for the Rally REST API" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pyral
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Python toolkit for the Rally REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#simple-use">Simple Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#rally-data-model">Rally Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#rally-entities-and-artifacts">Rally Entities and Artifacts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#full-crud-capability">Full CRUD capability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#rally-introspection">Rally Introspection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#queries-and-results">Queries and Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#custom-fields">Custom Fields</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#introduction-of-dyna-types">Introduction of Dyna-Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface.html">Primary <em>pyral</em> classes and functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface.html#rallyworkset">rallyWorkset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface.html#rallysettings">rallySettings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface.html#rally">Rally</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface.html#rallyrestresponse">RallyRESTResponse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface.html#item-attributes">Item Attributes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">pyral</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Python toolkit for the Rally REST API</li>
+    <li class="wy-breadcrumbs-aside">
+      
+          
+          <a href="_sources/overview.txt" rel="nofollow"> View page source</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="python-toolkit-for-the-rally-rest-api">
 <h1>Python toolkit for the Rally REST API<a class="headerlink" href="#python-toolkit-for-the-rally-rest-api" title="Permalink to this headline">¶</a></h1>
@@ -107,7 +204,7 @@ via the &#8216;Help&#8217; link from the Rally page displayed after the initial 
 <em>types</em> that are usually what a user of <strong>pyral</strong> will be interested in called <em>artifacts</em>.
 An <em>artifact</em> is either a UserStory, Defect, Task, DefectSuite, TestCase or TestSet.
 The Python toolkit for the Rally REST API (<strong>pyral</strong>) is primarily oriented towards operations with artifacts.
-But, it is not limited to those as it is very possible view/operate on other Rally
+But, it is not limited to those as it is very possible to view/operate on other Rally
 entities such as Workspace, Project, UserProfile, Release, Iteration, TestCaseResult,
 TestFolder, Tag and others.</p>
 </div>
@@ -186,70 +283,71 @@ to avoid ambiguity in identifying the Rally entity type.</p>
 </div>
 
 
+           </div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Python toolkit for the Rally REST API</a></li>
-<li><a class="reference internal" href="#simple-use">Simple Use</a></li>
-<li><a class="reference internal" href="#rally-data-model">Rally Data Model</a></li>
-<li><a class="reference internal" href="#rally-entities-and-artifacts">Rally Entities and Artifacts</a></li>
-<li><a class="reference internal" href="#full-crud-capability">Full CRUD capability</a></li>
-<li><a class="reference internal" href="#rally-introspection">Rally Introspection</a></li>
-<li><a class="reference internal" href="#queries-and-results">Queries and Results</a></li>
-<li><a class="reference internal" href="#custom-fields">Custom Fields</a></li>
-<li><a class="reference internal" href="#introduction-of-dyna-types">Introduction of Dyna-Types</a></li>
-</ul>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="interface.html" class="btn btn-neutral float-right" title="Primary pyral classes and functions" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Python toolkit for the Rally REST API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Python toolkit for the Rally REST API</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="interface.html"
-                        title="next chapter">Primary <em>pyral</em> classes and functions</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/overview.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright Rally Software Development 2010-2015, CA Technologies 2016.
+
     </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="interface.html" title="Primary pyral classes and functions"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="index.html" title="Python toolkit for the Rally REST API"
-             >previous</a> |</li>
-        <li><a href="index.html">pyral 1.1.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
-        &copy; Copyright Rally Software Development 2010-2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
-    </div>
-  </body>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.2.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

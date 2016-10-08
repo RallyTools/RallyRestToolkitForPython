@@ -572,6 +572,16 @@ pyral.Rally instance convenience methods
     PortfolioItem subclass.  Intended usage is to use the return *.ref* attribute.
     For example, within an info dict, "PortfolioItemType" : rally.typedef('Feature').ref .
 
+.. method:: getCollection(collection_url)
+
+    Given a collection_url of the form:
+
+       http(s)://<server>(:<port>)/slm/webservice/v2.0/<entity>/OID/<attribute>
+
+    issue a request for the url and return back a list of hydrated instances 
+    for each item in the collection.
+    
+
 .. method:: getState(entityName, stateName)
     
     As of Rally WSAPI 1.37 (Sep 2012), the State attribute is no longer a String value for 
@@ -635,16 +645,20 @@ pyral.Rally instance convenience methods
     the additional Content attribute that will contain the decoded AttachmentContent.
 
 .. method:: rankAbove(reference_artifact, target_artifact)
+
     Rank the target_artifact above the reference_artifact.
 
 .. method:: rankBelow(reference_artifact, target_artifact)
+
     Rank the target_artifact below the reference_artifact.
 
 .. method:: rankTop(target_artifact)
+
     Rank the target_artifact at the top of the list of ranked Artifacts 
     that the target_artifact exists in.
 
 .. method:: rankBottom(target_artifact)
+
     Rank the target_artifact at the bottom of the list of ranked Artifacts 
     that the target_artifact exists in.
     
