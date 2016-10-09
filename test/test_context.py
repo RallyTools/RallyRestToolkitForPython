@@ -2,6 +2,7 @@
 
 import sys, os
 import types
+import py
 
 from pyral import Rally, RallyUrlBuilder
 
@@ -18,14 +19,14 @@ def makeResourceUrl(rally, entity, **kwargs):
     resource.qualify(True, None, None, 10, 1)
     context, augments = rally.contextHelper.identifyContext(**kwargs)
 ##
-##    print " context: %s" % repr(context)
-##    print "augments: %s" % repr(augments)
+##    print(" context: %s" % repr(context))
+##    print("augments: %s" % repr(augments))
 ##
     workspace_ref = rally.contextHelper.currentWorkspaceRef()
     project_ref   = rally.contextHelper.currentProjectRef()
 ##
-##    print "workspace_ref: %s" % workspace_ref
-##    print "  project_ref: %s" %   project_ref
+##    print("workspace_ref: %s" % workspace_ref)
+##    print("  project_ref: %s" %   project_ref)
 ##
     if workspace_ref:
         if 'workspace' not in kwargs or ('workspace' in kwargs and kwargs['workspace'] is not None):
@@ -62,7 +63,7 @@ def test_default_context():
     assert context1.project   == DEFAULT_PROJECT
     assert project.Name       == DEFAULT_PROJECT
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     expected_project_clause = 'project=project/%s' % str(project.oid)
@@ -76,7 +77,7 @@ def test_explictly_set_workspace_as_default_context():
     project = rally.getProject()
     assert project.Name == DEFAULT_PROJECT
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     expected_project_clause = 'project=project/%s' % str(project.oid)
@@ -87,12 +88,19 @@ def test_initial_workspace_not_default():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, 
                   workspace=ALTERNATE_WORKSPACE, 
                   warn=False)
+    # Because no project=name arg was supplied, the project will be the User's default project
+    # which will not necessarily be valid for the workspace argument that was supplied
     workspace = rally.getWorkspace()
     assert workspace.Name == ALTERNATE_WORKSPACE
     project = rally.getProject()
+    assert project.Name == DEFAULT_PROJECT
+
+    rally.setProject(ALTERNATE_PROJECT)
+    project = rally.getProject()
     assert project.Name == ALTERNATE_PROJECT
+
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     expected_project_clause = 'project=project/%s' % str(project.oid)
@@ -108,7 +116,7 @@ def test_explicitly_set_workspace_and_project_as_default_context():
     project = rally.getProject()
     assert project.Name == DEFAULT_PROJECT
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     expected_project_clause = 'project=project/%s' % str(project.oid)
@@ -124,7 +132,7 @@ def test_set_default_workspace_non_default_project_context():
     project = rally.getProject()
     assert project.Name == NON_DEFAULT_PROJECT
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     expected_project_clause = 'project=project/%s' % str(project.oid)
@@ -140,7 +148,7 @@ def test_set_non_default_workspace_and_project_context():
     project = rally.getProject()
     assert project.Name == ALTERNATE_PROJECT
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     expected_project_clause = 'project=project/%s' % str(project.oid)
@@ -159,7 +167,7 @@ def test_default_wksprj_with_set_workspace_with_default_context():
     assert workspace.Name == DEFAULT_WORKSPACE
 
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     expected_project_clause = 'project=project/%s' % str(project.oid)
@@ -182,6 +190,8 @@ def test_default_wksprj_with_set_non_default_workspace_context():
     rally.setWorkspace(ALTERNATE_WORKSPACE)
     workspace = rally.getWorkspace()
     assert workspace.Name == ALTERNATE_WORKSPACE
+
+    rally.setProject(ALTERNATE_PROJECT)
     project   = rally.getProject()
     assert project.Name == ALTERNATE_PROJECT
 
@@ -202,11 +212,13 @@ def test_default_workspace_with_set_non_default_workspace_context():
     rally.setWorkspace(ALTERNATE_WORKSPACE)
     workspace = rally.getWorkspace()
     assert workspace.Name == ALTERNATE_WORKSPACE
+
+    rally.setProject(ALTERNATE_PROJECT)
     project   = rally.getProject()
     assert project.Name == ALTERNATE_PROJECT
 
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     expected_project_clause   = 'project=project/%s'     % str(project.oid)
     assert expected_workspace_clause in url
@@ -229,7 +241,7 @@ def test_default_workspace_with_set_non_default_workspace_and_project_context():
     assert project.Name == ALTERNATE_PROJECT
 
     url = makeResourceUrl(rally, 'Defect')
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     expected_project_clause = 'project=project/%s' % str(project.oid)
@@ -244,7 +256,7 @@ def test_default_workspace_project_specify_project_equal_None_context():
     assert project.Name == DEFAULT_PROJECT
 
     url = makeResourceUrl(rally, 'Defect', project=None)
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     assert '&project=' not in url
@@ -260,7 +272,7 @@ def test_non_default_workspace_project_specify_project_equal_None_context():
     assert project.Name == ALTERNATE_PROJECT
 
     url = makeResourceUrl(rally, 'Defect', project=None)
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     assert '&project=' not in url
@@ -277,7 +289,7 @@ def test_default_wksprj_with_set_non_default_workspace_specify_project_equal_Non
     assert workspace.Name == ALTERNATE_WORKSPACE
 
     url = makeResourceUrl(rally, 'Defect', project=None)
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     assert '&project=' not in url
@@ -298,7 +310,7 @@ def test_default_wksprj_with_set_non_default_workspace_and_project_specify_proje
     assert project.Name == ALTERNATE_PROJECT
 
     url = makeResourceUrl(rally, 'Defect', project=None)
-    #print url
+    #print(url)
     expected_workspace_clause = 'workspace=workspace/%s' % str(workspace.oid)
     assert expected_workspace_clause in url
     assert '&project=' not in url
@@ -312,7 +324,7 @@ def test_default_wksprj_specify_workspace_and_project_equal_None_context():
     assert project.Name == DEFAULT_PROJECT
 
     url = makeResourceUrl(rally, 'Defect', workspace=None, project=None)
-    #print url
+    #print(url)
     assert '&workspace=' not in url
     assert '&project='   not in url
 
@@ -327,7 +339,7 @@ def test_non_default_wksprj_specify_workspace_and_project_equal_None_context():
     assert project.Name == ALTERNATE_PROJECT
 
     url = makeResourceUrl(rally, 'Defect', workspace=None, project=None)
-    #print url
+    #print(url)
     assert '&workspace=' not in url
     assert '&project='   not in url
 
@@ -343,12 +355,19 @@ def test_default_wksprj_set_non_default_wksprj_specify_workspace_and_project_equ
     workspace = rally.getWorkspace()
     assert workspace.Name == ALTERNATE_WORKSPACE
 
+    #problem_text = 'Specified project not valid for your current workspace or credentials'
+    #with py.test.raises(Exception) as excinfo:
+    #    rally.setProject(ALTERNATE_PROJECT)
+    #actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    #assert excinfo.value.__class__.__name__ == 'Exception'
+    #assert actualErrVerbiage == problem_text
+    
     rally.setProject(ALTERNATE_PROJECT)
     project = rally.getProject()
     assert project.Name == ALTERNATE_PROJECT
-
+    
     url = makeResourceUrl(rally, 'Defect', workspace=None, project=None)
-    #print url
+    #print(url)
     assert '&workspace=' not in url
     assert '&project='   not in url
 

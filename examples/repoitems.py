@@ -48,7 +48,7 @@ def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
     if not args:
-        print  USAGE
+        print(USAGE)
         sys.exit(9)
     server, username, password, apikey, workspace, project = rallyWorkset(options)
     if apikey:
@@ -87,8 +87,8 @@ def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC", sinc
                              query=criteria,
                              workspace=workspace, project=None, 
                              pagesize=200, limit=limit)
-    except Exception, msg:
-        print msg
+    except Exception as msg:
+        print(msg)
         return None
 
     if response.errors:
@@ -96,15 +96,27 @@ def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC", sinc
                response.status_code)
         return None
 
-    print "Workspace: %s  SCMRepository: %s  Changesets: %s " % \
-          (workspace, repo_name, response.resultCount)
+    print("Workspace: %s  SCMRepository: %s  Changesets: %s " % \
+          (workspace, repo_name, response.resultCount))
     for cs in response:
         author    = cs.Author.UserName if cs.Author else "-None-"
         committed = cs.CommitTimestamp.replace('T', ' ')
 
-        print "%-12.12s  %-42.42s %-19.19s Z %s  %s" % \
-              (cs.SCMRepository.Name, cs.Revision, committed, author, cs.oid)
-        print "         |%s|" % cs.Message
+        print("%-12.12s  %-42.42s %-19.19s Z %s  %s" % \
+              (cs.SCMRepository.Name, cs.Revision, committed, author, cs.oid))
+        print("    |%s|" % cs.Message)
+
+        if len(cs.Artifacts) == 0:
+            print "    changeset %s - %s has no artifacts"  % (cs.SCMRepository.Name, cs.Revision)
+            continue
+
+        artifact_idents = [art.FormattedID for art in cs.Artifacts]
+        if artifact_idents:
+            print("         artifacts mentioned: %s" % " ".join(artifact_idents))
+##
+##        for artifact in cs.Artifacts:
+##            print("    %s  |%s|  |%s|" % (artifact.FormattedID, artifact.Workspace.Name, artifact.Project.Name))
+##
 
         # If we iterate over change items via cs.Changes, then we later have to do lazy load
         # for the change attributes on a per Change basis, which is relatively slow
@@ -116,25 +128,6 @@ def showRepoItems(rally, repo_name, workspace=None, limit=200, order="ASC", sinc
 #                             pagesize=200, limit=limit)
 #        for change in changes:
 #            print "      %s  %s" % (change.Action, change.PathAndFilename)
-
-        if len(cs.Artifacts) == 0:
-            #print "changeset %s - %s has no artifacts"  % (cs.SCMRepository.Name, cs.Revision)
-            continue
-
-        artifact_idents = []
-        for shell_artifact in cs.Artifacts:
-            entity = shell_artifact._type # the shell artifact has the oid, not the FormattedID
-            if shell_artifact.oid not in oid_cache:
-                by_oid = "ObjectID = %s" % shell_artifact.oid
-                art_response = rally.get(entity, fetch="FormattedID", query=by_oid)
-                if art_response.resultCount == 1:
-                    art = art_response.next()
-                    oid_cache[shell_artifact.oid] = art
-            artifact = oid_cache.get(shell_artifact.oid, None)
-            if artifact:
-                artifact_idents.append(artifact.FormattedID)
-        if artifact_idents:
-            print "         artifacts mentioned: %s" % " ".join(artifact_idents)
 
 #################################################################################################
 #################################################################################################

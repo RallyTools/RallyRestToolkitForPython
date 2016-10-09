@@ -4,11 +4,13 @@ import sys, os
 import types
 import py
 import time
+import re
 
 import pyral
 from pyral import Rally
 
-RallyRESTAPIError = pyral.context.RallyRESTAPIError
+RallyRESTAPIError  = pyral.context.RallyRESTAPIError
+RallyResponseError = pyral.rallyresp.RallyResponseError
 
 ##################################################################################################
 
@@ -45,6 +47,27 @@ def test_basic_connection():
 #    os.environ['https_proxy'] = ""
 #    del os.environ['https_proxy']
 #    time.sleep(1)
+
+#def test_connection_proxy_with_api_key():
+#    """
+#        Using a known valid Rally server and access credentials, issue a simple query 
+#        request against a known valid Rally entity via use of https_proxy.
+#    """
+#    os.environ['https_proxy'] = "http://%s" % HTTPS_PROXY
+#
+#    rally = Rally(server=TRIAL, apikey=API_KEY, server_ping=False)
+#    rally.setWorkspace('Rally')
+#    projects = rally.getProjects()
+#    project_names = sorted([proj.Name for proj in projects])
+#    AWESOME_PROJECT = 'Alligator Tiers'
+#    assert AWESOME_PROJECT in project_names
+#    response = rally.get('Project', fetch=False, limit=10)
+#    assert response != None
+#    assert response.status_code == 200
+#    rally.setProject(AWESOME_PROJECT)
+#    project = rally.getProject()
+#    assert project.Name == AWESOME_PROJECT
+    
 
 def test_basic_connection_with_apikey():
     """
@@ -148,28 +171,29 @@ def test_non_rally_server():
         Do the same test using default access credentials and known correct
         valid credentials to an existing Rally server.
         The attempt must generate an Exception
-        The status_code in the response must indicate a non-success condition.
     """
     non_rally_server = 'www.irs.gov'
-    expectedErrMsg = "404 Target host: '%s' doesn't support the Rally WSAPI" % non_rally_server
-    timeoutMsg     = "Request timed out on attempt to reach %s" % non_rally_server
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    #expectedErrMsg = "404 Target host: '%s' doesn't support the Rally WSAPI" % non_rally_server
+    #timeoutMsg     = "Request timed out on attempt to reach %s" % non_rally_server
+    #expectedErrMsg = "Response for request: .+//%s/.+ either was not JSON content or was an invalidly formed"
+    expectedErrMsg = "Response for request: .*%s.* either was not JSON content or was an invalidly formed\/incomplete JSON structure" % non_rally_server
+    with py.test.raises(RallyResponseError) as excinfo:
         rally = Rally(server=non_rally_server, timeout=5)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    #print "     expectedErrMsg: %s" % expectedErrMsg
-    #print "  actualErrVerbiage: %s" % actualErrVerbiage
-    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    assert (actualErrVerbiage == expectedErrMsg or actualErrVerbiage == timeoutMsg)
+    #print("     expectedErrMsg: %s" % expectedErrMsg)
+    #print("  actualErrVerbiage: %s" % actualErrVerbiage)
+    assert excinfo.value.__class__.__name__ == 'RallyResponseError'
+    ex_value_mo = re.search(expectedErrMsg, actualErrVerbiage)
+    assert ex_value_mo is not None
 
     time.sleep(1)
 
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with py.test.raises(RallyResponseError) as excinfo:
         rally = Rally(server=non_rally_server, 
                             user=TRIAL_USER, 
                             password=TRIAL_PSWD, timeout=5)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    assert actualErrVerbiage == expectedErrMsg
+    assert excinfo.value.__class__.__name__ == 'RallyResponseError'
     time.sleep(1)
 
 def test_bad_server_spec():

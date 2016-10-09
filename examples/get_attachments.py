@@ -33,7 +33,8 @@ COMMON_ATTRIBUTES = ['_type', 'oid', '_ref', '_CreatedAt', '_hydrated', 'Name']
 def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
-    server, user, password, apikey, workspace, project = rallyWorkset(options)
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
+    print " | ".join([server, username, password, workspace, project])
     if apikey:
         rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
     else:
@@ -75,12 +76,12 @@ def main(args):
     artifact = response.next()
     attachments = rally.getAttachments(artifact)
     for attachment in attachments:
-        print "-" * 32
-        print attachment.Name
-        print "~" * len(attachment.Name)
-        print attachment.Content
-        print ""
-        print "=" *  64
+        print("-" * 32)
+        print(attachment.Name)
+        print("~" * len(attachment.Name))
+        print(attachment.Content)
+        print("")
+        print("=" *  64)
 
 #################################################################################################
 #################################################################################################

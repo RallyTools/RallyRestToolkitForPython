@@ -45,7 +45,6 @@ def main(args):
     else:
         rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
 
-    rally = Rally(server, user, password)      # specify the Rally server and credentials
     rally.enableLogging('rally.hist.item') # name of file you want logging to go to
 
     if len(args) != 2:
@@ -82,7 +81,7 @@ def main(args):
         sys.exit(5)
 
     for item in response:
-        print item.details()
+        print(item.details())
 
 #################################################################################################
 #################################################################################################
