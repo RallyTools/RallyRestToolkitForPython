@@ -272,7 +272,7 @@ Versions
    1.2.0
        Support for Python 3.5.x
        Begin deprecation sequence for pinging the Rally server before the connection attempt, 
-             initially with this version, allow option on instantiation to bypass ping.
+       initially with this version, allow option on instantiation to bypass ping.
        Added ability to rankAbove, rankBelow, rankToTop, rankToBottom for an Artifact.
        Fixed defect where user has no default workspace or project.
 
@@ -286,7 +286,7 @@ Versions
    1.1.1 
        Modified entity.py to allow it to pass back PortfolioItem sub type instances.
        Modified rallyresp.py defect referencing non-existing req_type instance var by changing 
-                reference to request_type. 
+       reference to request_type. 
        Modified restapi.py to use user, dropped auth_user.
        Modified restapi.py to be more defensive when user has no associated UserProfile.
        Modified context.py to account for use of Cygwin in Pinger code.
@@ -296,7 +296,7 @@ Versions
        Modified restapi.py/entity.py to provide rudimentary support for querying of RecycleBin entries.
        Modified restapi.py and added search_utils.py to provide a search method for pyral Rally instances.
        Modified rallyresp.py to better handle some boundary conditions when response body item counts 
-                differ from what is stated in the TotalResultCount.
+       differ from what is stated in the TotalResultCount.
        Modified context.py to account for scenario where user's default workspace has no projects.
        Modified restapi.py/getProject to return correct project.
 

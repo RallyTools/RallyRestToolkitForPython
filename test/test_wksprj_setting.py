@@ -5,18 +5,18 @@ import types
 
 import py
 
-from pyral import Rally
+from pyral import Rally, RallyUrlBuilder
 
 
 ##################################################################################################
 
 from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
 from rally_targets import   DEFAULT_WORKSPACE,   DEFAULT_PROJECT
-from rally_targets import ALTERNATE_WORKSPACE
+from rally_targets import ALTERNATE_WORKSPACE, ALTERNATE_PROJECT
 
 ##################################################################################################
 
-ALTERNATE_PROJECT   = 'Dynamic'
+#ALTERNATE_PROJECT   = 'Dynamic'
 
 ##################################################################################################
 
@@ -78,6 +78,21 @@ def test_warn_on_setting_invalid_project():
     py.test.raises(Exception, "rally.setProject('Thorny Buxcuit Weevilz')")
     project = rally.getProject()
     assert project.Name == DEFAULT_PROJECT
+
+def test_disallow_project_value_invalid_for_workspace():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        and specifying the default workspace and project that does not exist 
+        in that workspace, issue an Exception that prevents further processing.
+    """
+    problem_text = "No valid Project with the name 'Argonaut' found in the Workspace 'AC WSAPI Toolkit Python'"
+    with py.test.raises(Exception) as excinfo:
+        rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, 
+                      workspace=DEFAULT_WORKSPACE, project=ALTERNATE_PROJECT, server_ping=False)
+    actualErrVerbiage = excinfo.value.args[0]
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert actualErrVerbiage == problem_text
+
 
 def test_get_project():
     """

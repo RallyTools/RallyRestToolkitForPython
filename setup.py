@@ -21,7 +21,7 @@ GITHUB_SITE   = 'https://github.com/RallyTools/RallyRestToolkitForPython'
 GITHUB_DISTS  = '%s/blob/master/dists' % GITHUB_SITE
 DOWNLOADABLE_ZIP = '%s/%s-%s.zip' % (GITHUB_DISTS, PACKAGE, VERSION)
 
-MINIMUM_REQUESTS_VERSION = '2.3.0'
+MINIMUM_REQUESTS_VERSION = '2.8.1'
 
 setup(name=PACKAGE,
       version=VERSION,
@@ -48,6 +48,6 @@ setup(name=PACKAGE,
             'Topic :: Internet :: WWW/HTTP',
             'Topic :: Software Development :: Libraries',
         ],
-      #documentation='http://readthedocs.org/docs/pyral'
+      #documentation='http://pyral.readthedocs.io/en/latest/'
     )
         
