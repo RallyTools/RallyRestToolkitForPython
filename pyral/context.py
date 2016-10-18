@@ -293,6 +293,7 @@ class RallyContextHelper(object):
             exists in the returned set.  If the project_name parameter is non-None and there is NOT
             a match in the returned set raise an Exception stating that fact.
         """
+        self._currentProject = project_name
         result = self.agent.get('Project', fetch="Name", workspace=self._currentWorkspace)
 
         if not result or result.resultCount == 0:
