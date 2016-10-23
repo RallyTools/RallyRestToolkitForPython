@@ -17,11 +17,14 @@ examples/showdefects.py
 examples/statecounts.py
 examples/crtask.py
 examples/uptask.py
-examples/typedefs.py
+examples/typedef.py
 examples/repoitems.py
 examples/wkspcounts.py
 examples/builddefs.py
 examples/creattach.py
 examples/get_attachments.py
+examples/get_schedulable_artifacts.py
 examples/get_schema.py
+examples/defrevs.py
 examples/add_tcrs.py
+examples/updtag.py

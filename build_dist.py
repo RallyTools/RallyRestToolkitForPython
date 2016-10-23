@@ -11,7 +11,7 @@ import tarfile
 import zipfile
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.2.0"
+VERSION      = "1.2.1"
 
 AUX_FILES  = ['MANIFEST.in', 
               'LICENSE', 
@@ -30,6 +30,7 @@ EXAMPLES   = ['getitem.py',
               'repoitems.py',
               'get_schema.py',
               'typedef.py',
+              'allowedValues.py', 
               'wkspcounts.py',
               'builddefs.py',
               'creattach.py',
@@ -146,7 +147,6 @@ def make_zipfile(pkg_name, pkg_version, base_files, example_files, doc_files):
         elif os.path.isdir(doc_item):
             sub_items = os.listdir(doc_item)
             for sub_item in sub_items:
-                
                 zf.write('%s/%s' % (doc_item, sub_item), '%s/%s/%s' % (base_dir, doc_item, sub_item), zipfile.ZIP_DEFLATED)
                 
     zf.close()

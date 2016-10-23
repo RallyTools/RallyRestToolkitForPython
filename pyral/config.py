@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 0)
+__version__ = (1, 2, 1)
 
 import datetime
 import os
@@ -130,7 +130,7 @@ def rallyWorkset(args):
     # #5
     # if there are environment vars, use them
     #
-    # purposely excluding RALLY_PING ...
+    # purposely excluding RALLY_PING, we'll recognize in the environment later, don't want to make it part of server_creds ...
     for ix, name in enumerate(['RALLY_SERVER', 'RALLY_USER', 'RALLY_PASSWORD', 'APIKEY', 'RALLY_WORKSPACE', 'RALLY_PROJECT']):
         if name in os.environ:
             server_creds[ix] = os.environ[name]

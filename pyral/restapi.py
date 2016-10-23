@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 0)
+__version__ = (1, 2, 1)
 
 import sys, os
 import re
@@ -1405,9 +1405,14 @@ class Rally(object):
         if not matching_attrs:
             return None
         attribute = matching_attrs[0]
-##
-##        print("  AllowedValues: %s" % (attribute.AllowedValues))
-##
+        collection_types = [type([]), type({})]
+        if type(attribute.AllowedValues) == str:
+            context = self.contextHelper.currentContext()
+            avs = attribute.resolveAllowedValues(context, getCollection)
+            if type(avs) not in collection_types:
+                return [avs]
+            return [av.StringValue for av in avs]
+
         # suggested by Scott Vitale to address issue in Rally WebServices response 
         #   (sometimes value is present, other times StringValue must be used)
         return [av.StringValue for av in attribute.AllowedValues]

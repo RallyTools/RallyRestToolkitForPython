@@ -3,27 +3,30 @@
 
 import sys
 
-try:
-    from distutils2.core import setup
-except:
-    try:
-        from distutils.core import setup
-    except:
-        from setuptools import setup
+#try:
+#    from distutils2.core import setup
+#except:
+#    try:
+#        from distutils.core import setup
+#    except:
+#        from setuptools import setup
+
+from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '1.2.0'
+VERSION       = '1.2.1'
 OFFICIAL_NAME = 'Python toolkit for Rally REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (Rally Software Development)'
 AUTHOR_EMAIL  = 'klehman@rallydev.com'
 GITHUB_SITE   = 'https://github.com/RallyTools/RallyRestToolkitForPython'
-GITHUB_DISTS  = '%s/blob/master/dists' % GITHUB_SITE
+GITHUB_DISTS  = '%s/raw/master/dists' % GITHUB_SITE
 DOWNLOADABLE_ZIP = '%s/%s-%s.zip' % (GITHUB_DISTS, PACKAGE, VERSION)
 
 MINIMUM_REQUESTS_VERSION = '2.8.1'
 
 setup(name=PACKAGE,
+      packages=[PACKAGE],
       version=VERSION,
       description=OFFICIAL_NAME,
       author=AUTHOR,
@@ -31,10 +34,11 @@ setup(name=PACKAGE,
       url=GITHUB_SITE,
       download_url=DOWNLOADABLE_ZIP,
       long_description=open('README.rst').read(),
-      packages=[PACKAGE],
       license='BSD',
-      #requires=["python"],
-      #install_requires=['requests>=%s' % MINIMUM_REQUESTS_VERSION],
+      keywords=['rally', 'agilecentral', 'api'],
+      install_requires=['requests>=%s' % MINIMUM_REQUESTS_VERSION,
+                        'six' 
+                       ],
       classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Environment :: Web Environment',

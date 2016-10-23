@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Python toolkit for the Rally REST API &mdash; pyral 1.2.0 documentation</title>
+  <title>Python toolkit for the Rally REST API &mdash; pyral 1.2.1 documentation</title>
   
 
   
@@ -30,7 +30,10 @@
   
 
   
-    <link rel="top" title="pyral 1.2.0 documentation" href="index.html"/>
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="pyral 1.2.1 documentation" href="index.html"/>
         <link rel="next" title="Primary pyral classes and functions" href="interface.html"/>
         <link rel="prev" title="Python toolkit for the Rally REST API" href="index.html"/> 
 
@@ -61,7 +64,7 @@
             
             
               <div class="version">
-                1.2.0
+                1.2.1
               </div>
             
           
@@ -83,7 +86,7 @@
             
             
                 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">Python toolkit for the Rally REST API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python toolkit for the Rally REST API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#simple-use">Simple Use</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#rally-data-model">Rally Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#rally-entities-and-artifacts">Rally Entities and Artifacts</a></li>
@@ -120,7 +123,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -168,22 +171,22 @@ with Rally WSAPI 1.x.</p>
 <div class="section" id="simple-use">
 <h1>Simple Use<a class="headerlink" href="#simple-use" title="Permalink to this headline">¶</a></h1>
 <p>Here&#8217;s a prototype of simple use of the <strong>pyral</strong> package.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
 
-<span class="kn">from</span> <span class="nn">pyral</span> <span class="kn">import</span> <span class="n">Rally</span><span class="p">,</span> <span class="n">rallyWorkset</span>
+<span class="kn">from</span> <span class="nn">pyral</span> <span class="k">import</span> <span class="n">Rally</span><span class="p">,</span> <span class="n">rallyWorkset</span>
 
-<span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="n">opt</span> <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">opt</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;--&#39;</span><span class="p">)]</span>
+<span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="n">opt</span> <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">opt</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="p">)]</span>
 <span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">apikey</span><span class="p">,</span> <span class="n">workspace</span><span class="p">,</span> <span class="n">project</span> <span class="o">=</span> <span class="n">rallyWorkset</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
-<span class="n">rally</span><span class="o">.</span><span class="n">enableLogging</span><span class="p">(</span><span class="s">&#39;rally.simple-use.log&#39;</span><span class="p">)</span>
+<span class="n">rally</span><span class="o">.</span><span class="n">enableLogging</span><span class="p">(</span><span class="s1">&#39;rally.simple-use.log&#39;</span><span class="p">)</span>
 
-<span class="n">response</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;Release&#39;</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="s">&quot;Project,Name,ReleaseStartDate,ReleaseDate&quot;</span><span class="p">,</span>
-                     <span class="n">order</span><span class="o">=</span><span class="s">&quot;ReleaseDate&quot;</span><span class="p">)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Release&#39;</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="s2">&quot;Project,Name,ReleaseStartDate,ReleaseDate&quot;</span><span class="p">,</span>
+                     <span class="n">order</span><span class="o">=</span><span class="s2">&quot;ReleaseDate&quot;</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">release</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
-    <span class="n">rlsStart</span> <span class="o">=</span> <span class="n">rls</span><span class="o">.</span><span class="n">ReleaseStartDate</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c"># just need the date part</span>
-    <span class="n">rlsDate</span>  <span class="o">=</span> <span class="n">rls</span><span class="o">.</span><span class="n">ReleaseDate</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>       <span class="c"># ditto</span>
-    <span class="k">print</span> <span class="s">&quot;</span><span class="si">%-6.6s</span><span class="s">  </span><span class="si">%-16.16s</span><span class="s">   </span><span class="si">%s</span><span class="s">  --&gt;  </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> \
+    <span class="n">rlsStart</span> <span class="o">=</span> <span class="n">rls</span><span class="o">.</span><span class="n">ReleaseStartDate</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># just need the date part</span>
+    <span class="n">rlsDate</span>  <span class="o">=</span> <span class="n">rls</span><span class="o">.</span><span class="n">ReleaseDate</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>       <span class="c1"># ditto</span>
+    <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">%-6.6s</span><span class="s2">  </span><span class="si">%-16.16s</span><span class="s2">   </span><span class="si">%s</span><span class="s2">  --&gt;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> \
           <span class="p">(</span><span class="n">rls</span><span class="o">.</span><span class="n">Project</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">rls</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">rlsStart</span><span class="p">,</span> <span class="n">rlsDate</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -301,7 +304,7 @@ to avoid ambiguity in identifying the Rally entity type.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright Rally Software Development 2010-2015, CA Technologies 2016.
+        &copy; Copyright CA Technologies 2016, Rally Software Development 2010-2015.
 
     </p>
   </div>
@@ -323,7 +326,7 @@ to avoid ambiguity in identifying the Rally entity type.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.0',
+            VERSION:'1.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
