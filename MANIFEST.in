@@ -1,30 +1,6 @@
-LICENSE
-README.short
-README.rst
-setup.py
-template.cfg
-rallyfire.py
-pyral/__init__.py
-pyral/config.py
-pyral/context.py
-pyral/entity.py
-pyral/hydrate.py
-pyral/rallyresp.py
-pyral/restapi.py
-examples/getitem.py
-examples/periscope.py
-examples/showdefects.py
-examples/statecounts.py
-examples/crtask.py
-examples/uptask.py
-examples/typedef.py
-examples/repoitems.py
-examples/wkspcounts.py
-examples/builddefs.py
-examples/creattach.py
-examples/get_attachments.py
-examples/get_schedulable_artifacts.py
-examples/get_schema.py
-examples/defrevs.py
-examples/add_tcrs.py
-examples/updtag.py
+include LICENSE README.short README.rst setup.py
+include template.cfg rallyfire.py
+recursive-include pyral *.py
+recursive-include doc *.txt *.html *.js *.css *.png *.gif
+recursive-include examples *.py
+

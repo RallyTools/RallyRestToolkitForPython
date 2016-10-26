@@ -923,7 +923,7 @@ class Rally(object):
             in the collection.
         """
         context = self.contextHelper.currentContext()
-        # craven ugly hackiness...
+        # craven ugly hackiness to support calls triggered from within ContextHelper.check ...
         if not '?fetch=' in collection_url:
             collection_url = "%s?pagesize=%d&start=1" % (collection_url, MAX_PAGESIZE)
         resource = collection_url
@@ -941,6 +941,70 @@ class Rally(object):
             self._logDest.flush()
         rally_rest_response = self._getRequestResponse(context, resource, 0)
         return rally_rest_response
+
+
+    def addCollectionItems(self, target, items):
+        """
+            Given a target which is a hydrated RallyEntity instance having a valid _type
+            and a items which is a list of hydrated Rally Entity instances
+            all of the same _type, construct a valid AC WSAPI collection url and 
+            issue a POST request to that URL supplying the _greased items refs as the
+            payload.
+        """
+        if not items: return None
+        auth_token = self.obtainSecurityToken()
+        target_type = target._type
+        item_type = items[0]._type
+        resource = "%s/%s/%ss/add" % (target_type, target.oid, item_type)
+        collection_url = '%s/%s?fetch=Name&key=%s' % (self.service_url, resource, auth_token)
+        #print(collection_url)
+        payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
+                    for item in items]}
+        #print(payload)
+        #print("-------------------------------")
+        response = self.session.post(collection_url, data=json.dumps(payload), headers=RALLY_REST_HEADERS)
+        #print(response.text)
+        #print(response.reason)
+        #print(response.content)
+        context = self.contextHelper.currentContext()
+        response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
+        added_items = [str(item[u'Name']) for item in response.data[u'Results']]
+        return added_items
+
+    def dropCollectionItems(self, target, items):
+        """
+            Given a target which is a hydrated RallyEntity instance having a valid _type
+            and a items which is a list of hydrated Rally Entity instances
+            all of the same _type, construct a valid AC WSAPI collection url and 
+            issue a POST request to that URL supplying the item refs in an appropriate
+            JSON structure as the payload.
+        """
+        if not items: return None
+        auth_token = self.obtainSecurityToken()
+        target_type = target._type
+        item_type = items[0]._type
+        resource = "%s/%s/%ss/delete" % (target_type, target.oid, item_type)
+        collection_url = '%s/%s?key=%s' % (self.service_url, resource, auth_token)
+        print(collection_url)
+        payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
+                    for item in items]}
+        print(payload)
+        print("-------------------------------")
+        response = self.session.post(collection_url, data=json.dumps(payload), headers=RALLY_REST_HEADERS)
+        print(response.status_code)
+        print(response.reason)
+        #print(response.text)
+        #print(" - - - - - - - - - - - - - - - - - -")
+        #print(response.content)
+        print(" - - - - - - - - - - - - - - - - - -")
+        return response.reason
+
+        #errors = response.errors
+        #context = self.contextHelper.currentContext()
+        #response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
+        #errors = [item[u'Errors'] for item in response.data[u'OperationResult']]
+        #errors = [item[u'Errors'] for item in response.data[u'QueryResult']]
+        #return errors
 
 
     def put(self, entityName, itemData, workspace='current', project='current', **kwargs):

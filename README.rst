@@ -274,13 +274,13 @@ Prerequisites
 Versions
 --------
 
-   1.2.1
+   **1.2.1**
        Added mention that the six package is required.
        Fixed context setup for proper handling when a user has no default workspace/project settings.
        Corrected handling of allowedValues for attributes when the single allowedValue is a boolean value.
        Added an allowedValues.py example script.
 
-   1.2.0
+   **1.2.0**
        Support for Python 3.5.x
        Begin deprecation sequence for pinging the Rally server before the connection attempt, 
        initially with this version, allow option on instantiation to bypass ping.

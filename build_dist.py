@@ -14,6 +14,7 @@ PACKAGE_NAME = "pyral"
 VERSION      = "1.2.1"
 
 AUX_FILES  = ['MANIFEST.in', 
+              'PKG-INFO', 
               'LICENSE', 
               'README.short', 
               'README.rst', 
@@ -76,6 +77,11 @@ TEST_FILES = ['test/rally_targets.py',
 ################################################################################
 
 def main(args):
+    pkgcfg = package_meta('setup.py')
+    #peek_in_to_pkg(pkgcfg)
+    pkg_info = pkg_info_content(pkgcfg)
+    pifi = save_pkg_info(".", 'PKG-INFO', pkg_info)
+
     tarball = make_tarball(PACKAGE_NAME, VERSION, AUX_FILES, EXAMPLES, DOC_FILES)
     print tarball
 
@@ -91,6 +97,74 @@ def main(args):
             reduction_fraction = 0.0
         reduction_pct = int(reduction_fraction * 100)
         print("%-52.52s   %6d (%2d%%)" % (info.filename, info.compress_size, reduction_pct))
+
+################################################################################
+
+def package_meta(filename):
+    import imp
+
+    if not os.path.exists(filename):
+        raise Exception('No such file: %s' % filename)
+    with open(filename, 'r') as pcf:
+        content = pcf.read()
+    chunk, setup = re.split('setup\(', content, maxsplit=1, flags=re.M)
+    consties = [line for line in chunk.split("\n") 
+                      if (len(line) > 0 and line[0] == " ") or re.search(r'^[A-Z]', line)]
+    assignments = "\n".join(consties)
+
+    #print(assignments)
+    pkgcfg = imp.new_module('pkgcfg')
+    exec(assignments, pkgcfg.__dict__)
+    sys.modules['pkgcfg'] = pkgcfg
+    return pkgcfg
+
+################################################################################
+
+def indentified_text(source_body):
+    """
+        The source_body should be a single string with embedded newline chars.
+        This function splits the string on the newline chars, yielding a list
+        of strings.  The indentation should only be performed lines after the first
+        line.  The first line shall have no indentation performed.
+        Return the result as a single string.
+    """
+    lines = source_body.split("\n")
+    indented = ['        %s' % line for ix, line in enumerate(lines) if ix > 0]
+    indented.insert(0, lines[0])    
+    return "\n".join(indented)
+
+
+def pkg_info_content(pkgcfg):
+    with open(pkgcfg.SHORT_DESCRIPTION, 'r') as sdf: 
+        short_desc = indentified_text(sdf.read())
+    meta_ver    =   'Metadata-Version: 1.1'
+    name        =   'Name: %s'       % pkgcfg.PACKAGE
+    version     =   'Version: %s'    % pkgcfg.VERSION 
+    summary     =   'Summary: %s'    % pkgcfg.OFFICIAL_NAME
+    homepage    =   'Home-page: %s'  % pkgcfg.GITHUB_SITE
+    author      =   'Author: %s'     % pkgcfg.AUTHOR
+    license     =   'License: %s'    % pkgcfg.LICENSE
+    download    =   'Download-URL: %s' % pkgcfg.DOWNLOADABLE_ZIP
+    desc        =   'Description: %s'  % short_desc
+    keywords    =   'Keywords: %s'   % ",".join(pkgcfg.KEYWORDS)
+    requires    =  ['Requires: %s'   % reqmt for reqmt in pkgcfg.REQUIRES]
+    platform    =   'Platform: %s'   % pkgcfg.PLATFORM
+    classifiers =  ['Classifier: %s' % item for item in pkgcfg.CLASSIFIERS]
+
+    pki_items = [meta_ver, name, version, summary, homepage, author, license,
+                 download, desc, keywords, 
+                 "\n".join(requires), platform, "\n".join(classifiers)
+                ]
+    pkg_info = "\n".join(pki_items)
+    return pkg_info
+    
+
+def save_pkg_info(directory, filename, pkg_info):
+    full_path = os.path.join(directory, filename)
+    with open(full_path, 'w') as pif:
+        pif.write(pkg_info)
+        pif.write("\n")
+    return full_path
 
 ################################################################################
 
