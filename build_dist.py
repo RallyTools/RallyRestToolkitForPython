@@ -9,6 +9,7 @@
 import sys, os
 import tarfile
 import zipfile
+import re
 
 PACKAGE_NAME = "pyral"
 VERSION      = "1.2.1"
