@@ -28,6 +28,7 @@ def main(args):
 
     # If you want to use API Key, you can use the following form
     #rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+
     # the following form of obtaining a Rally instance will use the apikey if it is present (non None)
     # otherwise it will use the user and password for BasicAuth
     # add in the debug=True keyword arg if you want more verbiage ...

@@ -28,3 +28,4 @@ examples/get_schema.py
 examples/defrevs.py
 examples/add_tcrs.py
 examples/updtag.py
+examples/addtags.py

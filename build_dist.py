@@ -39,7 +39,8 @@ EXAMPLES   = ['getitem.py',
               'get_schedulable_artifacts.py',
               'add_tcrs.py',
               'defrevs.py',
-              'updtag.py'
+              'updtag.py',
+              'addtags.py'
              ]
 DOC_FILES  = ['doc/Makefile',
               'doc/source/conf.py',

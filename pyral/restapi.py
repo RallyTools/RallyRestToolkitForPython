@@ -1140,7 +1140,12 @@ class Rally(object):
         if not items: return None
         auth_token = self.obtainSecurityToken()
         target_type = target._type
-        item_type = items[0]._type
+        item_types = [item._type for item in items]
+        item_type = item_types[0]
+        outliers = [item for item in item_types if item._type != item_type]
+        if outliers:
+            raise RallyRESTAPIError("addCollectionItems: all items must be of the same type")
+
         resource = "%s/%s/%ss/add" % (target_type, target.oid, item_type)
         collection_url = '%s/%s?fetch=Name&key=%s' % (self.service_url, resource, auth_token)
         payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 

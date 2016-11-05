@@ -181,11 +181,14 @@ class RallyQueryFormatter(object):
             return criteria.strip()[1:-1].replace(' ', '%20')
        
         # if caller has more than one opening paren, summarily return the query 
-        # essentially untouched (except for encoding space chars).  
+        # after stripping off the opening paren at the start of the string and the 
+        # closing parent at the end of the string
         # The assumption is that the caller has correctly done the parenthisized grouping 
-        # to end up in a binary form
+        # to end up in a binary form but we strip off the enclosing parens because the 
+        # caller (RallyUrlBuilder) will be immediately supplying them after the return from here.
         if criteria.count('(') > 1:
-            return criteria.strip().replace(' ', '%20')
+            stripped_and_plugged  = criteria.strip()[1:-1].replace(' ', '%20')
+            return stripped_and_plugged
 
         criteria = criteria.replace('&', '%26')        
         parts = RallyQueryFormatter.CONJUNCTION_PATT.split(criteria.strip())

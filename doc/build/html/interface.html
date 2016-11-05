@@ -100,6 +100,7 @@
 <li class="toctree-l1"><a class="reference internal" href="#rally">Rally</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#core-rest-methods-and-crud-aliases">Core REST methods and CRUD aliases</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pyral-rally-instance-convenience-methods">pyral.Rally instance convenience methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyral-rally-experimental-convenience-methods">pyral.Rally experimental convenience methods</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#rallyrestresponse">RallyRESTResponse</a></li>
@@ -451,6 +452,9 @@ interacting with the Rally server.</p>
 </dd>
 </dl>
 <p>either in this specific order or as keyword arguments.</p>
+<p>You must either have default workspace and project values set up for your account
+OR
+you must provide workspace and project values that are valid and accessible for your account.</p>
 <dl class="docutils">
 <dt>You can optionally specify the following as keyword arguments:</dt>
 <dd><ul class="first last">
@@ -491,7 +495,7 @@ a single workspace (either the user&#8217;s default workspace or the named works
 Using isolated_workspace=True provides performance benefits for a subscription
 with many workspaces, but it also means you cannot change the workspace you
 are working within a single instance of a Rally class, nor can you provide
-a workspace keyword argument to a get, create, update or delete methods that
+a workspace keyword argument to the get, create, update or delete methods that
 differs from the workspace identified at instantiation time.
 For subscriptions with a small to moderate number of workspaces (up to a few dozen),
 the performance savings will be relatively minor when using isolated_workspace=True
@@ -905,6 +909,45 @@ that the target_artifact exists in.</p>
 that the target_artifact exists in.</p>
 </dd></dl>
 
+</div>
+<div class="section" id="pyral-rally-experimental-convenience-methods">
+<h2>pyral.Rally experimental convenience methods<a class="headerlink" href="#pyral-rally-experimental-convenience-methods" title="Permalink to this headline">¶</a></h2>
+<dl class="method">
+<dt id="addCollectionItems">
+<code class="descname">addCollectionItems</code><span class="sig-paren">(</span><em>target_item</em>, <em>collection_items</em><span class="sig-paren">)</span><a class="headerlink" href="#addCollectionItems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a target_item and a homogenous list of items whose type appears as a One to Many relationship
+in the target item, add the collection_items to the corresponding attribute in the target_item.</p>
+</dd></dl>
+
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">milestones</span> <span class="o">=</span> <span class="p">[</span><span class="n">milestone_1</span><span class="p">,</span> <span class="n">milestone_2</span><span class="p">,</span> <span class="n">milestone_3</span><span class="p">]</span>
+<span class="n">story</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;story&#39;</span><span class="p">,</span> <span class="s1">&#39;US123&#39;</span><span class="p">)</span>
+<span class="n">rally</span><span class="o">.</span><span class="n">addCollectionItems</span><span class="p">(</span><span class="n">story</span><span class="p">,</span> <span class="n">milestones</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This method only works when the collection attribute on the target_item is Modifiable.
+Consult the AgileCentral WSAPI documentation for the target_item attributes to see whether
+the attribute of interest has a notation of &#8216;Collection Modifiable  yes&#8217;.  If there is no
+&#8216;Colletion Modifiable&#8217; notation or the value for that is &#8216;no&#8217;, then use of this method
+should not be attempted.
+At this time, the AgileCentral WSAPI schema endpoint does not include information about
+&#8216;Collection Modifiable&#8217; for any of the attributes, you&#8217;ll have to consult the documentation.</p>
+</div>
+<dl class="method">
+<dt id="dropCollectionItems">
+<code class="descname">dropCollectionItems</code><span class="sig-paren">(</span><em>target_item</em>, <em>collection_items</em><span class="sig-paren">)</span><a class="headerlink" href="#dropCollectionItems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a target_item and a homogenous list of items whose type appears as a One to Many relationship
+in the target item, delete the collection_items to the corresponding attribute in the target_item
+from the current collection contents for the target_item.</p>
+</dd></dl>
+
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">See note above for the &#8216;addCollectionItems&#8217; method.  The restrictions there are also applicable
+to this method.</p>
+</div>
 </div>
 </div>
 <div class="section" id="rallyrestresponse">
