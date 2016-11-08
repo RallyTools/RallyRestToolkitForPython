@@ -20,6 +20,7 @@ from pyral.query_builder import RallyUrlBuilder, RallyQueryFormatter
 
 from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
+from rally_targets import BOONDOCKS_WORKSPACE, BOONDOCKS_PROJECT
 
 ##################################################################################################
 
@@ -242,9 +243,23 @@ def test_two_condition_query_parenned():
         parens..
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    qualifiers = "(State = Submitted) AND (FormattedID != US100)"
+    qualifiers = "((State = Submitted) AND (FormattedID != US100))"
     response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
     assert response.resultCount > 0
+
+def test_four_ored_conditions_in_parrened_string():
+    """
+        Take a user query with OR conditions in which the parenneg groups are 
+        already supplied in AgileCentral conformant "binary" condition style
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, 
+                  workspace=BOONDOCKS_WORKSPACE, project=BOONDOCKS_PROJECT)
+    qualifiers = '((((Name = "Brazen%20Milliwogs") OR (Name = "Jenkins")) OR (Name = "Refusnik")) OR (Name = "Salamandra"))'
+    response = rally.get('Project', fetch=True, query=qualifiers, limit=10)
+    assert response.resultCount > 0
+    projects = [project for project in response]
+    #print([project.Name for project in projects])
+    assert response.resultCount == 2  # Only Jenkins and Salamandra exist or or accessible to the accessing account
 
 def test_single_condition_query_as_list():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)

@@ -266,17 +266,23 @@ Rally
     with appropriate and valid target/credential information then provides a means of 
     interacting with the Rally server.
 
-    To instantiate a Rally object, you'll need to provide these arguments:
-        * server
-        * user
-        * password
+To instantiate a Rally object, you'll need to provide these arguments:
+        * **server**    usually rally1.rallydev.com unless you are using an OnPrem version
+        * **user**      AgileCentral UserName
+        * **password**  AgileCentral password for the given user
 
     either in this specific order or as keyword arguments.
 
+    You must either have default **workspace** and **project** values set up for your account
+
+    OR 
+
+    you must provide **workspace** and **project** values that are valid and accessible for your account.
+
     You can optionally specify the following as keyword arguments:
-        * apikey
-        * workspace
-        * project
+        * apikey      (alternate credential specification)
+        * workspace   (name of the AgileCentral workspace)
+        * project     (name of the AgileCentral project)
         * verify_ssl_cert  (True or False, default is True)
         * warn     (True or False, default is True) 
                     Controls whether a warning is issued if no project is specified
@@ -298,7 +304,7 @@ Rally
                    Using isolated_workspace=True provides performance benefits for a subscription
                    with many workspaces, but it also means you cannot change the workspace you 
                    are working within a single instance of a Rally class, nor can you provide
-                   a workspace keyword argument to a get, create, update or delete methods that
+                   a workspace keyword argument to the get, create, update or delete methods that
                    differs from the workspace identified at instantiation time.
                    For subscriptions with a small to moderate number of workspaces (up to a few dozen),
                    the performance savings will be relatively minor when using isolated_workspace=True
@@ -662,6 +668,42 @@ pyral.Rally instance convenience methods
     Rank the target_artifact at the bottom of the list of ranked Artifacts 
     that the target_artifact exists in.
     
+pyral.Rally experimental convenience methods
+--------------------------------------------
+
+.. method:: addCollectionItems(target_item, collection_items)
+    
+    Given a target_item and a homogenous list of items whose type appears as a One to Many relationship
+    in the target item, add the collection_items to the corresponding attribute in the target_item.
+
+::
+
+       ...
+       milestones = [milestone_1, milestone_2, milestone_3]
+       story = rally.get('story', 'US123') 
+       rally.addCollectionItems(story, milestones)
+
+.. warning:: 
+
+        This method only works when the collection attribute on the target_item is Modifiable.
+        Consult the AgileCentral WSAPI documentation for the target_item attributes to see whether
+        the attribute of interest has a notation of 'Collection Modifiable  yes'.  If there is no 
+        'Colletion Modifiable' notation or the value for that is 'no', then use of this method 
+        should not be attempted.
+        At this time, the AgileCentral WSAPI schema endpoint does not include information about 
+        'Collection Modifiable' for any of the attributes, you'll have to consult the documentation.
+
+.. method:: dropCollectionItems(target_item, collection_items)
+
+    Given a target_item and a homogenous list of items whose type appears as a One to Many relationship
+    in the target item, delete the collection_items to the corresponding attribute in the target_item 
+    from the current collection contents for the target_item.
+
+.. warning:: 
+
+        See note above for the 'addCollectionItems' method.  The restrictions there are also applicable 
+        to this method.
+
 
 RallyRESTResponse
 =================

@@ -39,7 +39,9 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.2.0) has been tested using requests 2.8.1.
+The most recent release of pyral (1.2.1) has been tested using requests 2.8.1.
+
+Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
 
 Unpack the ``pyral`` distribution file (zip or tar.gz) and then install the pyral_ package. 
@@ -61,11 +63,11 @@ relevant packages.
 :: 
 
    $ python
-   Python 2.7.11 [other Python interpreter info elided ...]
+   Python 3.5.1 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 2, 0)
+   (1, 2, 1)
 
 
 
@@ -105,7 +107,7 @@ Common setup code ::
   options = [arg for arg in sys.argv[1:] if arg.startswith('--')]
   args    = [arg for arg in sys.argv[1:] if arg not in options] 
   server, user, password, apikey, workspace, project = rallyWorkset(options)
-  rally = Rally(server, user, password, workspace=workspace, project=project)
+  rally = Rally(server, user, password, apikey=apikey, workspace=workspace, project=project)
   rally.enableLogging('mypyral.log')
 
 Show a TestCase identified by the **FormattedID** value.
@@ -253,6 +255,7 @@ The item names in config files **are** case sensitive.
   --apikey=<APIKey>                     valid Rally API Key value
   --rallyWorkspace=<bar>                Workspace in Rally you want to interact with
   --rallyProject=<bar>                  Project in Rally you want to interact with
+  --ping                                boolean, ping Rally server before connection attempt?
 ====================================== =========================================
 
 
@@ -263,16 +266,24 @@ Prerequisites
  * Python 3.5 (this package not tested with earlier versions of Python 3.x)
  * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy),
    requests 2.8.1 is recommended.
+ * The six_ package.
 
 .. _requests: http://github.com/kennethreitz/requests
+.. _six: https://bitbucket/gutworth/six
 
 Versions
 --------
 
-   1.2.0
+   **1.2.1**
+       Added mention that the six package is required.
+       Fixed context setup for proper handling when a user has no default workspace/project settings.
+       Corrected handling of allowedValues for attributes when the single allowedValue is a boolean value.
+       Added an allowedValues.py example script.
+
+   **1.2.0**
        Support for Python 3.5.x
        Begin deprecation sequence for pinging the Rally server before the connection attempt, 
-             initially with this version, allow option on instantiation to bypass ping.
+       initially with this version, allow option on instantiation to bypass ping.
        Added ability to rankAbove, rankBelow, rankToTop, rankToBottom for an Artifact.
        Fixed defect where user has no default workspace or project.
 
@@ -286,7 +297,7 @@ Versions
    1.1.1 
        Modified entity.py to allow it to pass back PortfolioItem sub type instances.
        Modified rallyresp.py defect referencing non-existing req_type instance var by changing 
-                reference to request_type. 
+       reference to request_type. 
        Modified restapi.py to use user, dropped auth_user.
        Modified restapi.py to be more defensive when user has no associated UserProfile.
        Modified context.py to account for use of Cygwin in Pinger code.
@@ -296,7 +307,7 @@ Versions
        Modified restapi.py/entity.py to provide rudimentary support for querying of RecycleBin entries.
        Modified restapi.py and added search_utils.py to provide a search method for pyral Rally instances.
        Modified rallyresp.py to better handle some boundary conditions when response body item counts 
-                differ from what is stated in the TotalResultCount.
+       differ from what is stated in the TotalResultCount.
        Modified context.py to account for scenario where user's default workspace has no projects.
        Modified restapi.py/getProject to return correct project.
 

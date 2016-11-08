@@ -5,18 +5,16 @@ import types
 
 import py
 
-from pyral import Rally
+from pyral import Rally, RallyUrlBuilder
 
 
 ##################################################################################################
 
 from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
 from rally_targets import   DEFAULT_WORKSPACE,   DEFAULT_PROJECT
-from rally_targets import ALTERNATE_WORKSPACE
-
-##################################################################################################
-
-ALTERNATE_PROJECT   = 'Dynamic'
+from rally_targets import ALTERNATE_WORKSPACE, ALTERNATE_PROJECT
+from rally_targets import API_KEY
+from rally_targets import ACCOUNT_WITH_NO_DEFAULTS_CREDENTIALS
 
 ##################################################################################################
 
@@ -79,6 +77,20 @@ def test_warn_on_setting_invalid_project():
     project = rally.getProject()
     assert project.Name == DEFAULT_PROJECT
 
+def test_disallow_project_value_invalid_for_workspace():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        and specifying the default workspace and project that does not exist 
+        in that workspace, issue an Exception that prevents further processing.
+    """
+    problem_text = "The current Workspace '%s' does not contain a Project with the name of '%s'" % (DEFAULT_WORKSPACE, ALTERNATE_PROJECT)
+    with py.test.raises(Exception) as excinfo:
+        rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, 
+                      workspace=DEFAULT_WORKSPACE, project=ALTERNATE_PROJECT, server_ping=False)
+    actualErrVerbiage = excinfo.value.args[0]
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert actualErrVerbiage == problem_text
+
 def test_get_project():
     """
         Using a known valid Rally server and known valid access credentials,
@@ -108,6 +120,72 @@ def test_get_named_project():
     assert response.resultCount > 0
     proj = rally.getProject('My Project')
     assert str(proj.Name) == 'My Project'
+
+def test_no_defaults_good_workspace_none_project():
+    no_defaults_user, no_defaults_password = ACCOUNT_WITH_NO_DEFAULTS_CREDENTIALS
+    nd_workspace = "NMTest"
+    none_project = None
+    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+    problem_text = problem % (nd_workspace, none_project)
+
+    with py.test.raises(Exception) as excinfo:
+        agicen = Rally(TRIAL, no_defaults_user, no_defaults_password,
+                      workspace=nd_workspace, project=none_project, server_ping=False)
+    actualErrVerbiage = excinfo.value.args[0]
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert actualErrVerbiage == problem_text
+
+def test_no_defaults_good_workspace_bad_project():
+    no_defaults_user, no_defaults_password = ACCOUNT_WITH_NO_DEFAULTS_CREDENTIALS
+    nd_workspace, bad_project = ('NMTest', 'Cuzzin Blutto')
+    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+    problem_text = problem % (nd_workspace, bad_project)
+
+    with py.test.raises(Exception) as excinfo:
+        agicen = Rally(TRIAL, no_defaults_user, no_defaults_password,
+                      workspace=nd_workspace, project=bad_project, server_ping=False)
+    actualErrVerbiage = excinfo.value.args[0]
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert actualErrVerbiage == problem_text
+
+def test_ignore_defaults_use_good_workspace_none_project():
+    good_workspace = "Integrations Test"
+    good_project   = "Integrations Project"
+    none_project   = None
+
+    rally = Rally(server=TRIAL, username=TRIAL_USER, password=TRIAL_PSWD, apikey=API_KEY,
+                  workspace=good_workspace, project=good_project, server_ping=False)
+    workspace = rally.getWorkspace()
+    project   = rally.getProject()
+    assert(workspace.Name) == good_workspace
+    assert(project.Name)   == good_project
+
+    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+    problem_text = problem % (good_workspace, none_project)
+    with py.test.raises(Exception) as excinfo:
+       rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, apikey=API_KEY,
+                     workspace=good_workspace,
+                     project=none_project, server_ping=False)
+    actualErrVerbiage = excinfo.value.args[0]
+    #print("actualErrVerbiage")
+    #print(actualErrVerbiage)
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert actualErrVerbiage == problem_text
+
+def test_ignore_defaults_use_good_workspace_bad_project():
+    good_workspace = "Integrations Test"
+    good_project   = "Integrations Project"
+    bad_project    = "while (e_coyote)"
+
+    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+    problem_text = problem % (good_workspace, bad_project)
+    with py.test.raises(Exception) as excinfo:
+       rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, apikey=API_KEY,
+                     workspace=good_workspace,
+                     project=bad_project, server_ping=False)
+    actualErrVerbiage = excinfo.value.args[0]
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert actualErrVerbiage == problem_text
 
 #test_get_workspace()
 #test_get_project()
