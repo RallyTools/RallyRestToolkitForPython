@@ -439,30 +439,30 @@ or you may elect to not specify the &#8216;.cfg&#8217; suffix.</p>
 <div class="section" id="rally">
 <h1>Rally<a class="headerlink" href="#rally" title="Permalink to this headline">¶</a></h1>
 <blockquote>
-<div><p>The Rally class is the central focus of the <strong>pyral</strong> package.  Instantiation of this class
+<div>The Rally class is the central focus of the <strong>pyral</strong> package.  Instantiation of this class
 with appropriate and valid target/credential information then provides a means of
-interacting with the Rally server.</p>
+interacting with the Rally server.</div></blockquote>
 <dl class="docutils">
 <dt>To instantiate a Rally object, you&#8217;ll need to provide these arguments:</dt>
-<dd><ul class="first last simple">
-<li>server</li>
-<li>user</li>
-<li>password</li>
+<dd><blockquote class="first">
+<div><ul class="simple">
+<li><strong>server</strong>    usually rally1.rallydev.com unless you are using an OnPrem version</li>
+<li><strong>user</strong>      AgileCentral UserName</li>
+<li><strong>password</strong>  AgileCentral password for the given user</li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 <p>either in this specific order or as keyword arguments.</p>
-<p>You must either have default workspace and project values set up for your account
-OR
-you must provide workspace and project values that are valid and accessible for your account.</p>
+<p>You must either have default <strong>workspace</strong> and <strong>project</strong> values set up for your account</p>
+<p>OR</p>
+<p>you must provide <strong>workspace</strong> and <strong>project</strong> values that are valid and accessible for your account.</p>
 <dl class="docutils">
 <dt>You can optionally specify the following as keyword arguments:</dt>
 <dd><ul class="first last">
-<li><p class="first">apikey</p>
+<li><p class="first">apikey      (alternate credential specification)</p>
 </li>
-<li><p class="first">workspace</p>
+<li><p class="first">workspace   (name of the AgileCentral workspace)</p>
 </li>
-<li><p class="first">project</p>
+<li><p class="first">project     (name of the AgileCentral project)</p>
 </li>
 <li><p class="first">verify_ssl_cert  (True or False, default is True)</p>
 </li>
@@ -509,11 +509,12 @@ statement returns a ready-for-use Rally instance.</p>
 </ul>
 </dd>
 </dl>
-<p>If you use an apikey value, any user name and password you provide is not considered, the connection
+<p class="last">If you use an apikey value, any user name and password you provide is not considered, the connection
 attempt will only use the apikey.
 Consult the Rally Help documentation for Rally Application Manager for information
 on how to generate an API Key and how to reset or delete an API Key.</p>
-</div></blockquote>
+</dd>
+</dl>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If your Subscription administrator has set up your Rally Subscription as &#8220;SSO only&#8221;, then to use

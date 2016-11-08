@@ -266,21 +266,23 @@ Rally
     with appropriate and valid target/credential information then provides a means of 
     interacting with the Rally server.
 
-    To instantiate a Rally object, you'll need to provide these arguments:
-        * server
-        * user
-        * password
+To instantiate a Rally object, you'll need to provide these arguments:
+        * **server**    usually rally1.rallydev.com unless you are using an OnPrem version
+        * **user**      AgileCentral UserName
+        * **password**  AgileCentral password for the given user
 
     either in this specific order or as keyword arguments.
 
-    You must either have default workspace and project values set up for your account
+    You must either have default **workspace** and **project** values set up for your account
+
     OR 
-    you must provide workspace and project values that are valid and accessible for your account.
+
+    you must provide **workspace** and **project** values that are valid and accessible for your account.
 
     You can optionally specify the following as keyword arguments:
-        * apikey
-        * workspace
-        * project
+        * apikey      (alternate credential specification)
+        * workspace   (name of the AgileCentral workspace)
+        * project     (name of the AgileCentral project)
         * verify_ssl_cert  (True or False, default is True)
         * warn     (True or False, default is True) 
                     Controls whether a warning is issued if no project is specified
