@@ -103,6 +103,16 @@ def test_getAllowedValues_query():
     assert u'Open' in avs
     assert u'Closed' in avs
 
+def test_getAllowedValues_for_UserStory():
+    """
+        Using a known valid Rally server and known valid access credentials,
+        request allowed value information for the Milestones field of the UserStory entity.
+    """
+    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    avs = rally.getAllowedValues('Story', 'Milestones')
+    assert len(avs) == 1
+    assert avs == [True]
+
 def test_typedef():
     """
         Using a known valid Rally server and known valid access credentials,

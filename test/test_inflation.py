@@ -68,7 +68,8 @@ def test_default_workspace_non_valid_project():
         An exception should be raised.
     """
     project = 'Halfling Leaf Pipe'
-    expectedErrMsg = u"No valid Project with the name '%s' found in the Workspace '%s'" % (project, DEFAULT_WORKSPACE)
+    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+    expectedErrMsg = problem % (DEFAULT_WORKSPACE, project)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       project=project)
@@ -129,7 +130,8 @@ def test_named_default_workspace_named_invalid_project():
         An exception should be raised.
     """
     project = 'Sailor Sami'
-    expectedErrMsg = "No valid Project with the name '%s' found in the Workspace '%s'" % (project, DEFAULT_WORKSPACE)
+    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+    expectedErrMsg = problem % (DEFAULT_WORKSPACE, project)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                       workspace=DEFAULT_WORKSPACE, project=project)
@@ -192,7 +194,8 @@ def test_named_non_default_workspace_named_invalid_project():
     """
     workspace = ALTERNATE_WORKSPACE
     project   = 'Barney Rubble'
-    expectedErrMsg = u"No valid Project with the name '%s' found in the Workspace '%s'" % (project, workspace)
+    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+    expectedErrMsg = problem % (ALTERNATE_WORKSPACE, project)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
                   workspace=workspace, project=project, timeout=10)

@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 0)
+__version__ = (1, 2, 1)
 
 import sys, os
 import re
@@ -915,34 +915,6 @@ class Rally(object):
     find = get # offer interface approximately matching Ruby Rally REST API, App SDK Javascript RallyDataSource
 
 
-    def getCollection(self, collection_url, **kwargs):
-        """
-            Given a collection_url of the form:
-                http(s)://<server>(:<port>)/slm/webservice/v2.0/<entity>/OID/<attribute>
-            issue a request for the url and return back a list of hydrated instances for each item 
-            in the collection.
-        """
-        context = self.contextHelper.currentContext()
-        # craven ugly hackiness...
-        if not '?fetch=' in collection_url:
-            collection_url = "%s?pagesize=%d&start=1" % (collection_url, MAX_PAGESIZE)
-        resource = collection_url
-
-        disabled_augments = kwargs.get('_disableAugments', False)
-        if not disabled_augments:
-            workspace_ref = self.contextHelper.currentWorkspaceRef()
-            project_ref   = self.contextHelper.currentProjectRef()
-            resource = "%s&workspace=%s&project=%s" % (resource, workspace_ref, project_ref)
-##
-##        print("Collection resource URL: %s" % resource)
-##
-        if self._log: 
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
-            self._logDest.flush()
-        rally_rest_response = self._getRequestResponse(context, resource, 0)
-        return rally_rest_response
-
-
     def put(self, entityName, itemData, workspace='current', project='current', **kwargs):
         """
             Given a Rally entityName, a dict with data that the newly created entity should contain,
@@ -1127,6 +1099,84 @@ class Rally(object):
             self._logDest.flush()
 
         return status
+
+
+    def getCollection(self, collection_url, **kwargs):
+        """
+            Given a collection_url of the form:
+                http(s)://<server>(:<port>)/slm/webservice/v2.0/<entity>/OID/<attribute>
+            issue a request for the url and return back a list of hydrated instances for each item 
+            in the collection.
+        """
+        context = self.contextHelper.currentContext()
+        # craven ugly hackiness to support calls triggered from within ContextHelper.check ...
+        if not '?fetch=' in collection_url:
+            collection_url = "%s?pagesize=%d&start=1" % (collection_url, MAX_PAGESIZE)
+        resource = collection_url
+
+        disabled_augments = kwargs.get('_disableAugments', False)
+        if not disabled_augments:
+            workspace_ref = self.contextHelper.currentWorkspaceRef()
+            project_ref   = self.contextHelper.currentProjectRef()
+            resource = "%s&workspace=%s&project=%s" % (resource, workspace_ref, project_ref)
+##
+##        print("Collection resource URL: %s" % resource)
+##
+        if self._log: 
+            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
+            self._logDest.flush()
+        rally_rest_response = self._getRequestResponse(context, resource, 0)
+        return rally_rest_response
+
+
+    def addCollectionItems(self, target, items):
+        """
+            Given a target which is a hydrated RallyEntity instance having a valid _type
+            and a items which is a list of hydrated Rally Entity instances
+            all of the same _type, construct a valid AC WSAPI collection url and 
+            issue a POST request to that URL supplying the item refs in an appropriate
+            JSON structure as the payload.
+        """
+        if not items: return None
+        auth_token = self.obtainSecurityToken()
+        target_type = target._type
+        item_types = [item._type for item in items]
+        item_type = item_types[0]
+        outliers = [item for item in item_types if item._type != item_type]
+        if outliers:
+            raise RallyRESTAPIError("addCollectionItems: all items must be of the same type")
+
+        resource = "%s/%s/%ss/add" % (target_type, target.oid, item_type)
+        collection_url = '%s/%s?fetch=Name&key=%s' % (self.service_url, resource, auth_token)
+        payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
+                    for item in items]}
+        response = self.session.post(collection_url, data=json.dumps(payload), headers=RALLY_REST_HEADERS)
+        context = self.contextHelper.currentContext()
+        response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
+        added_items = [str(item[u'Name']) for item in response.data[u'Results']]
+        return added_items
+
+
+    def dropCollectionItems(self, target, items):
+        """
+            Given a target which is a hydrated RallyEntity instance having a valid _type
+            and a items which is a list of hydrated Rally Entity instances
+            all of the same _type, construct a valid AC WSAPI collection url and 
+            issue a POST request to that URL supplying the item refs in an appropriate
+            JSON structure as the payload.
+        """
+        if not items: return None
+        auth_token = self.obtainSecurityToken()
+        target_type = target._type
+        item_type = items[0]._type
+        resource = "%s/%s/%ss/remove" % (target_type, target.oid, item_type)
+        collection_url = '%s/%s?key=%s' % (self.service_url, resource, auth_token)
+        payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
+                    for item in items]}
+        response = self.session.post(collection_url, data=json.dumps(payload), headers=RALLY_REST_HEADERS)
+        context = self.contextHelper.currentContext()
+        response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
+        return response
 
 
     def search(self, keywords, **kwargs):
@@ -1405,9 +1455,14 @@ class Rally(object):
         if not matching_attrs:
             return None
         attribute = matching_attrs[0]
-##
-##        print("  AllowedValues: %s" % (attribute.AllowedValues))
-##
+        collection_types = [type([]), type({})]
+        if type(attribute.AllowedValues) == str:
+            context = self.contextHelper.currentContext()
+            avs = attribute.resolveAllowedValues(context, getCollection)
+            if type(avs) not in collection_types:
+                return [avs]
+            return [av.StringValue for av in avs]
+
         # suggested by Scott Vitale to address issue in Rally WebServices response 
         #   (sometimes value is present, other times StringValue must be used)
         return [av.StringValue for av in attribute.AllowedValues]

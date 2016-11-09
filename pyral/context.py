@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 0)
+__version__ = (1, 2, 1)
 
 import sys, os
 import platform
@@ -187,6 +187,10 @@ class RallyContextHelper(object):
 
         if not self.isolated_workspace:
             self._getSubscriptionWorkspaces(subscription, limit=0)
+##
+##        print("ContextHelper _currentWorkspace: %s" % self._currentWorkspace)
+##        print("ContextHelper _defaultProject:   %s" % self._defaultProject)
+##
         self._getWorkspacesAndProjects(workspace=self._currentWorkspace, project=self._defaultProject)
         self._setOperatingContext(project)
         schema_info = self.agent.getSchemaInfo(self._currentWorkspace)
@@ -244,7 +248,9 @@ class RallyContextHelper(object):
                     problem = "Target Rally host: '%s' non-existent or unreachable" % self.server
                 else:
                     sys.stderr.write("404 Response for request\n")
-                   #sys.stderr.write("\n".join(str(response.errors)) + "\n")
+##
+##                  sys.stderr.write("\n".join(str(response.errors)) + "\n")
+##
                     if response.warnings:
                         sys.stderr.write("\n".join(str(response.warnings)) + "\n")
                     sys.stderr.flush()
@@ -293,7 +299,7 @@ class RallyContextHelper(object):
             exists in the returned set.  If the project_name parameter is non-None and there is NOT
             a match in the returned set raise an Exception stating that fact.
         """
-        result = self.agent.get('Project', fetch="Name", workspace=self._currentWorkspace)
+        result = self.agent.get('Project', fetch="Name", workspace=self._currentWorkspace, project=None)
 
         if not result or result.resultCount == 0:
             problem = "No Projects found in the Workspace '%s'" % self._defaultWorkspace
@@ -310,8 +316,8 @@ class RallyContextHelper(object):
 
         if project_name:
             if not match_for_named_project:
-                problem = "No valid Project with the name '%s' found in the Workspace '%s'"
-                raise RallyRESTAPIError(problem % (project_name, self._currentWorkspace))
+                problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+                raise RallyRESTAPIError(problem % (self._currentWorkspace, project_name))
             else:
                 project = match_for_named_project[0]
                 proj_ref = project._ref
@@ -319,8 +325,8 @@ class RallyContextHelper(object):
                 self._currentProject = project.Name
         else:
             if not match_for_default_project:
-                problem = "Default Project with the name '%s' was not found in the Workspace '%s'"
-                raise RallyRESTAPIError(problem % (self._defaultProject, self._defaultWorkspace))
+                problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
+                raise RallyRESTAPIError(problem % (self._currentWorkspace, project_name))
             else:
                 project = match_for_default_project[0]
                 proj_ref = project._ref
