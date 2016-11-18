@@ -324,6 +324,12 @@ To instantiate a Rally object, you'll need to provide these arguments:
         **pyral**, you must have your account added to the whitelist in Rally so that you can use either
         BasicAuth (username and password) or the API Key to authenticate to Rally.
 
+.. note::
+
+        As of the 1.2.2 release, **pyral** offers a means of precisely identifying a Project whose name appears in multiple locations within the forest of Projects with a Workspace.  For example, your organization may have several "base" level Projects with sub-trees of Projects.  In this scenario, you might have multiple Projects named 'AgileTeam-X' or 'SalesPrep'.  By using a Project path component separator of '  // ' (<space><slash><slash><space>) you can specify the unambiguous and unique path to the specific Project of interest.  Example:  Omnibus // Metallic // Conductive // Copper // Wire . 
+        You only have to use this syntax to specify a particular Project if you have multiple instances of that Project that have the same name.  There is no provision for supporting the scenario where a Project of the same name exists in the same structural location. 
+
+
 .. py:class:: Rally (server, user=None, password=None, apikey=None, workspace=None, project=None, warn=True, server_ping=True)
 
 Examples::

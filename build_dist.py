@@ -9,10 +9,11 @@
 import sys, os
 import tarfile
 import zipfile
+import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.2.1"
+VERSION      = "1.2.2"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -37,6 +38,7 @@ EXAMPLES   = ['getitem.py',
               'builddefs.py',
               'creattach.py',
               'get_attachments.py',
+              'get_milestones.py',
               'get_schedulable_artifacts.py',
               'add_tcrs.py',
               'defrevs.py',
@@ -99,6 +101,24 @@ def main(args):
             reduction_fraction = 0.0
         reduction_pct = int(reduction_fraction * 100)
         print("%-52.52s   %6d (%2d%%)" % (info.filename, info.compress_size, reduction_pct))
+
+    # got to use Python 2.7 to be able to run python setup.py bdist_wheel
+    os.system('/usr/local/bin/python setup.py bdist_wheel')
+    wheel_file = "pyral-%s-py2.py3-none-any.whl" % VERSION
+    # the wheel_file gets written into the dist  subdir by default, no need for a copy...
+
+    store_packages('dist',  [tarball])
+    store_packages('dists', [tarball, zipped])
+
+################################################################################
+
+def store_packages(subdir, files):
+    for file in files:
+        if os.path.exists(file):
+            shutil.copy(file, '%s/%s' % (subdir, file))
+        else:
+            problem = "No such file found: {0} to copy into {1}".format(file, subdir)
+            sys.stderr.write(problem)
 
 ################################################################################
 

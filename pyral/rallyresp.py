@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 1)
+__version__ = (1, 2, 2)
 
 import sys
 import re
@@ -83,6 +83,7 @@ class RallyRESTResponse(object):
             if self.target.lower() == 'revisionhistory':
                 self.target = 'RevisionHistory'
 
+        self._served  = -1
         self.errors   = []
         self.warnings = []
         self._item_type  = self.target
