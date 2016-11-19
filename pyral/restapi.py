@@ -3,7 +3,7 @@
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 13 first stab at support for Python 3.5 or higher
+#          round 14 support for multi-element-path Project names, couple of minor defect fixes
 #          notable dependencies:
 #               requests v2.8.1 or better
 #
@@ -325,6 +325,7 @@ class Rally(object):
         """
         return self.service_url
 
+
     def obtainSecurityToken(self):
         if self.apikey:
             return None
@@ -395,11 +396,13 @@ class Rally(object):
     def warningsEnabled(self):
         return self._warn == True
 
+
     def subscriptionName(self):
         """
             Returns the name of the subscription in the currently active context.
         """
         return self.contextHelper.currentContext().subscription()
+
 
     def setWorkspace(self, workspaceName):
         """
@@ -415,6 +418,7 @@ class Rally(object):
             raise Exception('Specified workspace not valid for your credentials or is in a Closed state')
         self.contextHelper.setWorkspace(workspaceName)
 
+
     def getWorkspace(self):
         """
             Returns a minimally hydrated Workspace instance with the Name and ref
@@ -423,6 +427,7 @@ class Rally(object):
         context = self.contextHelper.currentContext()
         wksp_name, wksp_ref = self.contextHelper.getWorkspace()
         return _createShellInstance(context, 'Workspace', wksp_name, wksp_ref)
+
 
     def getWorkspaces(self):
         """
@@ -609,7 +614,8 @@ class Rally(object):
                       # and other UserProfile attributes
                      ]
 
-        users_resource = 'users?fetch=%s&query=&pagesize=%s&start=1&workspace=%s' % (",".join(user_attrs), MAX_PAGESIZE, workspace_ref)
+        users_resource = 'users?fetch=%s&query=&pagesize=%s&start=1&workspace=%s' % \
+                         (",".join(user_attrs), MAX_PAGESIZE, workspace_ref)
         full_resource_url = '%s/%s' % (self.service_url, users_resource)
         response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
@@ -939,7 +945,6 @@ class Rally(object):
 ##
 ##        print("full_resource_url: %s" % full_resource_url)
 ##
-
         if self._log: 
             # unquote the resource for enhanced readability
             self._logDest.write('%s GET %s\n' % (timestamp(), unquote(resource)))
@@ -1033,7 +1038,7 @@ class Rally(object):
         if not oid:
             formattedID = itemData.get('FormattedID', None)
             if not formattedID:
-                raise RallyRESTAPIError('An identifying field (Object or FormattedID) must be specified')
+                raise RallyRESTAPIError('An identifying field (ObjectID or FormattedID) must be specified')
             fmtIdQuery = 'FormattedID = "%s"' % formattedID
             response = self.get(entityName, fetch="ObjectID", query=fmtIdQuery, 
                                 workspace=workspace, project=project)
@@ -1043,7 +1048,6 @@ class Rally(object):
             target = response.next()
             oid = target.ObjectID
             itemData['ObjectID'] = oid
-
 
         resource = '%s/%s?key=%s' % (entityName.lower(), oid, auth_token) 
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
@@ -1171,7 +1175,7 @@ class Rally(object):
     def addCollectionItems(self, target, items):
         """
             Given a target which is a hydrated RallyEntity instance having a valid _type
-            and a items which is a list of hydrated Rally Entity instances
+            and a a list of hydrated Rally Entity instances (items)
             all of the same _type, construct a valid AC WSAPI collection url and 
             issue a POST request to that URL supplying the item refs in an appropriate
             JSON structure as the payload.
@@ -1457,6 +1461,7 @@ class Rally(object):
 
         state = self.get('State', fetch=True, query=criteria, project=None, instance=True)
         return state
+
 
     def getStates(self, entity):
         """
@@ -1744,7 +1749,6 @@ class Rally(object):
         return art_type, artifact
 
 
-
     def rankAbove(self, reference_artifact, target_artifact):
         """
             Given a reference_artifact and a target_artifact, make a Rally WSAPI PUT call
@@ -1788,6 +1792,7 @@ class Rally(object):
         update_item = {artifact_type:{'_ref':target_artifact.ref}}
         return self._postRankRequest(target_artifact, resource, update_item)
 
+
     def _rankTo(self, target_artifact, location):
         """
             Given a reference_artifact, make a Rally WSAPI POST call
@@ -1799,6 +1804,7 @@ class Rally(object):
         resource = '%s/%s?&rankTo=%s' % (artifact_type, target_artifact.oid, location) 
         update_item = {artifact_type:{'_ref':target_artifact.ref}}
         return self._postRankRequest(target_artifact, resource, update_item)
+
 
     def _postRankRequest(self, target_artifact, resource, update_item):
         """
@@ -1822,6 +1828,7 @@ class Rally(object):
             raise RallyRESTAPIError(problem % (target_artifact.FormattedID, response.errors[0]))
         return response
 
+
     def _ensureRankItemSanity(self, target_artifact, reference_artifact=None):
         """
             Ranking can only be done for an item that is an Artifact subclass.
@@ -1841,4 +1848,4 @@ class Rally(object):
 
         return target_artifact.__class__.__name__.lower()
 
-##################################################################################################
+####################################################################################################
