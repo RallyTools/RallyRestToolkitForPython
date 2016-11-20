@@ -410,7 +410,7 @@ def test_query_with_special_chars_in_criteria():
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
     rally.setWorkspace(DEFAULT_WORKSPACE)
     rally.setProject(DEFAULT_PROJECT)
-    rally.enableLogging('spec_char_query')
+    #rally.enableLogging('spec_char_query')
     criteria = 'Name = "distinctive criteria of -32% degradation in rust protection"'
     response = rally.get('Defect', fetch=True, query=criteria, limit=10)
     assert response.__class__.__name__ == 'RallyRESTResponse'
@@ -451,7 +451,7 @@ def test_query_with_matched_parens_in_condition_value():
         make sure a query containing a condition looking for the Release by this name succeeds.
     """
     rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
-    rally.enableLogging('query_condition_value_has_matched_internal_parens')
+    #rally.enableLogging('query_condition_value_has_matched_internal_parens')
 
     criteria = 'Name = "8.5 (Blah and Stuff)"'
     response = rally.get('Release', fetch=True, query=criteria, limit=10)

@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 1)
+__version__ = (1, 2, 2)
 
 import datetime
 import os
@@ -27,7 +27,6 @@ USER_NAME = "wiley@acme.com"
 PASSWORD  = "G3ronim0!"
 
 START_INDEX  =   1
-PAGESIZE     = 100
 MAX_PAGESIZE = 200
 MAX_ITEMS    = 1000000  # a million seems an eminently reasonable limit ...
 

@@ -3,13 +3,13 @@
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 13 first stab at support for Python 3.5 or higher
+#          round 14 support for multi-element-path Project names, couple of minor defect fixes
 #          notable dependencies:
 #               requests v2.8.1 or better
 #
 ###################################################################################################
 
-__version__ = (1, 2, 1)
+__version__ = (1, 2, 2)
 
 import sys, os
 import re
@@ -29,7 +29,7 @@ import requests
 from .config  import PROTOCOL, SERVER, WS_API_VERSION, WEB_SERVICE, SCHEMA_SERVICE, AUTH_ENDPOINT
 from .config  import RALLY_REST_HEADERS
 from .config  import USER_NAME, PASSWORD 
-from .config  import START_INDEX, PAGESIZE, MAX_PAGESIZE, MAX_ITEMS
+from .config  import START_INDEX, MAX_PAGESIZE, MAX_ITEMS
 from .config  import timestamp
 from .search_utils  import projectAncestors, projectDescendants, projeny, flatten, MockRallyRESTResponse
 
@@ -49,6 +49,8 @@ def warning(message):
 SERVICE_REQUEST_TIMEOUT   = 120
 HTTP_REQUEST_SUCCESS_CODE = 200
 PAGE_NOT_FOUND_CODE       = 404
+
+PROJECT_PATH_ELEMENT_SEPARATOR = ' // '
 
 ###################################################################################################
 
@@ -263,10 +265,19 @@ class Rally(object):
                   
         if 'project' in kwargs and kwargs['project'] != self.contextHelper.currentContext().project \
                                and kwargs['project'] != 'default':
+
+            mep_proj = None
             accessibleProjects = [name for name, ref in self.contextHelper.getAccessibleProjects(workspace='current')]
+            if PROJECT_PATH_ELEMENT_SEPARATOR in kwargs['project']:  # is ' // ' in kwargs['project']?
+                mep_proj = self.contextHelper._findMultiElementPathToProject(kwargs['project'])
+                if mep_proj:
+                    accessibleProjects.append(kwargs['project'])
 
             if kwargs['project'] in accessibleProjects:
-                self.contextHelper.setProject(kwargs['project'])
+                if not mep_proj:
+                    self.contextHelper.setProject(kwargs['project'])
+                else:
+                    self.contextHelper.setProject(mep_proj.ref, name=kwargs['project'])
                 __adjust_cache = True
             else:
                 issue = ("Unable to use your project specification of '%s', " 
@@ -313,6 +324,7 @@ class Rally(object):
             of a RallyContext instance.
         """
         return self.service_url
+
 
     def obtainSecurityToken(self):
         if self.apikey:
@@ -384,11 +396,13 @@ class Rally(object):
     def warningsEnabled(self):
         return self._warn == True
 
+
     def subscriptionName(self):
         """
             Returns the name of the subscription in the currently active context.
         """
         return self.contextHelper.currentContext().subscription()
+
 
     def setWorkspace(self, workspaceName):
         """
@@ -404,6 +418,7 @@ class Rally(object):
             raise Exception('Specified workspace not valid for your credentials or is in a Closed state')
         self.contextHelper.setWorkspace(workspaceName)
 
+
     def getWorkspace(self):
         """
             Returns a minimally hydrated Workspace instance with the Name and ref
@@ -412,6 +427,7 @@ class Rally(object):
         context = self.contextHelper.currentContext()
         wksp_name, wksp_ref = self.contextHelper.getWorkspace()
         return _createShellInstance(context, 'Workspace', wksp_name, wksp_ref)
+
 
     def getWorkspaces(self):
         """
@@ -432,12 +448,24 @@ class Rally(object):
     def setProject(self, projectName):
         """
             Given a projectName, set that as the current project and use the ref for 
-            that project in subsequent interractions with Rally.
+            that project in subsequent interractions with Rally unless overridden.
+            If the projectName contains the ' // ' path element separator token string and there are
+            two or more path elements in the deconstructed string, the verify that the project path
+            given is valid and use that project and ref are used in subsequent interactions with Rally
+            unless overridden.
         """
-        eligible_projects = [proj for proj,ref in self.contextHelper.getAccessibleProjects(workspace='current')]
-        if projectName not in eligible_projects:
-            raise Exception('Specified project not valid for your current workspace or credentials')
-        self.contextHelper.setProject(projectName)
+        context = self.contextHelper.currentContext()
+        if PROJECT_PATH_ELEMENT_SEPARATOR not in projectName:  # is ' // ' in projectName?
+            eligible_projects = [proj for proj,ref in self.contextHelper.getAccessibleProjects(workspace='current')]
+            if projectName not in eligible_projects:
+                raise Exception('Specified project not valid for your current workspace or credentials')
+            self.contextHelper.setProject(projectName)
+        else:  # projectName name like baseProject // nextLevelProject // targetProject
+            proj = self.contextHelper._findMultiElementPathToProject(projectName)
+            if not proj:
+                raise Exception('Specified projectName not found or not valid for your current workspace or credentials')
+            #proj = _createShellInstance(context, 'Project', projectName, proj._ref)
+            self.contextHelper.setProject(proj.ref, name=projectName)
 
 
     def getProject(self, name=None):
@@ -446,13 +474,26 @@ class Rally(object):
             of the project in the currently active context if the name keyword arg
             is not supplied or the Name and ref of the project identified by the name
             as long as the name identifies a valid project in the currently selected workspace.
+            If the name keyword arg has the form of fully qualified path using the ' // ' path
+            element separator token, then specialized pyral machinery will attempt to "chase"
+            the elements until either an invalid path element is detected or all path elements
+            are valid and the name and ref of the ending Project path element is returned.
             Returns None if a name parameter is supplied that does not identify a valid project
             in the currently selected workspace.
         """
         context = self.contextHelper.currentContext()
         if not name:
             proj_name, proj_ref = self.contextHelper.getProject()
+##
+##            print("Rally.getProject called contextHelper.getProject, it returned %s and %s" % (proj_name, proj_ref))
+##
             return _createShellInstance(context, 'Project', proj_name, proj_ref)
+
+        if name and PROJECT_PATH_ELEMENT_SEPARATOR in name:
+            proj = self.contextHelper._findMultiElementPathToProject(name)
+            if proj:
+                return _createShellInstance(context, 'Project', name, proj._ref)
+
         projs = self.contextHelper.getAccessibleProjects(workspace='current')
         hits = [(proj,ref) for proj,ref in projs if str(proj) == str(name)]
         if not hits:
@@ -573,7 +614,8 @@ class Rally(object):
                       # and other UserProfile attributes
                      ]
 
-        users_resource = 'users?fetch=%s&query=&pagesize=%s&start=1&workspace=%s' % (",".join(user_attrs), MAX_PAGESIZE, workspace_ref)
+        users_resource = 'users?fetch=%s&query=&pagesize=%s&start=1&workspace=%s' % \
+                         (",".join(user_attrs), MAX_PAGESIZE, workspace_ref)
         full_resource_url = '%s/%s' % (self.service_url, users_resource)
         response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
@@ -754,7 +796,7 @@ class Rally(object):
 
 
     def _buildRequest(self, entity, fetch, query, order, kwargs):
-        pagesize   = PAGESIZE
+        pagesize   = MAX_PAGESIZE
         startIndex = START_INDEX
         limit      = MAX_ITEMS
 
@@ -900,7 +942,9 @@ class Rally(object):
                 projectScopeDown=True/False
         """
         context, resource, full_resource_url, limit = self._buildRequest(entity, fetch, query, order, kwargs)
-
+##
+##        print("full_resource_url: %s" % full_resource_url)
+##
         if self._log: 
             # unquote the resource for enhanced readability
             self._logDest.write('%s GET %s\n' % (timestamp(), unquote(resource)))
@@ -994,7 +1038,7 @@ class Rally(object):
         if not oid:
             formattedID = itemData.get('FormattedID', None)
             if not formattedID:
-                raise RallyRESTAPIError('An identifying field (Object or FormattedID) must be specified')
+                raise RallyRESTAPIError('An identifying field (ObjectID or FormattedID) must be specified')
             fmtIdQuery = 'FormattedID = "%s"' % formattedID
             response = self.get(entityName, fetch="ObjectID", query=fmtIdQuery, 
                                 workspace=workspace, project=project)
@@ -1004,7 +1048,6 @@ class Rally(object):
             target = response.next()
             oid = target.ObjectID
             itemData['ObjectID'] = oid
-
 
         resource = '%s/%s?key=%s' % (entityName.lower(), oid, auth_token) 
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
@@ -1132,7 +1175,7 @@ class Rally(object):
     def addCollectionItems(self, target, items):
         """
             Given a target which is a hydrated RallyEntity instance having a valid _type
-            and a items which is a list of hydrated Rally Entity instances
+            and a a list of hydrated Rally Entity instances (items)
             all of the same _type, construct a valid AC WSAPI collection url and 
             issue a POST request to that URL supplying the item refs in an appropriate
             JSON structure as the payload.
@@ -1418,6 +1461,7 @@ class Rally(object):
 
         state = self.get('State', fetch=True, query=criteria, project=None, instance=True)
         return state
+
 
     def getStates(self, entity):
         """
@@ -1705,7 +1749,6 @@ class Rally(object):
         return art_type, artifact
 
 
-
     def rankAbove(self, reference_artifact, target_artifact):
         """
             Given a reference_artifact and a target_artifact, make a Rally WSAPI PUT call
@@ -1749,6 +1792,7 @@ class Rally(object):
         update_item = {artifact_type:{'_ref':target_artifact.ref}}
         return self._postRankRequest(target_artifact, resource, update_item)
 
+
     def _rankTo(self, target_artifact, location):
         """
             Given a reference_artifact, make a Rally WSAPI POST call
@@ -1760,6 +1804,7 @@ class Rally(object):
         resource = '%s/%s?&rankTo=%s' % (artifact_type, target_artifact.oid, location) 
         update_item = {artifact_type:{'_ref':target_artifact.ref}}
         return self._postRankRequest(target_artifact, resource, update_item)
+
 
     def _postRankRequest(self, target_artifact, resource, update_item):
         """
@@ -1783,6 +1828,7 @@ class Rally(object):
             raise RallyRESTAPIError(problem % (target_artifact.FormattedID, response.errors[0]))
         return response
 
+
     def _ensureRankItemSanity(self, target_artifact, reference_artifact=None):
         """
             Ranking can only be done for an item that is an Artifact subclass.
@@ -1802,4 +1848,4 @@ class Rally(object):
 
         return target_artifact.__class__.__name__.lower()
 
-##################################################################################################
+####################################################################################################
