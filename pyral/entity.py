@@ -108,9 +108,10 @@ class Persistable(object):
             raise Exception('Unsupported attempt to retrieve context attribute')
 
         rallyEntityTypeName = self.__class__.__name__
-        entity_path, oid = self._ref.split(SLM_WS_VER)[-1].rsplit('/', 1)
-        if entity_path.startswith('portfolioitem/'):
-            rallyEntityTypeName = entity_path.split('/')[-1].capitalize()
+        PORTFOLIO_PREFIX = 'PortfolioItem_'
+        if rallyEntityTypeName.startswith(PORTFOLIO_PREFIX):
+            rallyEntityTypeName = re.sub(PORTFOLIO_PREFIX, '',
+                                         rallyEntityTypeName)
 
         faultTrigger = "getattr fault detected on %s instance for attribute: %s  (hydrated? %s)" % \
                        (rallyEntityTypeName, name, self._hydrated)
