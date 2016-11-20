@@ -39,7 +39,7 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.2.1) has been tested using requests 2.8.1.
+The most recent release of pyral (1.2.2) has been tested using requests 2.8.1.
 
 Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
@@ -67,7 +67,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 2, 1)
+   (1, 2, 2)
 
 
 
@@ -273,6 +273,12 @@ Prerequisites
 
 Versions
 --------
+
+   **1.2.2**
+       Allow for disambiguating Project amongst name duplications by means of using fully qualified path.
+       Incorporated suggestion on preserving case name of custom PortfolioItem sub-item.
+       Fixed discrepancy of docs versus code on default pagesize, now is actually 200 everywhere.
+       Fix location of download package in GitHub repo.
 
    **1.2.1**
        Added mention that the six package is required.

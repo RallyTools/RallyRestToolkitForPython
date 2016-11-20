@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Primary pyral classes and functions &mdash; pyral 1.2.1 documentation</title>
+  <title>Primary pyral classes and functions &mdash; pyral 1.2.2 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="pyral 1.2.1 documentation" href="index.html"/>
+    <link rel="top" title="pyral 1.2.2 documentation" href="index.html"/>
         <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html"/> 
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.2.1
+                1.2.2
               </div>
             
           
@@ -520,6 +520,11 @@ on how to generate an API Key and how to reset or delete an API Key.</p>
 <p class="last">If your Subscription administrator has set up your Rally Subscription as &#8220;SSO only&#8221;, then to use
 <strong>pyral</strong>, you must have your account added to the whitelist in Rally so that you can use either
 BasicAuth (username and password) or the API Key to authenticate to Rally.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">As of the 1.2.2 release, <strong>pyral</strong> offers a means of precisely identifying a Project whose name appears in multiple locations within the forest of Projects with a Workspace.  For example, your organization may have several &#8220;base&#8221; level Projects with sub-trees of Projects.  In this scenario, you might have multiple Projects named &#8216;AgileTeam-X&#8217; or &#8216;SalesPrep&#8217;.  By using a Project path component separator of &#8216;  // &#8216; (&lt;space&gt;&lt;slash&gt;&lt;slash&gt;&lt;space&gt;) you can specify the unambiguous and unique path to the specific Project of interest.  Example:  Omnibus // Metallic // Conductive // Copper // Wire .
+You only have to use this syntax to specify a particular Project if you have multiple instances of that Project that have the same name.  There is no provision for supporting the scenario where a Project of the same name exists in the same structural location.</p>
 </div>
 <dl class="class">
 <dt id="Rally">
@@ -1128,7 +1133,7 @@ with the content of the instance.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.2.1',
+            VERSION:'1.2.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

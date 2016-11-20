@@ -29,3 +29,5 @@ examples/defrevs.py
 examples/add_tcrs.py
 examples/updtag.py
 examples/addtags.py
+examples/allowedValues.py
+examples/get_milestones.py

@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 1)
+__version__ = (1, 2, 2)
 
 import sys
 import re
@@ -110,8 +110,11 @@ class Persistable(object):
         rallyEntityTypeName = self.__class__.__name__
         PORTFOLIO_PREFIX = 'PortfolioItem_'
         if rallyEntityTypeName.startswith(PORTFOLIO_PREFIX):
-            rallyEntityTypeName = re.sub(PORTFOLIO_PREFIX, '',
-                                         rallyEntityTypeName)
+            rallyEntityTypeName = re.sub(PORTFOLIO_PREFIX, '', rallyEntityTypeName)
+        # previous logic prior to 1.2.2
+        #entity_path, oid = self._ref.split(SLM_WS_VER)[-1].rsplit('/', 1)
+        #if entity_path.startswith('portfolioitem/'):
+        #    rallyEntityTypeName = entity_path.split('/')[-1].capitalize()
 
         faultTrigger = "getattr fault detected on %s instance for attribute: %s  (hydrated? %s)" % \
                        (rallyEntityTypeName, name, self._hydrated)
@@ -683,7 +686,15 @@ class SchemaItem(object):
             Exclude the basic Python object. 
             Return a list starting with the furthermost ancestor continuing on down to this Rally Type.
         """
-        klass = classFor[self.Name.replace(' ', '')]
+        try:
+            klass = classFor[self.Name.replace(' ', '')]
+        except:
+            pi_qualified_name = 'PortfolioItem_%s' % self.Name
+            try:
+                klass = classFor[pi_qualified_name.replace(' ', '')]
+            except:
+                raise InvalidRallyTypeNameError(self.Name)
+
         ancestors = []
         for ancestor in klass.mro():
             mo = re.search(r"'pyral\.entity\.(\w+)'", str(ancestor))
