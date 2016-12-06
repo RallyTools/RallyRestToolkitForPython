@@ -39,7 +39,7 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.2.2) has been tested using requests 2.8.1.
+The most recent release of pyral (1.2.3) has been tested using requests 2.8.1.
 
 Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
@@ -67,7 +67,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 2, 2)
+   (1, 2, 3)
 
 
 
@@ -274,6 +274,11 @@ Prerequisites
 Versions
 --------
 
+  **1.2.3**
+       Fixed restapi.py Rally.getAllowedValues method to accommodate custom fields
+       Allow attribute payload for put and post to have a list of pyral.Entity instances
+       as values for an attribute that is of type COLLECTION.
+
    **1.2.2**
        Allow for disambiguating Project amongst name duplications by means of using fully qualified path.
        Incorporated suggestion on preserving case name of custom PortfolioItem sub-item.
@@ -300,100 +305,7 @@ Versions
        Added examples/updtag.py script.
 
 
-   1.1.1 
-       Modified entity.py to allow it to pass back PortfolioItem sub type instances.
-       Modified rallyresp.py defect referencing non-existing req_type instance var by changing 
-       reference to request_type. 
-       Modified restapi.py to use user, dropped auth_user.
-       Modified restapi.py to be more defensive when user has no associated UserProfile.
-       Modified context.py to account for use of Cygwin in Pinger code.
-       Modified restapi.py to handle encoding of attachment content to match Rally expectations.
-       Modified restapi.py/entity.py to handle querying of SchedulableArtifact instances.
-       Modified restapi.py to handle querying and hydrating of PortfolioItem instances more completely.
-       Modified restapi.py/entity.py to provide rudimentary support for querying of RecycleBin entries.
-       Modified restapi.py and added search_utils.py to provide a search method for pyral Rally instances.
-       Modified rallyresp.py to better handle some boundary conditions when response body item counts 
-       differ from what is stated in the TotalResultCount.
-       Modified context.py to account for scenario where user's default workspace has no projects.
-       Modified restapi.py/getProject to return correct project.
-
-   1.1.0 
-       Introduction of support to use Rally API Key and rallyWorkset (supercedes rallySettings). 
-       Two relatively minor defects fixed dealing with internalizing environment
-       vars for initialization and in retrieving Rally entity attribute allowed values.
-
-   1.0.1
-       Patch to address defect with Rally WSAPI v2.0 projects collection endpoint
-       providing conflicting information.
-
-   1.0.0
-       Default WSAPI version in config is v2.0. This version is not compatible 
-       with Rally WSAPI version 1.x.  
-       Adjusted the RallyUrlBuilder (via RallyQueryFormatter) to be more resilient
-       with respect to many more "special" characters (non-alphanumeric).
-       Retrieving the meta data uses the v2.0 schema endpoint.
-       No longer support a version keyword argument when obtaining a Rally instance.
-
-   0.9.4
-       Adjusted Rally __init__ to accommodate using requests 0.x, 1.x, 2.x versions.
-       Factored out query building and fixed constructing multi condition queries.
-       Added internal convenience method to handle a list of refs to turn them into a
-       list of single key (_ref) hashes.
-       Added UserIterationCapacity to known entities.
-       Upped default WSAPI version in config to 1.43.
-       Support using of https_proxy / HTTPS_PROXY environment variables.
-       Refactored getAllUsers to include UserProfile information with fewer queries.
-
-   0.9.3
-       Fixed Pinger class to use correct ping options on Linux and Windows.
-       Updated exception catching and exception raising to Python 2.6/2.7 syntax.            
-
-   0.9.2
-       Fixed getProject to take optional project name argument.
-       Added HTTP header item in config.py to set Content-Type to 'application/json'.
-       Added recognition of verify_ssl_cert=True/False as keyword argment to
-       Rally constructor.  Explicit specification results in passing a
-       verify=True/False to the underlying requests package. This can be
-       useful when dealing with an expired SSL certificate.
-       Upped default WSAPI version in config.py to 1.37 to support dyna-types
-       (specifically PortfolioItem and sub-types).
-       Modified addAttachment to conform with non-backward compatible change in Rally WSAPI 
-       involving how an attachment is related to an artifact.
-       Fixed defect in calculating an Attachment file size (use pre-encoded rather than post-encoded size).
-
-       This release is intended as the final beta before a 1.0 release.
-
-   0.9.1
-       Upped default WSAPI version in config.py to 1.30
-       All entities that are subclasses of WorkspaceDomainObject now have a details method
-       that show the attribute values in an easy to read multiline format.
-       Dropped attempted discrimination of server value to determine if it is a name or an IPv4 address.
-       No longer look for http_proxy in environment, only https_proxy.
-       Introduced convenience methods dealing with attachments.
-       Corrected resource URL construction for the major ops (GET, PUT, POST, DEL)
-       when project=None specified (useful for Workspace spanning activities).
-
-   0.8.12
-       Fixed premature exercise of iterator in initial response
-    
-   0.8.11
-       Fixed inappropriate error message when initial connect attempt timed out. 
-       Message had stated that the target server did not speak the Rally WSAPI.  
-       Improved context handling with respect to workspace and project settings.
-    
-   0.8.10
-       Attempted to bolster proxy handling.  
-       Limited success as there is an outstanding issue in requests (urllib3) not 
-       implementing CONNECT for https over http.
-
-   0.8.9
-       initial attempt at providing proxy support
-
-   0.8.8  
-       added warn=True/False to Rally instantiation
-
-   0.8.7
-       Initial release on developer.rallydev.com
+   see the VERSIONS file for information pertaining to older releases
 
 
 TODO

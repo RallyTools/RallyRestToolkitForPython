@@ -41,10 +41,10 @@ def main(args):
     entity = args.pop(0)
     attributes  = args
     server, user, password, apikey, workspace, project = rallyWorkset(options)
-    #print(" ".join(["|%s|" % item for item in [server, user, password, workspace, project]]))
+    print(" ".join(["|%s|" % item for item in [server, user, password, apikey, workspace, project]]))
 
-    #rally = Rally(server, user, password, apikey=apikey)
-    rally = Rally(server, user, password, apikey=apikey, workspace=workspace, project=project, server_ping=False) 
+    #rally = Rally(server, user, password, apikey=apikey, workspace=workspace, project=project, server_ping=False)
+    rally = Rally(server, user, password, apikey=apikey,server_ping=False)
     rally.enableLogging('rally.hist.avl')  # name of file you want the logging to go to
 
     target = entity
