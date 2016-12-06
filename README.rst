@@ -274,7 +274,7 @@ Prerequisites
 Versions
 --------
 
-  **1.2.3**
+   **1.2.3**
        Fixed restapi.py Rally.getAllowedValues method to accommodate custom fields
        Allow attribute payload for put and post to have a list of pyral.Entity instances
        as values for an attribute that is of type COLLECTION.
