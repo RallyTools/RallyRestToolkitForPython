@@ -100,8 +100,14 @@ def test_getAllowedValues_query():
     avs = rally.getAllowedValues('Defect', 'State')
     assert len(avs) > 0
     assert len(avs) >= 4
-    assert u'Open' in avs
-    assert u'Closed' in avs
+    assert 'Open' in avs
+    assert 'Closed' in avs
+
+    avs = rally.getAllowedValues('Defect', 'PrimaryColor')
+    assert len(avs) > 0
+    assert len(avs) >= 6 and len(avs) <= 8
+    assert 'Red' in avs
+    assert 'Magenta' in avs
 
 def test_getAllowedValues_for_UserStory():
     """

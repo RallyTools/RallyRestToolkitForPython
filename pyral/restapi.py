@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 2)
+__version__ = (1, 2, 3)
 
 import sys, os
 import re
@@ -135,7 +135,7 @@ def getCollection(context, collection_url, **kwargs):
 from .rallyresp import RallyRESTResponse, ErrorResponse
 from .hydrate   import EntityHydrator
 from .context   import RallyContext, RallyContextHelper
-from .entity    import validRallyType
+from .entity    import validRallyType, DomainObject
 from .query_builder import RallyUrlBuilder
 
 __all__ = ["Rally", "getResourceByOID", "getCollection", "hydrateAnInstance", "RallyUrlBuilder"]
@@ -786,9 +786,11 @@ class Rally(object):
             obj_list = []
             for value in item_data[attr_name]:
                 # is value like "someentityname/34223214" ?
-                if type(value) == bytes and '/' in value \
+                if (type(value) == str or type(value) == bytes) and '/' in value \
                 and re.match('^\d+$', value.split('/')[-1]):
                     obj_list.append({"_ref" : value})  # transform to a dict instance
+                elif issubclass(value.__class__, DomainObject):
+                    obj_list.append({"_ref" : value.ref})  # put the ref in a dict instance
                 else:
                     obj_list.append(value)   # value is untouched
             item_data[attr_name] = obj_list
@@ -823,10 +825,13 @@ class Rally(object):
         elif fetch in ['false', 'False', False]:
             fetch = 'false'
             self.hydration = "shell"
-        elif type(fetch) == bytes and fetch.lower() != 'false':
+        elif (type(fetch) == bytes or type(fetch) == str) and fetch.lower() != 'false':
             self.hydration = "full"
+        elif type(fetch) == tuple and len(fetch) == 1 and fetch[0].count(',') > 0:
+            fetch = fetch[0]
         elif type(fetch) in [list, tuple]:
-            attr_info = self.validateAttributeNames(entity, dict([(attr_name,True) for attr_name in fetch])) 
+            field_dict = dict([(attr_name, True) for attr_name in fetch]) 
+            attr_info = self.validateAttributeNames(entity, field_dict) 
             fetch = ",".join(k for k in list(attr_info.keys()))
             self.hydration = "full"
 
@@ -1482,6 +1487,18 @@ class Rally(object):
 
 
     def getAllowedValues(self, entityName, attributeName, **kwargs):
+        """
+            Given an entity name (usually an Artifact sub-type like Story, Defect,
+            PortfolioItem/Feature, ...) and an attribute of the Artifact sub-type,
+            return the list of values currently defined for that field.  
+            In most cases, the expected context will be that the attributeName type
+            is STATE, RATING or less expected, STRING. 
+            While there are many STRING type attributes and they have allowedValues endpoints,
+            most of them will return a boolean equivalent of True, making this method 
+            less useful for those attributes.
+            The original intent of allowedValues was to define a relatively small set of 
+            values that would rarely be augmented.
+        """
 ##
 ##        print("%s attribute name: %s" % (entityName, attributeName))
 ##
@@ -1495,7 +1512,8 @@ class Rally(object):
 ##
             schema_item.complete(self.contextHelper.currentContext(), getCollection)
         matching_attrs = [attr for attr in schema_item.Attributes 
-                                if attr.ElementName == attributeName]
+                                if attr.ElementName == attributeName
+                                or attr.ElementName == 'c_{0}'.format(attributeName)]
         if not matching_attrs:
             return None
         attribute = matching_attrs[0]

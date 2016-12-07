@@ -1,11 +1,11 @@
 Metadata-Version: 1.1
 Name: pyral
-Version: 1.2.2
+Version: 1.2.3
 Summary: Python toolkit for Rally REST API
 Home-page: https://github.com/RallyTools/RallyRestToolkitForPython
 Author: Kip Lehman (Rally Software Development)
 License: BSD
-Download-URL: https://github.com/RallyTools/RallyRestToolkitForPython/raw/master/dist/pyral-1.2.2.zip
+Download-URL: https://github.com/RallyTools/RallyRestToolkitForPython/raw/master/dist/pyral-1.2.3.zip
 Description: This is the README file for pyral, a package implementing a 
         Pythonic interface to the Rally REST API
         
@@ -28,7 +28,7 @@ Description: This is the README file for pyral, a package implementing a
         The pyral package requires the use of Kenneth Reitz's requests package using version 2.0.0 or better.
         As of requests version 2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
         The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-        The most recent release of pyral (1.2.2) has been tested with requests 2.8.1.
+        The most recent release of pyral (1.2.3) has been tested with requests 2.8.1.
         The six module is also required.
         
         

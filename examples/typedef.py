@@ -72,8 +72,9 @@ def main(args):
     query = 'ElementName = "%s"' % target
 
     server, username, password, apikey, workspace, project = rallyWorkset(options)
+    print(" ".join(["|%s|" % item for item in [server, username, password, apikey, workspace, project]]))
     try:
-        rally = Rally(server, user=username, password=password, apikey=apikey, workspace=workspace)
+        rally = Rally(server, username, password, apikey=apikey, workspace=workspace, server_ping=False)
     except Exception as ex:
         errout(str(ex.args[0]))       
         sys.exit(1)

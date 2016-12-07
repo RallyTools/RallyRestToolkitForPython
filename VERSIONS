@@ -87,3 +87,20 @@
     allow instantiation option to work with only one workspace for better performance for Subscriptions with large number of Workspaces
     fix addAttachment handling to allow binary files and increase size limit to 50MB.
 
+1.2.1 - Oct 2016
+    Added mention that the six package is required.
+    Fixed context setup for proper handling when a user has no default workspace/project settings.
+    Corrected handling of allowedValues for attributes when the single allowedValue is a boolean value.
+    Added an allowedValues.py example script.
+
+1.2.2 - Nov 2016
+    Allow for disambiguating Project amongst name duplications by means of using fully qualified path.
+    Incorporated suggestion on preserving case name of custom PortfolioItem sub-item.
+    Fixed discrepancy of docs versus code on default pagesize, now is actually 200 everywhere.
+    Fix location of download package in GitHub repo.
+
+1.2.3 - Dec 2016
+    Fixed restapi.py Rally.getAllowedValues method to accommodate custom fields
+    Allow attribute payload for put and post to have a list of pyral.Entity instances
+    as values for an attribute that is of type COLLECTION.
+
