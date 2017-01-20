@@ -375,7 +375,7 @@ class RallyRESTResponse(object):
                 blurb = self.warnings[0]
             else:
                 blurb = "%sResult TotalResultCount: %d  Results: %s" % \
-                         (self.request_type, self.resultCount, self.content['Results'])
+                         (self.request_type, self.resultCount, self.content['QueryResult']['Results'])
             return "%s %s" % (self.status_code, blurb)
 
 ##################################################################################################
