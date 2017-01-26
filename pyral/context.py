@@ -21,6 +21,7 @@ from pprint import pprint
 
 # intra-package imports
 from .rallyresp import RallyRESTResponse
+from .restapi   import RallyRESTAPIError
 from .entity    import processSchemaInfo, getSchemaItem
 from .entity    import InvalidRallyTypeNameError, UnrecognizedAllowedValuesReference
 
@@ -41,9 +42,6 @@ PROJECT_PATH_ELEMENT_SEPARATOR = ' // '
 
 ##################################################################################################
 
-class RallyRESTAPIError(Exception): pass
-
-##################################################################################################
 
 class RallyContext(object):
 
