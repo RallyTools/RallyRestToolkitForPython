@@ -12,6 +12,13 @@ As of July 2015, the Rally Software Development company was acquired by CA Techn
 The Rally product itself has been rebranded as 'Agile Central'.  Over time, the documentation
 will transition from using the term 'Rally' to using 'Agile Central'.
 
+Warranty
+
+The Python Toolkit for Rally REST API is available on an as-is basis.
+
+Support
+
+CA Technologies does not actively maintain or support this toolkit. If you have a question or problem, we recommend posting it to Stack Overflow: http://stackoverflow.com/questions/ask?tags=rally
 
 .. contents::
 
