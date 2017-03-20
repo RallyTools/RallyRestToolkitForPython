@@ -339,8 +339,8 @@ Support
 
 The use of this package is on an *as-is* basis and there is no official support offered by CA Technologies.
 The author of this module periodically checks the GitHub repository issues for this package in the
- interests of providing defect fixes and small feature enhancements as time permits, but is not obligated to
- respond or take action.
+interests of providing defect fixes and small feature enhancements as time permits, but is not obligated to
+respond or take action.
 Posts to Stack Overflow (http://stackoverflow.com/questions/ask?tags=rally) are another avenue to engage
 others who have some exposure to ``pyral`` and might be able to offer useful information.
 
