@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 3)
+__version__ = (1, 2, 4)
 
 import sys, os
 import platform
@@ -782,17 +782,25 @@ class RallyContextHelper(object):
 
         if 'projectScopeUp' in kwargs:
             projectScopeUp = kwargs['projectScopeUp']
-            if projectScopeUp not in [0, False, 'false', 'False']:
+            if   projectScopeUp in [1, True, 'true', 'True']:
                 augments.append("projectScopeUp=true")
+            elif projectScopeUp in [0, False, 'false', 'False']:
+                augments.append("projectScopeUp=false")
             else:
                 augments.append("projectScopeUp=false")
+        else:
+            augments.append("projectScopeUp=false")
 
         if 'projectScopeDown' in kwargs:
             projectScopeDown = kwargs['projectScopeDown']
-            if projectScopeDown not in [1, True, 'true', 'True']:
-                augments.append("projectScopeDown=false")
-            elif projectScopeDown in [0, False, 'false', 'False']:
+            if   projectScopeDown in [1, True, 'true', 'True']:
                 augments.append("projectScopeDown=true")
+            elif projectScopeDown in [0, False, 'false', 'False']:
+                augments.append("projectScopeDown=false")
+            else:
+                augments.append("projectScopeDown=false")
+        else:
+            augments.append("projectScopeDown=false")
 
         if not workspace and project:
             self.context = self.operatingContext

@@ -13,7 +13,7 @@ import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.2.3"
+VERSION      = "1.2.4"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -87,10 +87,10 @@ def main(args):
     pifi = save_pkg_info(".", 'PKG-INFO', pkg_info)
 
     tarball = make_tarball(PACKAGE_NAME, VERSION, AUX_FILES, EXAMPLES, DOC_FILES)
-    print tarball
+    print(tarball)
 
     zipped = make_zipfile(PACKAGE_NAME, VERSION, AUX_FILES, EXAMPLES, DOC_FILES)
-    print zipped
+    print(zipped)
 
     zf = zipfile.ZipFile(zipped, 'r')
     for info in zf.infolist():

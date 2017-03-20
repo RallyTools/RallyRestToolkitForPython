@@ -104,3 +104,10 @@
     Allow attribute payload for put and post to have a list of pyral.Entity instances
     as values for an attribute that is of type COLLECTION.
 
+1.2.4 - Mar 2017
+    Fixed handling of projectScopeUp and projectScopeDown keyword arguments in Rally.get operation.
+    Fixed Peristable's __getattr__ method to more properly handle getting the salient item
+    out of a response to a getResourceByOID request when the item retrieved is a PortfolioItem sub-type.
+    Fixed defect in SchemaItemAttribute where self._allowed_values_resolved was not always set.
+    Fixed defect in RallyRestResponse in __repr__ method where on a response that has no qualifying items
+    an attempt is made to get the Results out of the returned response without going through the QueryResult key.

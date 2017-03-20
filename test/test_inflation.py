@@ -9,7 +9,7 @@ from pyral import Rally, RallyRESTAPIError
 
 ##################################################################################################
 
-from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD, DEFAULT_WORKSPACE, DEFAULT_PROJECT
+from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD, DEFAULT_WORKSPACE, DEFAULT_PROJECT
 from rally_targets import ALTERNATE_WORKSPACE
 
 ##################################################################################################
@@ -21,7 +21,7 @@ def test_default_connection():
         Return status should be OK, 
         Rally._wpCacheStatus should be 'minimal'
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
     response = rally.get('Project', fetch=False, limit=10)
     assert response != None
     assert response.status_code == 200
@@ -37,7 +37,7 @@ def test_default_workspace_with_named_default_project():
         _inflated value should be 'minimal'
     """
     project = 'Sample Project'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                   project=project)
     response = rally.get('Project', fetch=False)
     assert response != None
@@ -53,7 +53,7 @@ def test_default_workspace_non_default_valid_project():
         _inflated value should be 'minimal'
     """
     project = 'My Project'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                   project=project)
     response = rally.get('Project', fetch=False)
     assert response != None
@@ -71,7 +71,7 @@ def test_default_workspace_non_valid_project():
     problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
     expectedErrMsg = problem % (DEFAULT_WORKSPACE, project)
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
+        rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                       project=project)
     actualErrVerbiage = excinfo.value.args[0] 
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -84,7 +84,7 @@ def test_named_default_workspace_use_default_project():
         without specifying the name of project.
         Inquire after connecting as to what the current project is.
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                   workspace=DEFAULT_WORKSPACE)
     project = rally.getProject()
     assert project != None
@@ -99,7 +99,7 @@ def test_named_default_workspace_named_default_project():
         Return status should be OK, the Rally instance's RallyContextHelper
         _inflated value should be 'minimal'
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                   workspace=DEFAULT_WORKSPACE, project=DEFAULT_PROJECT)
     response = rally.get('Project')
     assert response != None
@@ -115,7 +115,7 @@ def test_named_default_workspace_named_valid_project():
         _inflated value should be 'minimal'
     """
     project   = 'My Project'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                   workspace=DEFAULT_WORKSPACE, project=project)
     response = rally.get('Project')
     assert response != None
@@ -133,7 +133,7 @@ def test_named_default_workspace_named_invalid_project():
     problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
     expectedErrMsg = problem % (DEFAULT_WORKSPACE, project)
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
+        rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                       workspace=DEFAULT_WORKSPACE, project=project)
     actualErrVerbiage = excinfo.value.args[0] 
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -153,14 +153,14 @@ def test_named_non_default_workspace_use_default_project():
                 in the named non-default workspace
               
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, 
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                   workspace=ALTERNATE_WORKSPACE, warn=False)
     ai_proj = rally.getProject()
     assert str(ai_proj.Name) == 'Sample Project'  
     assert rally._wpCacheStatus() == 'narrow'
 
     #alt_project   = "Modus Operandi"
-    #rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, 
+    #rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
     #              workspace=ALTERNATE_WORKSPACE,  project=alt_project, warn=False)
     #ai_proj = rally.getProject()
     #assert str(ai_proj.Name) == alt_project # is valid only in ALTERNATE_WORKSPACE
@@ -175,7 +175,7 @@ def test_named_non_default_workspace_named_valid_project():
     """
     workspace   = "Kip's Playground"
     alt_project = 'Modus Operandi'
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD, workspace=workspace, warn=False)
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=workspace, warn=False)
     response = rally.get('Project')
     assert response != None
     assert response.status_code == 200
@@ -197,7 +197,7 @@ def test_named_non_default_workspace_named_invalid_project():
     problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
     expectedErrMsg = problem % (ALTERNATE_WORKSPACE, project)
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD,
+        rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
                   workspace=workspace, project=project, timeout=10)
         response = rally.get('Project', fetch=False, limit=5)
     actualErrVerbiage = excinfo.value.args[0] 

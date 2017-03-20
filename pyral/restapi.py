@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 3)
+__version__ = (1, 2, 4)
 
 import sys, os
 import re
@@ -1672,7 +1672,8 @@ class Rally(object):
         if response.errors or response.resultCount != 1:
             return None
         att_content = response.next()
-        att.Content = base64.decodestring(att_content.Content)  # maybe further txfm to Unicode ?
+        #att.Content = base64.decodestring(att_content.Content)  # maybe further txfm to Unicode ?
+        att.Content = base64.decodebytes(att_content.Content)  # maybe further txfm to Unicode ?
         return att
 
 
