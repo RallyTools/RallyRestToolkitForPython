@@ -11,7 +11,7 @@ RallyRESTAPIError = pyral.context.RallyRESTAPIError
 
 ##################################################################################################
 
-from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
+from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT
 
 EXAMPLE_ATTACHMENT_CONTENT = "The quck brown fox eluded the lumbering sloth\n"
@@ -36,7 +36,7 @@ def retrieveAttachment(rally, artifact, attachmentFileName):
 def test_add_attachment():
     """
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
     # find a Project with some US artifacts
     # pick one with no attachments
     # create an attachment file (or choose a smallish file with a commonly used suffix)
@@ -79,7 +79,7 @@ def test_add_attachment():
 def test_get_attachment():
     """
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
     candidate_story = "US2" # was this in trial -> "US80"
     target = 'FormattedID = "%s"' % candidate_story
     response = rally.get("UserStory", fetch=True, query=target, project=None)
@@ -108,7 +108,7 @@ def test_add_tcr_attachment():
         Create an attachment
         Attach the Attachment to the TestCaseResult item
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
     wksp = rally.getWorkspace()
     assert wksp.Name == DEFAULT_WORKSPACE
 
@@ -147,7 +147,7 @@ def test_detach_attachment():
     """
         This is the counterpart test for test_add_attachment
     """
-    rally = Rally(server=TRIAL, user=TRIAL_USER, password=TRIAL_PSWD)
+    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
     candidate_story = "US1"   # "US96"
     target = 'FormattedID = "%s"' % candidate_story
 
@@ -191,8 +191,8 @@ def x_test_replace_attachments():
     #expectedErrMsg = "hostname '%s' non-existent or unreachable" % bogus_server
     #with py.test.raises(RallyRESTAPIError) as excinfo:
     #    rally = Rally(server=bogus_server,
-    #                        user=TRIAL_USER, 
-    #                        password=TRIAL_PSWD)
+    #                        user=AGICEN_USER,
+    #                        password=AGICEN_PSWD)
     #actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     #assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     #assert actualErrVerbiage == expectedErrMsg

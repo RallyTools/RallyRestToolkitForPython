@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 3)
+__version__ = (1, 2, 4)
 
 import sys
 import re
@@ -407,7 +407,7 @@ class RallyRESTResponse(object):
                 blurb = self.warnings[0]
             else:
                 blurb = "%sResult TotalResultCount: %d  Results: %s" % \
-                         (self.request_type, self.resultCount, self.content['Results'])
+                         (self.request_type, self.resultCount, self.content['QueryResult']['Results'])
             return "%s %s" % (self.status_code, blurb)
 
 ##################################################################################################

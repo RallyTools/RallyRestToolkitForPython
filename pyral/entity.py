@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 2, 3)
+__version__ = (1, 2, 4)
 
 import sys
 import re
@@ -147,7 +147,14 @@ class Persistable(object):
 ##
                 raise UnreferenceableOIDError("%s OID %s" % (rallyEntityTypeName, self.oid))
 
-            item = response.content[rallyEntityTypeName]
+            if rallyEntityTypeName == 'PortfolioItem':
+                actual_item_name = list(response.content.keys())[0]
+                if entity_name.split('/')[1].lower() == actual_item_name.lower():
+                    item = response.content[actual_item_name]
+                else:  # this would be unexpected, but the above getResourceByOID seems to have been successful...
+                    item = response.content[actual_item_name]  # take what we're given...
+            else:
+                item = response.content[rallyEntityTypeName]
             hydrateAnInstance(self._context, item, existingInstance=self)
             self._hydrated = True
 
@@ -753,10 +760,11 @@ class SchemaItemAttribute(object):
         self.AllowedValues    =  attr_info['AllowedValues']
         self.MaxLength        =  attr_info['MaxLength']
         self.MaxFractionalDigits = attr_info['MaxFractionalDigits']
+        self._allowed_values           =  False
+        self._allowed_values_resolved  =  False
         if self.AllowedValues and type(self.AllowedValues) == dict:
             self.AllowedValues = str(self.AllowedValues['_ref']) # take the ref as value
             self._allowed_values = True
-            self._allowed_values_resolved = False
         elif self.AllowedValues and type(self.AllowedValues) == list:
             buffer = []
             for item in self.AllowedValues:
@@ -768,8 +776,6 @@ class SchemaItemAttribute(object):
             self.AllowedValues = buffer[:]
             self._allowed_values = True
             self._allowed_values_resolved = True
-        else:
-            self._allowed_values = False
 
     def __lt__(self, other):
         return self.ElementName < other.ElementName

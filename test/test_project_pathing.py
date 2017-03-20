@@ -9,7 +9,7 @@ from pyral import Rally, RallyUrlBuilder
 
 ##################################################################################################
 
-from rally_targets import TRIAL, TRIAL_USER, TRIAL_PSWD
+from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
 from rally_targets import YETI_USER, YETI_PSWD
 from rally_targets import BOONDOCKS_WORKSPACE, BOONDOCKS_PROJECT
 from rally_targets import API_KEY
@@ -63,7 +63,7 @@ def test_mep_project_as_payload_project_value():
         The resulting created item must have a Project value that is a ref to the
         m-e-p Project.
     """
-    rally = Rally(server=TRIAL, user=YETI_USER, password=YETI_PSWD)
+    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD)
 
 
 def test_obtain_instance_using_mep_project():
@@ -74,7 +74,7 @@ def test_obtain_instance_using_mep_project():
         A subsequent call on the instance to obtain the current Project should
         return a pyral entity for Project that has a ref for the correct m-e-p Project.
     """
-    rally = Rally(server=TRIAL, user=YETI_USER, password=YETI_PSWD, 
+    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD,
                   workspace=BOONDOCKS_WORKSPACE, project=DEEP_DUPE)
     cur_project = rally.getProject()
     assert cur_project.Name == DEEP_DUPE
@@ -86,7 +86,7 @@ def test_get_duplicated_project():
         issue a query to retrieve Project items that match a specific project name that occurs
         in more than one location in the tree of Projects under the target Workspace.
     """
-    rally = Rally(server=TRIAL, user=YETI_USER, password=YETI_PSWD, 
+    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD,
                   workspace=BOONDOCKS_WORKSPACE, project=BOONDOCKS_PROJECT)
     response = rally.get('Project', fetch=False, query='Name = "%s"' % DUPLICATED_PROJECT, limit=10)
     assert response.status_code == 200
@@ -109,7 +109,7 @@ def test_get_distant_duplicated_project():
         multi element path for the Project it should do so and should return the
         correct value when asked for the current Project.
     """
-    rally = Rally(server=TRIAL, user=YETI_USER, password=YETI_PSWD, 
+    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD,
                   workspace=BOONDOCKS_WORKSPACE, project=BOONDOCKS_PROJECT)
 
     dupey_project = rally.getProject(DEEP_DUPE)
@@ -139,7 +139,7 @@ def test_use_mep_project_as_default_scoped_project():
         A subsequent call on the instance to obtain the current Project should
         return a pyral entity for Project that has a ref for the correct m-e-p Project.
     """
-    rally = Rally(server=TRIAL, user=YETI_USER, password=YETI_PSWD, 
+    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD,
                   workspace=BOONDOCKS_WORKSPACE, project=DEEP_DUPE)
     target_story = 'US3'
     result = rally.get('Story', fetch="FormattedID,Name,Description,State,Project", projectScopeUp=False)
@@ -162,7 +162,7 @@ def test_use_mep_project_as_project_keyword_scoped():
         A subsequent request the instance specifying a valid m-e-p Project in the Workspace
         should return an item scoped to that m-e-p Project.
     """
-    rally = Rally(server=TRIAL, user=YETI_USER, password=YETI_PSWD, 
+    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD,
                   workspace=BOONDOCKS_WORKSPACE, project=BOONDOCKS_PROJECT)
     target_story = 'US3'
     result = rally.get('Story', fetch="FormattedID,Name,Description,State,Project", 
@@ -191,7 +191,7 @@ def test_set_mep_project_used_as_default_in_request_operation():
         The result should be an Artifact whose projet matches the target duplicate Project
         leaf name and ref exactly.
     """
-    rally = Rally(server=TRIAL, user=YETI_USER, password=YETI_PSWD, 
+    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD,
                   workspace=BOONDOCKS_WORKSPACE, project=BOONDOCKS_PROJECT)
     rally.setProject(DEEP_DUPE)
     target_story = 'US3'
@@ -218,7 +218,7 @@ def test_mep_project_in_request_payload():
         The result should be the creation of the BuildDefinition item
         for which the Project attribute has a ref to the targeted m-e-p Project.
     """
-    rally = Rally(server=TRIAL, user=YETI_USER, password=YETI_PSWD,
+    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD,
                   workspace=BOONDOCKS_WORKSPACE, project=BOONDOCKS_PROJECT)
     workspace = rally.getWorkspace()
     dd_project = rally.getProject(DEEP_DUPE)
