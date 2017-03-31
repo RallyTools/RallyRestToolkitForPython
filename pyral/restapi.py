@@ -3,25 +3,26 @@
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 14 support for multi-element-path Project names, couple of minor defect fixes
+#          round 15 support for multi-threading for large query result sets
+#                   and non sub admins can get all user info
 #          notable dependencies:
-#               requests v2.8.1 or better
+#               requests v2.12.5 or better
 #
 ###################################################################################################
 
-__version__ = (1, 2, 4)
+__version__ = (1, 3, 0)
 
 import sys, os
 import re
-import types
-import time
 import six
-from   six.moves.urllib.parse import quote, unquote
 import json
 import string
 import base64
 from operator import itemgetter
-from pprint   import pprint
+
+#from   six.moves.urllib.parse import quote, unquote
+quote   = six.moves.urllib.parse.quote
+unquote = six.moves.urllib.parse.unquote
 
 import requests   
 
@@ -193,12 +194,12 @@ class Rally(object):
         self._logDest     = None
         self._logAttrGet  = False
         self._warn        = warn
-        self._server_ping = True   # this is the default for 1.2.0
+        self._server_ping = False   # this is the default for 1.3.0
         if 'RALLY_PING' in os.environ:
-            if os.environ['RALLY_PING'].lower() in ['f', 'false', 'n', 'no', '0']:
-                self._server_ping = False
-        if server_ping == False:
-            self._server_ping = False
+            if os.environ['RALLY_PING'].lower() in ['t', 'true', 'y', 'yes', '1']:
+                self._server_ping = True
+        if server_ping == True:
+            self._server_ping = True
         self.isolated_workspace = isolated_workspace
         config = {}
         if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
@@ -614,8 +615,9 @@ class Rally(object):
                       # and other UserProfile attributes
                      ]
 
-        users_resource = 'users?fetch=%s&query=&pagesize=%s&start=1&workspace=%s' % \
-                         (",".join(user_attrs), MAX_PAGESIZE, workspace_ref)
+        user_inclusion = "((Disabled = true) OR (Disabled = false))"
+        users_resource = 'users?fetch=%s&query=%s&pagesize=%s&start=1&workspace=%s' % \
+                         (",".join(user_attrs), user_inclusion, MAX_PAGESIZE, workspace_ref)
         full_resource_url = '%s/%s' % (self.service_url, users_resource)
         response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
@@ -858,7 +860,7 @@ class Rally(object):
         return context, resource, full_resource_url, limit
 
 
-    def _getRequestResponse(self, context, request_url, limit):
+    def _getRequestResponse(self, context, request_url, limit, **kwargs):
         response = None  # in case an exception gets raised in the session.get call ...
         try:
             # a response has status_code, content and data attributes
@@ -901,7 +903,8 @@ class Rally(object):
             response = RallyRESTResponse(self.session, context, request_url, errorResponse, self.hydration, 0)
             return response 
 
-        response = RallyRESTResponse(self.session, context, request_url, response, self.hydration, limit)
+        response = RallyRESTResponse(self.session, context, request_url, response, 
+                                     self.hydration, limit, **kwargs)
 
         if self._log:
             if response.status_code == HTTP_REQUEST_SUCCESS_CODE:
@@ -955,7 +958,13 @@ class Rally(object):
             self._logDest.write('%s GET %s\n' % (timestamp(), unquote(resource)))
             self._logDest.flush()
 
-        response = self._getRequestResponse(context, full_resource_url, limit)
+        threads = 0
+        if 'threads' in kwargs:
+            if kwargs['threads'] in [1,2,3,4,5,6,7,8]:
+                threads = kwargs['threads']
+            else:
+                threads = 2
+        response = self._getRequestResponse(context, full_resource_url, limit, threads=threads)
             
         if kwargs and 'instance' in kwargs and kwargs['instance'] == True and response.resultCount == 1:
             return response.next()
@@ -1866,5 +1875,7 @@ class Rally(object):
                 raise RallyRESTAPIError(problem % (target_artifact.__class__.__name__))
 
         return target_artifact.__class__.__name__.lower()
+
+AgileCentral = Rally
 
 ####################################################################################################
