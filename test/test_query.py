@@ -10,8 +10,8 @@ try:
 except:
     from urllib.parse import unquote
 
-from pyral import Rally
 import pyral
+from pyral import Rally
 
 InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
 from pyral.query_builder import RallyUrlBuilder, RallyQueryFormatter
@@ -477,7 +477,7 @@ def test_query_using_project_scoping_options():
 
     rally.setProject(SCOPE_ROOT_PROJECT)
 
-    response = rally.get('Story', fetch="FormattedID,Name,State")
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project")
     #assert response.resultCount == 11  # pre 1.2.4 behavior
     assert response.resultCount == 4  # expected 1.2.4 behavior
 

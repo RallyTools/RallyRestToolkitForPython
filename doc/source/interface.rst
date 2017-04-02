@@ -131,7 +131,7 @@ Example use::
     print " ".join(['|%|' % opt for opt in [server, user, password, apikey, workspace, project]]
 
 
-    % python basic.py --config=current --rallyProject="Livestock Mgmt" --ping=no
+    % python basic.py --config=current --rallyProject="Livestock Mgmt" --ping=yes
 
     |rally1.rallydev.com| |wiley@acme.com| |*****| |*****| |General Products Umbrella| |Livestock Mgmt|
 
@@ -289,16 +289,14 @@ To instantiate a Rally object, you'll need to provide these arguments:
                     and the default project for the user is not in the workspace specified.  
                     Under those conditions, the project is changed to the first project
                     (alphabetic ordering) in the list of projects for the specified workspace.
-        * server_ping     (True or False, default in v1.2.0 is True)
+        * server_ping     (True or False, default in v1.3.0 is False)
                    Specifies whether a ping attempt will be made to confirm network connectivity
                    to the Rally server prior to making a Rally WSAPI REST request.
                    Organizations may have disabled the ability to make ICMP requests so the ping
                    attempt may fail even though there is network connectivity to the Rally server.
                    For this reason, the use of the ping=True option is discouraged going forward.
-                   The next minor point release of pyral (v1.3.0) will have the default value 
-                   for this option inverted to be False.  
                    The the ping operation itself will be dropped in the next major release (2.0.0).
-        * isolated_workspace  (True or False, default in v1.2.0 is False)
+        * isolated_workspace  (True or False, default in v1.2.0 + is False)
                    Specifies that the Rally instance will only be used for interacting with 
                    a single workspace (either the user's default workspace or the named workspace).
                    Using isolated_workspace=True provides performance benefits for a subscription
@@ -330,7 +328,7 @@ To instantiate a Rally object, you'll need to provide these arguments:
         You only have to use this syntax to specify a particular Project if you have multiple instances of that Project that have the same name.  There is no provision for supporting the scenario where a Project of the same name exists in the same structural location. 
 
 
-.. py:class:: Rally (server, user=None, password=None, apikey=None, workspace=None, project=None, warn=True, server_ping=True)
+.. py:class:: Rally (server, user=None, password=None, apikey=None, workspace=None, project=None, warn=True, server_ping=False)
 
 Examples::
 

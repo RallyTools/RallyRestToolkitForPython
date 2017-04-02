@@ -39,7 +39,7 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.2.4) has been tested using requests 2.8.1.
+The most recent release of pyral (1.3.0) has been tested using requests 2.12.5.
 
 Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
@@ -67,7 +67,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 2, 4)
+   (1, 3, 0)
 
 
 
@@ -262,10 +262,10 @@ The item names in config files **are** case sensitive.
 Prerequisites
 -------------
 
- * Python 3.5 (this package not tested with earlier versions of Python 3.x) OR
- * Python 2.6 or 2.7 (2.7 is preferred)
+ * Python 3.5 or 3.6 (this package not tested with earlier versions of Python 3.x) OR
+ * Python 2.6 or 2.7 (of these two, 2.7 is preferred)
  * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy),
-   requests 2.8.1 is recommended.
+   requests 2.12.5 is recommended.
  * The six_ package.
 
 .. _requests: http://github.com/kennethreitz/requests
@@ -273,6 +273,13 @@ Prerequisites
 
 Versions
 --------
+   **1.3.0**
+       Introduced automatic multi-threading for Rally.get operation to speed up retrieval of large
+       result sets.  Implemented step two of the Pinger deprecation plan, ping=False is the new default.
+       Increased default page size to 500.  Maximum useful page size limit is 2000 but 1000 seems
+       to be the sweet spot for multithreading requests.
+       Fixed Rally.getAllUsers so that non subscription admin accounts can see the user list.
+       Updated recommendation for version of requests package.
 
    **1.2.4**
        Fixed handling of projectScopeUp and projectScopeDown keyword arguments for get operation.
@@ -339,8 +346,8 @@ Support
 
 The use of this package is on an *as-is* basis and there is no official support offered by CA Technologies.
 The author of this module periodically checks the GitHub repository issues for this package in the
- interests of providing defect fixes and small feature enhancements as time permits, but is not obligated to
- respond or take action.
+interests of providing defect fixes and small feature enhancements as time permits, but is not obligated to
+respond or take action.
 Posts to Stack Overflow (http://stackoverflow.com/questions/ask?tags=rally) are another avenue to engage
 others who have some exposure to ``pyral`` and might be able to offer useful information.
 
