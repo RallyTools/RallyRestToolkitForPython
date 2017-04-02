@@ -70,12 +70,13 @@ TEST_FILES = ['test/rally_targets.py',
               'test/test_convenience.py',
               'test/test_inflation.py',
               'test/test_field_access.py',
-              'test/test_query.py',
-              'test/test_search.py',
-              'test/test_wksprj_setting.py',
-              'test/test_attachments.py',
               'test/test_workspaces.py'
+              'test/test_wksprj_setting.py',
+              'test/test_query.py',
+              'test/test_big_query.py',
+              'test/test_attachments.py',
               'test/test_ranking.py'
+              'test/test_search.py',
              ]
 
 ################################################################################

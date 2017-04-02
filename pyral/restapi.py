@@ -950,10 +950,7 @@ class Rally(object):
                 projectScopeDown=True/False
         """
         context, resource, full_resource_url, limit = self._buildRequest(entity, fetch, query, order, kwargs)
-##
-##        print("full_resource_url: %s" % full_resource_url)
-##
-        if self._log: 
+        if self._log:
             # unquote the resource for enhanced readability
             self._logDest.write('%s GET %s\n' % (timestamp(), unquote(resource)))
             self._logDest.flush()

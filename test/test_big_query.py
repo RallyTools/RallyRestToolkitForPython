@@ -10,9 +10,9 @@ try:
 except:
     from urllib.parse import unquote
 
-from pyral import Rally
-from pyral.cargotruck import CargoTruck
 import pyral
+Rally = pyral.Rally
+from pyral.cargotruck import CargoTruck
 
 ##################################################################################################
 
@@ -67,3 +67,4 @@ def test_cargo_truck_init():
     assert len(cgo.orders) == 2
     assert cgo.orders[0] == 'a'
     assert cgo.num_loaders == 2
+    print("at the end of the rope")

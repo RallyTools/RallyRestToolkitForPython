@@ -196,7 +196,7 @@ class RallyRESTResponse(object):
             self.max_threads = 1
             reference_population = min(self._limit, self.resultCount)
             if self._page and self.resultCount > 1000 and self.pageSize < reference_population:
-                pop_thread_limit = [(  1*self.pageSize,  1)
+                pop_thread_limit = [(  1*self.pageSize,  1),
                                     (  4*self.pageSize,  2),
                                     ( 10*self.pageSize,  4),
                                     ( 20*self.pageSize,  8),
