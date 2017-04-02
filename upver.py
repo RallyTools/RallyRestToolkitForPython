@@ -53,6 +53,7 @@ FILE_VERSION_LOC = [
       ('pyral/__init__.py'         ,  r'^__version__ = \((\d, \d+, \d+)\)'),
       ('pyral/config.py'           ,  r'^__version__ = \((\d, \d+, \d+)\)'),
       ('pyral/context.py'          ,  r'^__version__ = \((\d, \d+, \d+)\)'),
+      ('pyral/cargotruck.py'       ,  r'^__version__ = \((\d, \d+, \d+)\)'),
       ('pyral/entity.py'           ,  r'^__version__ = \((\d, \d+, \d+)\)'),
       ('pyral/hydrate.py'          ,  r'^__version__ = \((\d, \d+, \d+)\)'),
       ('pyral/query_builder.py'    ,  r'^__version__ = \((\d, \d+, \d+)\)'),

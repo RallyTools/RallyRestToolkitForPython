@@ -14,7 +14,7 @@ import sys
 from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '1.2.4'
+VERSION       = '1.3.0'
 OFFICIAL_NAME = 'Python toolkit for Rally REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (Rally Software Development)'

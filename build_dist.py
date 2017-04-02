@@ -13,7 +13,7 @@ import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.2.4"
+VERSION      = "1.3.0"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -70,12 +70,13 @@ TEST_FILES = ['test/rally_targets.py',
               'test/test_convenience.py',
               'test/test_inflation.py',
               'test/test_field_access.py',
-              'test/test_query.py',
-              'test/test_search.py',
-              'test/test_wksprj_setting.py',
-              'test/test_attachments.py',
               'test/test_workspaces.py'
+              'test/test_wksprj_setting.py',
+              'test/test_query.py',
+              'test/test_big_query.py',
+              'test/test_attachments.py',
               'test/test_ranking.py'
+              'test/test_search.py',
              ]
 
 ################################################################################
@@ -104,7 +105,7 @@ def main(args):
 
     # got to use Python 2.7 to be able to run python setup.py bdist_wheel
     os.system('/usr/local/bin/python setup.py bdist_wheel')
-    wheel_file = "pyral-%s-py2.py3-none-any.whl" % VERSION
+    wheel_file = "%s-%s-py2.py3-none-any.whl" % (PACKAGE_NAME, VERSION)
     # the wheel_file gets written into the dist  subdir by default, no need for a copy...
 
     store_packages('dist',  [tarball])

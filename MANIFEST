@@ -7,6 +7,7 @@ rallyfire.py
 pyral/__init__.py
 pyral/config.py
 pyral/context.py
+pyral/cargotruck.py
 pyral/entity.py
 pyral/hydrate.py
 pyral/rallyresp.py

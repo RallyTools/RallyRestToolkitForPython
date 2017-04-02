@@ -132,7 +132,7 @@ def test_nonexistent_server():
         and do the relevant assertions.
     """
     bogus_server = "bogus.notreally.bug"
-    expectedErrMsg = "ping: cannot resolve %s: Unknown host" % bogus_server
+    expectedErrMsg = "Target Rally host: '%s' non-existent or unreachable" % bogus_server
     #print expectedErrMsg
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bogus_server)
@@ -140,7 +140,7 @@ def test_nonexistent_server():
     #print actualErrVerbiage
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     #assert actualErrVerbiage == expectedErrMsg
-    assert expectedErrMsg in actualErrVerbiage
+    assert expectedErrMsg == actualErrVerbiage
     time.sleep(1)
 
 
@@ -173,31 +173,34 @@ def test_non_rally_server():
     """
     non_rally_server = 'www.irs.gov'
     non_rally_server = 'www.espn.com'
-    expectedErrMsg = "404 Target host: '%s' is either not reachable or doesn't support the Rally WSAPI" % non_rally_server
-    timeoutMsg     = "Request timed out on attempt to reach %s" % non_rally_server
-    #expectedErrMsg = "Response for request: .+//%s/.+ either was not JSON content or was an invalidly formed"
-    #expectedErrMsg = "Response for request: .*%s.* either was not JSON content or was an invalidly formed\/incomplete JSON structure" % non_rally_server
-    #with py.test.raises(RallyResponseError) as excinfo:
+
+    # With the default behavior of 1.3.0, no ping is attempted
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=non_rally_server, timeout=5)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    #print("     expectedErrMsg: %s" % expectedErrMsg)
-    #print("  actualErrVerbiage: %s" % actualErrVerbiage)
-    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    #assert excinfo.value.__class__.__name__ == 'RallyResponseError'
+    expectedErrMsg = "Target host: '%s' is either not reachable or " % non_rally_server
     ex_value_mo = re.search(expectedErrMsg, actualErrVerbiage)
     assert ex_value_mo is not None
 
+    # but if specified explicitly, the ping is attempted
+    with py.test.raises(RallyRESTAPIError) as excinfo:
+        rally = Rally(server=non_rally_server, server_ping=True, timeout=5)
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    expectedErrMsg = "404 Target host: '%s' is either not reachable or doesn't support the Rally WSAPI" % non_rally_server
+    timeoutMsg     = "Request timed out on attempt to reach %s" % non_rally_server
+    ex_value_mo = re.search(expectedErrMsg, actualErrVerbiage)
+    assert ex_value_mo is not None
+    #expectedErrMsg = "Response for request: .+//%s/.+ either was not JSON content or was an invalidly formed"
+    #expectedErrMsg = "Response for request: .*%s.* either was not JSON content or was an invalidly formed\/incomplete JSON structure" % non_rally_server
+    #with py.test.raises(RallyResponseError) as excinfo:
+
+    #print("     expectedErrMsg: %s" % expectedErrMsg)
+    #print("  actualErrVerbiage: %s" % actualErrVerbiage)
+    #assert excinfo.value.__class__.__name__ == 'RallyResponseError'
     time.sleep(1)
 
-    # Don't think the following really tests anything useful ...
-    #with py.test.raises(RallyResponseError) as excinfo:
-    #    rally = Rally(server=non_rally_server,
-    #                       user=AGICEN_USER,
-    #                       password=AGICEN_PSWD, timeout=5)
-    #actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    #assert excinfo.value.__class__.__name__ == 'RallyResponseError'
-    #time.sleep(1)
+
 
 def test_bad_server_spec():
     """
@@ -208,24 +211,30 @@ def test_bad_server_spec():
         The status_code in the response must indicate a non-success condition.
     """
     bad_server = "ww!w.\fo,o\r\n.c%om"
-    expectedErrMsg = "Unknown host"
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bad_server, timeout=3)
-        response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    assert 'cannot resolve' in actualErrVerbiage and 'Unknown host' in actualErrVerbiage
+    expectedErrMsg = "Target Rally host: 'ww!w.\x0co,o\r\n.c%om' non-existent or unreachable"
+    assert actualErrVerbiage == expectedErrMsg
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=bad_server, 
-                            user=AGICEN_USER,
-                            password=AGICEN_PSWD, timeout=3)
-        response = rally.get('Project', fetch=False, limit=5)
-    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+        rally = Rally(server=bad_server, server_ping=True, timeout=3)
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    assert 'cannot resolve' in actualErrVerbiage and 'Unknown host' in actualErrVerbiage
+    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    expectedErrMsg = "ping: cannot resolve ww!w"
+    assert expectedErrMsg in actualErrVerbiage
     time.sleep(1)
+
+    #with py.test.raises(RallyRESTAPIError) as excinfo:
+    #    rally = Rally(server=bad_server,
+    #                        user=AGICEN_USER,
+    #                        password=AGICEN_PSWD, timeout=3)
+    #    response = rally.get('Project', fetch=False, limit=5)
+    #actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    #assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    #assert 'cannot resolve' in actualErrVerbiage and 'Unknown host' in actualErrVerbiage
+    #time.sleep(1)
 
 def test_insuff_credentials():
     """
