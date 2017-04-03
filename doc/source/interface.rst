@@ -377,13 +377,14 @@ Core REST methods and CRUD aliases
             - fetch = True/False or "List,Of,Attributes,We,Are,Interested,In"
             - query = 'FieldName = "some value"' or ['EstimatedHours = 10', 'MiddleName != "Shamu"', 'Name contains "foogelhorn pop-tarts"',  etc.]
             - instance = True/False (defaults to False)
-            - pagesize = n  (defaults to 200)
+            - pagesize = n  (defaults to 500)
             - start = n  (defaults to 1)
             - limit = n  (defaults to no limit)
             - workspace = workspace_name (defaults to current workspace selected)
             - project = project_name (defaults to current project selected)
             - projectScopeUp = True/False (defaults to False)
             - projectScopeDown True/False (defaults to False)
+            - threads = n (value of 1 insures single-threading, any other value is advisory)
 
         Returns a RallyRESTResponse object that has errors and warnings attributes that
         should be checked before any further operations on the object are attempted.
@@ -475,7 +476,7 @@ Core REST methods and CRUD aliases
      keyword arguments:
          - projectScopeUp = true/false (defaults to false)
          - projectScopeDown = true/false (defaults to false)
-         - pagesize = n  (defaults to 200)
+         - pagesize = n  (defaults to 500)
          - start = n  (defaults to 1)
          - limit = n  (defaults to no limit)
 
