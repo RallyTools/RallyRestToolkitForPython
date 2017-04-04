@@ -1529,11 +1529,12 @@ class Rally(object):
             avs = attribute.resolveAllowedValues(context, getCollection)
             if type(avs) not in collection_types:
                 return [avs]
-            return [av.StringValue for av in avs]
+            return [getattr(av, 'LocalizedStringValue', getattr(av, 'StringValue')) for av in avs]
 
         # suggested by Scott Vitale to address issue in Rally WebServices response 
         #   (sometimes value is present, other times StringValue must be used)
-        return [av.StringValue for av in attribute.AllowedValues]
+        avs = attribute.AllowedValues
+        return [getattr(av, 'LocalizedStringValue', getattr(av, 'StringValue')) for av in avs]
 
 
     def addAttachment(self, artifact, filename, mime_type='text/plain'):

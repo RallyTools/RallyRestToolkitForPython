@@ -674,13 +674,26 @@ class SchemaItem(object):
         """
             This method is used to trigger the complete population of all Attributes,
             in particular the resolution of refs to AllowedValues that are present after
-            the instantation of each Attribute.  
+            the instantiation of each Attribute.
+            There are some standard attributes whose type is COLLECTION that are not to be
+            treated as "allowedValue" eligible; for the reason that the collections may be
+            arbitrarily large and more frequently updated as opposed to more "normal"
+            attributes like 'State', 'Severity', etc.
             Sequence through each Attribute and call resolveAllowedValues for each Attribute.
         """
         if self.completed:
             return True
-        for attribute in sorted([attr for attr in self.Attributes if attr.AttributeType in ['RATING', 'STATE']]):
+        for attribute in sorted([attr for attr in self.Attributes if attr.AttributeType in ['RATING', 'STATE', 'COLLECTION']]):
             # only an attribute whose AttributeType is RATING or STATE will have allowedValues
+            if attribute.ElementName in [ 'Attachments', 'Changesets', 'Children', 'Collaborators',
+                                          'Defects', 'DefectSuites', 'Discussion', 'Duplicates',
+                                          'Release', 'Iteration', 'Milestones',
+                                          'Owner', 'Predecessors', 'Project', 'SubmittedBy',
+                                          'Successors', 'Tasks', 'TestCases', 'TestSets', 'Results',
+                                          'Steps',
+                                          'Tags',
+                                          ]:
+                continue
             attribute.resolveAllowedValues(context, getCollection)
 
         self.completed = True
