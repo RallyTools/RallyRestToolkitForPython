@@ -618,7 +618,7 @@ classFor = { 'Persistable'             : Persistable,
 
 for entity_name, entity_class in list(classFor.items()):
     _rally_entity_cache[entity_name] = entity_name
-entity_class = None # reset...
+entity_class = None  # reset...
 
 # now stuff whatever other classes we've defined in this module that aren't already in 
 # _rally_entity_cache
@@ -678,22 +678,25 @@ class SchemaItem(object):
             There are some standard attributes whose type is COLLECTION that are not to be
             treated as "allowedValue" eligible; for the reason that the collections may be
             arbitrarily large and more frequently updated as opposed to more "normal"
-            attributes like 'State', 'Severity', etc.
+            attributes like 'State', 'Severity', etc.,  AND in many cases the values are
+            on a per specific artifact/entity basis rather than values eligible for the
+            artifact/entity on a workspace-wide basis.
             Sequence through each Attribute and call resolveAllowedValues for each Attribute.
         """
+        NON_ELIGIBLE_ALLOWED_VALUES_ATTRIBUTES = \
+            [ 'Artifacts', 'Attachments', 'Changesets', 'Children', 'Collaborators',
+              'Defects', 'DefectSuites', 'Discussion', 'Duplicates', 'Milestone',
+              'Iteration', 'Release', 'Project',
+              'Owner', 'SubmittedBy', 'Predecessors', 'Successors',
+              'Tasks', 'TestCases', 'TestSets', 'Results', 'Steps', 'Tags',
+            ]
+
         if self.completed:
             return True
         for attribute in sorted([attr for attr in self.Attributes if attr.AttributeType in ['RATING', 'STATE', 'COLLECTION']]):
             # only an attribute whose AttributeType is RATING or STATE will have allowedValues
-            if attribute.ElementName in [ 'Attachments', 'Changesets', 'Children', 'Collaborators',
-                                          'Defects', 'DefectSuites', 'Discussion', 'Duplicates',
-                                          'Release', 'Iteration', 'Milestones',
-                                          'Owner', 'Predecessors', 'Project', 'SubmittedBy',
-                                          'Successors', 'Tasks', 'TestCases', 'TestSets', 'Results',
-                                          'Steps',
-                                          'Tags',
-                                          ]:
-                continue
+            if attribute.ElementName in NON_ELIGIBLE_ALLOWED_VALUES_ATTRIBUTES:
+               continue
             attribute.resolveAllowedValues(context, getCollection)
 
         self.completed = True
@@ -760,8 +763,8 @@ class SchemaItemAttribute(object):
         self.ElementName   = str(attr_info['ElementName'])
         self.Name          = str(attr_info['Name'])
         self.AttributeType = str(attr_info['AttributeType'])
-        self.Subscription  =     attr_info.get('Subscription', None) # not having 'Subscription' should be rare
-        self.Workspace     =     attr_info.get('Workspace', None) # apparently only custom fields will have a 'Workspace' value
+        self.Subscription  =     attr_info.get('Subscription', None)  # not having 'Subscription' should be rare
+        self.Workspace     =     attr_info.get('Workspace', None)     # apparently only custom fields will have a 'Workspace' value
         self.Custom        =     attr_info['Custom']
         self.Required      =     attr_info['Required']
         self.ReadOnly      =     attr_info['ReadOnly']

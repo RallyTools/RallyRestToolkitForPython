@@ -111,6 +111,11 @@ def main(args):
     store_packages('dist',  [tarball])
     store_packages('dists', [tarball, zipped])
 
+    doc_dir = 'doc/build/html'
+    doc_files = [path.split('/')[-1] for path in DOC_FILES if path.startswith(doc_dir)]
+    webdocs_zip = make_online_docs_zipfile(PACKAGE_NAME, VERSION, doc_dir, doc_files)
+    store_packages('dist', webdocs_zip)
+
 ################################################################################
 
 def store_packages(subdir, files):
@@ -217,6 +222,25 @@ def make_tarball(pkg_name, pkg_version, base_files, example_files, doc_files):
     tf.close()
 
     return tgz_name
+
+################################################################################
+
+def make_online_docs_zipfile(pkg_name, pkg_version, doc_dir, doc_files):
+    zf_name = '%s-%s.docs.html.zip' % (pkg_name, pkg_version)
+    cur_dir = os.getcwd()
+    os.chdir(doc_dir)
+    zf = zipfile.ZipFile(zf_name, 'w')
+    for fn in doc_files:
+        zf.write(fn, fn, zipfile.ZIP_DEFLATED)
+    zf.close()
+
+    ##  The following is what has been done before on the command line, when you
+    ## get the recursion opt on the above logic you can drop the os.system call
+    os.system("zip %s -r %s" % (zf_name, " ".join(doc_files)))
+    ##
+
+    os.chdir(cur_dir)
+    return zf_name
 
 ################################################################################
 
