@@ -35,11 +35,20 @@ The git repository is available at https://github.com/RallyTools/RallyRestToolki
 Installation
 ````````````
 
+If you want to pull down the latest release from standard Python package repository
+(pypi.python.org) and install the package, the easiest way is to use
+pip, the Python package installation utility.::
+
+    pip install pyral
+
+Alternatively, if you've got the tar.gz or zip distribution on hand, as long as you've
+satisfied the dependency requirements on the six and requests packages, you can use
+the setup mechanism.
 Obtain the requests_ package and install it according to that package's directions.
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.3.0) has been tested using requests 2.12.5.
+The most recent release of pyral (1.3.1) has been tested using requests 2.12.5.
 
 Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
@@ -67,7 +76,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 3, 0)
+   (1, 3, 1)
 
 
 

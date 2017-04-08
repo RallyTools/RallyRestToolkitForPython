@@ -68,7 +68,13 @@ FILE_VERSION_LOC = [
 
 def main(args):
     cleanup = False
-    if args[0] == "--clean":
+    if not args:
+        print("ERROR: no version indentifier provided")
+        print(USAGE)
+        sys.exit(1)
+    options = [opt for opt in args if opt.startswith('-')]
+    if options and options[0] == "--clean":
+        args.remove("--clean")
         cleanup = True
 
     filenames = set([filename for filename, rx in FILE_VERSION_LOC])

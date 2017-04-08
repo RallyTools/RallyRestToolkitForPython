@@ -618,8 +618,23 @@ pyral.Rally instance convenience methods
 
 .. method:: getAllowedValues(entityName, attributeName [,workspace=None])
 
-    Given an entityName and and attributeName (assumed to be valid for the entityName)
+    Given an entityName and and attributeName (which must be valid for the entityName)
     issue a request to obtain a list of allowed values for the attribute.
+    For standard attributes in the set of ('Artifacts', 'Attachments', 'Changesets',
+    'Children', 'Collaborators', 'Defects', 'DefectSuites', 'Discussion', 'Duplicates',
+    'Milestones', 'Iteration', 'Release', 'Project', 'Owner', 'SubmittedBy', 'Predecessors',
+    'Successors', 'Tasks', 'TestCases', 'TestSets', 'Results', 'Steps', 'Tags') this method
+    will return a [True] value if the entity identified by entityName actually has the
+    attributeName specified.  To get the values associated with the attributes in the
+    aforementioned list you should use the **get()** method with the entityName as the first
+    argument and the singular form of the attribute name as the target of the fetch
+    keyword argument.  Of course, this only works with an entity that exists (such as
+    'Attachment' or 'Milestone' or 'Tag') but not entities named above like 'Discussion',
+    or 'SubmittedBy' or 'Result'.
+    For custom fields though there is no such "disqualification", that is the return
+    value will be either a single value or a list of values regardless of whether the
+    values are relevant to every such entity type or the values are a list that can vary
+    per specific instance of the entity type.
 
 .. method:: addAttachment(artifact, filename, mime_type='text/plain')
 

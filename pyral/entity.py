@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 3, 0)
+__version__ = (1, 3, 1)
 
 import sys
 import re
@@ -685,7 +685,7 @@ class SchemaItem(object):
         """
         NON_ELIGIBLE_ALLOWED_VALUES_ATTRIBUTES = \
             [ 'Artifacts', 'Attachments', 'Changesets', 'Children', 'Collaborators',
-              'Defects', 'DefectSuites', 'Discussion', 'Duplicates', 'Milestone',
+              'Defects', 'DefectSuites', 'Discussion', 'Duplicates', 'Milestones',
               'Iteration', 'Release', 'Project',
               'Owner', 'SubmittedBy', 'Predecessors', 'Successors',
               'Tasks', 'TestCases', 'TestSets', 'Results', 'Steps', 'Tags',
@@ -784,12 +784,13 @@ class SchemaItemAttribute(object):
         elif self.AllowedValues and type(self.AllowedValues) == list:
             buffer = []
             for item in self.AllowedValues:
-                aav = AllowedAttributeValue(0, item['StringValue'], None, None)
-                aav.Name        = item['StringValue']
-                aav.StringValue = item['StringValue']
+                name = item.get('LocalizedStringValue', item['StringValue'])
+                aav = AllowedAttributeValue(0, name, None, None)
+                aav.Name        = name
+                aav.StringValue = name
                 aav._hydrated   = True
                 buffer.append(aav)
-            self.AllowedValues = buffer[:]
+            self.AllowedValues   = buffer[:]
             self._allowed_values = True
             self._allowed_values_resolved = True
 
@@ -879,7 +880,7 @@ def getEntityName(candidate):
 
     official_name = candidate
     hits = [path for entity, path in list(_rally_entity_cache.items())
-                    if '/' in path and path.split('/')[1] == candidate]
+                  if '/'  in path and path.split('/')[1] == candidate]
 ##
 ##    print("for candidate |%s|  hits: |%s|" % (candidate, hits))
 ##
