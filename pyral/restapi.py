@@ -228,7 +228,7 @@ class Rally(object):
         if 'headers' in kwargs:
             for header_name, header_value in kwargs['headers'].items():
                 matching_header = [key for key in self.session.headers
-                                       if key.replace(INTEGRATION_HEADER_PREFIX).lower() == header_value.lower()]
+                                       if key.replace(INTEGRATION_HEADER_PREFIX, '').lower() == header_name.lower()]
                 if matching_header:
                     self.session.headers[matching_header[0]] = header_value
         if self.apikey:
