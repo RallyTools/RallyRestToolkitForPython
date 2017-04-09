@@ -7,13 +7,14 @@
 #############################################################################
 
 import sys, os
+import types
 import tarfile
 import zipfile
 import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.3.0"
+VERSION      = "1.3.1"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -71,6 +72,7 @@ TEST_FILES = ['test/rally_targets.py',
               'test/test_inflation.py',
               'test/test_field_access.py',
               'test/test_workspaces.py'
+              'test/test_allowed_values.py',
               'test/test_wksprj_setting.py',
               'test/test_query.py',
               'test/test_big_query.py',
@@ -103,20 +105,29 @@ def main(args):
         reduction_pct = int(reduction_fraction * 100)
         print("%-52.52s   %6d (%2d%%)" % (info.filename, info.compress_size, reduction_pct))
 
-    # got to use Python 2.7 to be able to run python setup.py bdist_wheel
-    os.system('/usr/local/bin/python setup.py bdist_wheel')
+    # in order to get a wheel file built, the python used has to have available a setup.py
+    # that exposes a bdist_wheel method, which in versions of python beyond 2.7, like 3.5., 3.6, etc
+    # you'll need to have done a 'pip install wheel' which sets up the necessary infrastructure.
+    os.system('python setup.py bdist_wheel')
     wheel_file = "%s-%s-py2.py3-none-any.whl" % (PACKAGE_NAME, VERSION)
     # the wheel_file gets written into the dist  subdir by default, no need for a copy...
 
     store_packages('dist',  [tarball])
     store_packages('dists', [tarball, zipped])
 
+    doc_dir = 'doc/build/html'
+    doc_files = [path.split('/')[-1] for path in DOC_FILES if path.startswith(doc_dir)]
+    webdocs_zip = make_online_docs_zipfile(PACKAGE_NAME, VERSION, doc_dir, doc_files)
+    webdocs_location = os.path.join(doc_dir, webdocs_zip)
+    store_packages('dist', [webdocs_location])
+
 ################################################################################
 
 def store_packages(subdir, files):
     for file in files:
         if os.path.exists(file):
-            shutil.copy(file, '%s/%s' % (subdir, file))
+            leaf_name = os.path.basename(file)
+            shutil.copy(file, '%s/%s' % (subdir, leaf_name))
         else:
             problem = "No such file found: {0} to copy into {1}".format(file, subdir)
             sys.stderr.write(problem)
@@ -124,7 +135,6 @@ def store_packages(subdir, files):
 ################################################################################
 
 def package_meta(filename):
-    import imp
 
     if not os.path.exists(filename):
         raise Exception('No such file: %s' % filename)
@@ -136,8 +146,8 @@ def package_meta(filename):
     assignments = "\n".join(consties)
 
     #print(assignments)
-    pkgcfg = imp.new_module('pkgcfg')
-    exec(assignments, pkgcfg.__dict__)
+    pkgcfg = types.ModuleType('pkgcfg')  # make a new empty module, internally.. no file created
+    exec(assignments, pkgcfg.__dict__)   # now populate the module with our assignments
     sys.modules['pkgcfg'] = pkgcfg
     return pkgcfg
 
@@ -217,6 +227,25 @@ def make_tarball(pkg_name, pkg_version, base_files, example_files, doc_files):
     tf.close()
 
     return tgz_name
+
+################################################################################
+
+def make_online_docs_zipfile(pkg_name, pkg_version, doc_dir, doc_files):
+    zf_name = '%s-%s.docs.html.zip' % (pkg_name, pkg_version)
+    cur_dir = os.getcwd()
+    os.chdir(doc_dir)
+    zf = zipfile.ZipFile(zf_name, 'w')
+    for fn in doc_files:
+        zf.write(fn, fn, zipfile.ZIP_DEFLATED)
+    zf.close()
+
+    ##  The following is what has been done before on the command line, when you
+    ## get the recursion opt on the above logic you can drop the os.system call
+    os.system("zip %s -r %s" % (zf_name, " ".join(doc_files)))
+    ##
+
+    os.chdir(cur_dir)
+    return zf_name
 
 ################################################################################
 

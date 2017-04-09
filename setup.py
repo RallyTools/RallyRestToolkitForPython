@@ -14,10 +14,10 @@ import sys
 from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '1.3.0'
-OFFICIAL_NAME = 'Python toolkit for Rally REST API'
+VERSION       = '1.3.1'
+OFFICIAL_NAME = 'Python toolkit for Agile Central (Rally) REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
-AUTHOR        = 'Kip Lehman (Rally Software Development)'
+AUTHOR        = 'Kip Lehman (CA Technologies, AgileCentral Business Unit)'
 AUTHOR_EMAIL  = 'klehman@rallydev.com'
 LICENSE       = 'BSD'
 GITHUB_SITE   = 'https://github.com/RallyTools/RallyRestToolkitForPython'
@@ -27,7 +27,7 @@ SHORT_DESCRIPTION = 'README.short'
 FULL_DESCRIPTION  = 'README.rst'
 KEYWORDS      = ['rally', 'agilecentral', 'api']
 
-MINIMUM_REQUESTS_VERSION = '2.8.1'  # test this with 2.12.5
+MINIMUM_REQUESTS_VERSION = '2.10.1'  # 2.12.5 is recommended
 REQUIRES      = ['six', 
                  'requests>=%s' % MINIMUM_REQUESTS_VERSION
                 ]
@@ -42,6 +42,7 @@ CLASSIFIERS   =  [ 'Development Status :: 5 - Production/Stable',
                    'Programming Language :: Python :: 2.6',
                    'Programming Language :: Python :: 2.7',
                    'Programming Language :: Python :: 3.5',
+                   'Programming Language :: Python :: 3.6',
                    'Topic :: Internet :: WWW/HTTP',
                    'Topic :: Software Development :: Libraries',
                  ]
@@ -60,5 +61,5 @@ setup(name=PACKAGE,
       keywords=KEYWORDS,
       install_requires=REQUIRES,
       classifiers=CLASSIFIERS
-    )
+     )
         

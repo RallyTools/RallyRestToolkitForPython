@@ -91,34 +91,6 @@ def test_getAllUsers_query():
     assert len(everybody) > 0
     assert len([user for user in everybody if user.DisplayName == 'da Kipster']) == 1
 
-def test_getAllowedValues_query():
-    """
-        Using a known valid Rally server and known valid access credentials,
-        request allowed value information for the State field of the Defect entity.
-    """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
-    avs = rally.getAllowedValues('Defect', 'State')
-    assert len(avs) > 0
-    assert len(avs) >= 4
-    assert 'Open' in avs
-    assert 'Closed' in avs
-
-    avs = rally.getAllowedValues('Defect', 'PrimaryColor')
-    assert len(avs) > 0
-    assert len(avs) >= 6 and len(avs) <= 8
-    assert 'Red' in avs
-    assert 'Magenta' in avs
-
-def test_getAllowedValues_for_UserStory():
-    """
-        Using a known valid Rally server and known valid access credentials,
-        request allowed value information for the Milestones field of the UserStory entity.
-    """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
-    avs = rally.getAllowedValues('Story', 'Milestones')
-    assert len(avs) == 1
-    assert avs == [True]
-
 def test_typedef():
     """
         Using a known valid Rally server and known valid access credentials,
@@ -174,7 +146,6 @@ def test_getCollection():
 #test_getProject()
 #test_getUserInfo_query()
 #test_getAllUsers_query()
-#test_getAllowedValues_query()
 #test_typedef
 #test_getStates
 #test_getCollection
