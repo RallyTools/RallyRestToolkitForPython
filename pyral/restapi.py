@@ -1509,7 +1509,7 @@ class Rally(object):
             While there are many STRING type attributes and they have allowedValues endpoints,
             most of them will return a boolean equivalent of True, making this method 
             less useful for those attributes.
-            There can are be  COLLECTION type attributes that have allowedValues endpoints,
+            There are COLLECTION type attributes that have allowedValues endpoints,
             including several standard attributes on the most common entity types.
             Most of the standard attributes having an allowedValues endpoint that is a
             COLLECTION url are disqualified from the processing the actually chases the

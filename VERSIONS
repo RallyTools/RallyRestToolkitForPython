@@ -125,5 +125,8 @@
     Disqualifed a group of standard attributes whose allowedValue is of type COLLECTION when retrieving 
     allowed values in SchemaItem.complete(). This is primarily relevant only to attributes defined as
     Drop Down List or Multi Value Drop Down List. 
+    Fixed mechanism of supplying headers dict to Rally instantiation so that the X-RallyIntegration*
+    headers get overwritten with supplied headers (for name, vendor, version) to better identify the 
+    origin of the integration.
     Updated official name to reference Agile Central in setup.py, mention threads keyword arg in the
     get method in the the interface.rst file.

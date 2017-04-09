@@ -289,13 +289,13 @@ To instantiate a Rally object, you'll need to provide these arguments:
                     and the default project for the user is not in the workspace specified.  
                     Under those conditions, the project is changed to the first project
                     (alphabetic ordering) in the list of projects for the specified workspace.
-        * server_ping     (True or False, default in v1.3.0 is False)
+        * server_ping     (True or False, default in v1.3.0 + is False)
                    Specifies whether a ping attempt will be made to confirm network connectivity
                    to the Rally server prior to making a Rally WSAPI REST request.
                    Organizations may have disabled the ability to make ICMP requests so the ping
                    attempt may fail even though there is network connectivity to the Rally server.
                    For this reason, the use of the ping=True option is discouraged going forward.
-                   The the ping operation itself will be dropped in the next major release (2.0.0).
+                   The ping operation itself will be dropped in the next major release (2.0.0).
         * isolated_workspace  (True or False, default in v1.2.0 + is False)
                    Specifies that the Rally instance will only be used for interacting with 
                    a single workspace (either the user's default workspace or the named workspace).
@@ -310,6 +310,7 @@ To instantiate a Rally object, you'll need to provide these arguments:
                    workspaces, using isolated_workspace=False results in a request to AgileCentral
                    for each workspace, which can result in a noticeable lag before the instantiation
                    statement returns a ready-for-use Rally instance.
+        * headers  dict with entries for name, vendor, version of software/integration using this package.
 
     If you use an apikey value, any user name and password you provide is not considered, the connection
     attempt will only use the apikey.
@@ -332,7 +333,7 @@ To instantiate a Rally object, you'll need to provide these arguments:
 
 Examples::
 
-    rally = Rally('rally1.rallydev.com', 'chester@corral.com', 'bAbYF@cerZ')
+    rally = Rally('rally1.rallydev.com', 'chester@corral.com', 'bAbYF@cerZ', server_ping=True)
 
     rally = Rally(server='rally1.rallydev.com', user='mchunko', password='mySEk^et')
 
@@ -342,7 +343,7 @@ Examples::
 
     rally = Rally(server, apikey="_some-more-numbers", workspace='RockLobster', project='Fence Posts')
 
-    rally = Rally('rally1.rallydev.com', 'chester@corral.com', 'bAbYF@cerZ', server_ping=False)
+    rally = Rally('rally1.rallydev.com', 'chester@corral.com', 'bAbYF@cerZ', headers={'name': 'Fungibles Goods Burn Up/Down', 'vendor': 'Archimedes', 'version': '1.2.3'})
 
 
 

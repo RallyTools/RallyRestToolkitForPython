@@ -476,13 +476,13 @@ Under those conditions, the project is changed to the first project
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>server_ping     (True or False, default in v1.3.0 is False)</dt>
+<dt>server_ping     (True or False, default in v1.3.0 + is False)</dt>
 <dd><p class="first last">Specifies whether a ping attempt will be made to confirm network connectivity
 to the Rally server prior to making a Rally WSAPI REST request.
 Organizations may have disabled the ability to make ICMP requests so the ping
 attempt may fail even though there is network connectivity to the Rally server.
 For this reason, the use of the ping=True option is discouraged going forward.
-The the ping operation itself will be dropped in the next major release (2.0.0).</p>
+The ping operation itself will be dropped in the next major release (2.0.0).</p>
 </dd>
 </dl>
 </li>
@@ -503,6 +503,8 @@ for each workspace, which can result in a noticeable lag before the instantiatio
 statement returns a ready-for-use Rally instance.</p>
 </dd>
 </dl>
+</li>
+<li><p class="first">headers  dict with entries for name, vendor, version of software/integration using this package.</p>
 </li>
 </ul>
 </dd>
@@ -530,7 +532,7 @@ You only have to use this syntax to specify a particular Project if you have mul
 <dd></dd></dl>
 
 <p>Examples:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">server_ping</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;mchunko&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;mySEk^et&#39;</span><span class="p">)</span>
 
@@ -540,7 +542,7 @@ You only have to use this syntax to specify a particular Project if you have mul
 
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">apikey</span><span class="o">=</span><span class="s2">&quot;_some-more-numbers&quot;</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s1">&#39;RockLobster&#39;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s1">&#39;Fence Posts&#39;</span><span class="p">)</span>
 
-<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">server_ping</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Fungibles Goods Burn Up/Down&#39;</span><span class="p">,</span> <span class="s1">&#39;vendor&#39;</span><span class="p">:</span> <span class="s1">&#39;Archimedes&#39;</span><span class="p">,</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.2.3&#39;</span><span class="p">})</span>
 </pre></div>
 </div>
 <div class="section" id="core-rest-methods-and-crud-aliases">
