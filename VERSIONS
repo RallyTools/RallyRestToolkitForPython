@@ -111,3 +111,19 @@
     Fixed defect in SchemaItemAttribute where self._allowed_values_resolved was not always set.
     Fixed defect in RallyRestResponse in __repr__ method where on a response that has no qualifying items
     an attempt is made to get the Results out of the returned response without going through the QueryResult key.
+
+1.3.0 - Apr 2017
+    Introduced automatic multi-threading for Rally.get operation to speed up retrieval of large
+    result sets.  Implemented step two of the Pinger deprecation plan, ping=False is the new default.
+    Increased default page size to 500.  Maximum useful page size limit is 2000 but 1000 seems
+    to be the sweet spot for multithreading requests.
+    Fixed Rally.getAllUsers so that non subscription admin accounts can see the user list.
+    Updated recommendation for version of requests package.
+
+1.3.1 - Apr 2017
+    Adjusted getAllowedValues so that custom fields with an allowedValues endpoint get resolved.
+    Disqualifed a group of standard attributes whose allowedValue is of type COLLECTION when retrieving 
+    allowed values in SchemaItem.complete(). This is primarily relevant only to attributes defined as
+    Drop Down List or Multi Value Drop Down List. 
+    Updated official name to reference Agile Central in setup.py, mention threads keyword arg in the
+    get method in the the interface.rst file.

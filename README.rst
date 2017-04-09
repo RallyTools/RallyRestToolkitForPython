@@ -282,6 +282,14 @@ Prerequisites
 
 Versions
 --------
+   **1.3.1**
+       Adjusted getAllowedValues so that custom fields with an allowedValues endpoint get resolved.
+       Disqualifed a group of standard attributes whose allowedValue is of type COLLECTION when retrieving 
+       allowed values in SchemaItem.complete(). This is primarily relevant only to attributes defined as
+       Drop Down List or Multi Value Drop Down List.
+       Updated official name to reference Agile Central in setup.py, mention threads keyword arg in the
+       get method in the the interface.rst file.
+
    **1.3.0**
        Introduced automatic multi-threading for Rally.get operation to speed up retrieval of large
        result sets.  Implemented step two of the Pinger deprecation plan, ping=False is the new default.
