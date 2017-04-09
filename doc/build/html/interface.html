@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Primary pyral classes and functions &mdash; pyral 1.3.0 documentation</title>
+  <title>Primary pyral classes and functions &mdash; pyral 1.3.1 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="pyral 1.3.0 documentation" href="index.html"/>
+    <link rel="top" title="pyral 1.3.1 documentation" href="index.html"/>
         <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html"/> 
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.3.0
+                1.3.1
               </div>
             
           
@@ -476,13 +476,13 @@ Under those conditions, the project is changed to the first project
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>server_ping     (True or False, default in v1.3.0 is False)</dt>
+<dt>server_ping     (True or False, default in v1.3.0 + is False)</dt>
 <dd><p class="first last">Specifies whether a ping attempt will be made to confirm network connectivity
 to the Rally server prior to making a Rally WSAPI REST request.
 Organizations may have disabled the ability to make ICMP requests so the ping
 attempt may fail even though there is network connectivity to the Rally server.
 For this reason, the use of the ping=True option is discouraged going forward.
-The the ping operation itself will be dropped in the next major release (2.0.0).</p>
+The ping operation itself will be dropped in the next major release (2.0.0).</p>
 </dd>
 </dl>
 </li>
@@ -503,6 +503,8 @@ for each workspace, which can result in a noticeable lag before the instantiatio
 statement returns a ready-for-use Rally instance.</p>
 </dd>
 </dl>
+</li>
+<li><p class="first">headers  dict with entries for name, vendor, version of software/integration using this package.</p>
 </li>
 </ul>
 </dd>
@@ -530,7 +532,7 @@ You only have to use this syntax to specify a particular Project if you have mul
 <dd></dd></dl>
 
 <p>Examples:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">server_ping</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;mchunko&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;mySEk^et&#39;</span><span class="p">)</span>
 
@@ -540,7 +542,7 @@ You only have to use this syntax to specify a particular Project if you have mul
 
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">apikey</span><span class="o">=</span><span class="s2">&quot;_some-more-numbers&quot;</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s1">&#39;RockLobster&#39;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s1">&#39;Fence Posts&#39;</span><span class="p">)</span>
 
-<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">server_ping</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Fungibles Goods Burn Up/Down&#39;</span><span class="p">,</span> <span class="s1">&#39;vendor&#39;</span><span class="p">:</span> <span class="s1">&#39;Archimedes&#39;</span><span class="p">,</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.2.3&#39;</span><span class="p">})</span>
 </pre></div>
 </div>
 <div class="section" id="core-rest-methods-and-crud-aliases">
@@ -577,13 +579,14 @@ members of each returned entity record.</p>
 <li>fetch = True/False or &#8220;List,Of,Attributes,We,Are,Interested,In&#8221;</li>
 <li>query = &#8216;FieldName = &#8220;some value&#8221;&#8217; or [&#8216;EstimatedHours = 10&#8217;, &#8216;MiddleName != &#8220;Shamu&#8221;&#8217;, &#8216;Name contains &#8220;foogelhorn pop-tarts&#8221;&#8217;,  etc.]</li>
 <li>instance = True/False (defaults to False)</li>
-<li>pagesize = n  (defaults to 200)</li>
+<li>pagesize = n  (defaults to 500)</li>
 <li>start = n  (defaults to 1)</li>
 <li>limit = n  (defaults to no limit)</li>
 <li>workspace = workspace_name (defaults to current workspace selected)</li>
 <li>project = project_name (defaults to current project selected)</li>
 <li>projectScopeUp = True/False (defaults to False)</li>
 <li>projectScopeDown True/False (defaults to False)</li>
+<li>threads = n (value of 1 insures single-threading, any other value is advisory)</li>
 </ul>
 </dd>
 </dl>
@@ -678,7 +681,7 @@ scope that have any of the keywords in any of the artifact&#8217;s text fields.<
 <dd><ul class="first last simple">
 <li>projectScopeUp = true/false (defaults to false)</li>
 <li>projectScopeDown = true/false (defaults to false)</li>
-<li>pagesize = n  (defaults to 200)</li>
+<li>pagesize = n  (defaults to 500)</li>
 <li>start = n  (defaults to 1)</li>
 <li>limit = n  (defaults to no limit)</li>
 </ul>
@@ -839,8 +842,23 @@ about each state value permitted for the entityName.</p>
 <dl class="method">
 <dt id="getAllowedValues">
 <code class="descname">getAllowedValues</code><span class="sig-paren">(</span><em>entityName</em>, <em>attributeName</em><span class="optional">[</span>, <em>workspace=None</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#getAllowedValues" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given an entityName and and attributeName (assumed to be valid for the entityName)
-issue a request to obtain a list of allowed values for the attribute.</p>
+<dd><p>Given an entityName and and attributeName (which must be valid for the entityName)
+issue a request to obtain a list of allowed values for the attribute.
+For standard attributes in the set of (&#8216;Artifacts&#8217;, &#8216;Attachments&#8217;, &#8216;Changesets&#8217;,
+&#8216;Children&#8217;, &#8216;Collaborators&#8217;, &#8216;Defects&#8217;, &#8216;DefectSuites&#8217;, &#8216;Discussion&#8217;, &#8216;Duplicates&#8217;,
+&#8216;Milestones&#8217;, &#8216;Iteration&#8217;, &#8216;Release&#8217;, &#8216;Project&#8217;, &#8216;Owner&#8217;, &#8216;SubmittedBy&#8217;, &#8216;Predecessors&#8217;,
+&#8216;Successors&#8217;, &#8216;Tasks&#8217;, &#8216;TestCases&#8217;, &#8216;TestSets&#8217;, &#8216;Results&#8217;, &#8216;Steps&#8217;, &#8216;Tags&#8217;) this method
+will return a [True] value if the entity identified by entityName actually has the
+attributeName specified.  To get the values associated with the attributes in the
+aforementioned list you should use the <strong>get()</strong> method with the entityName as the first
+argument and the singular form of the attribute name as the target of the fetch
+keyword argument.  Of course, this only works with an entity that exists (such as
+&#8216;Attachment&#8217; or &#8216;Milestone&#8217; or &#8216;Tag&#8217;) but not entities named above like &#8216;Discussion&#8217;,
+or &#8216;SubmittedBy&#8217; or &#8216;Result&#8217;.
+For custom fields though there is no such &#8220;disqualification&#8221;, that is the return
+value will be either a single value or a list of values regardless of whether the
+values are relevant to every such entity type or the values are a list that can vary
+per specific instance of the entity type.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1131,7 +1149,7 @@ with the content of the instance.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.3.0',
+            VERSION:'1.3.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

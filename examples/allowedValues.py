@@ -45,7 +45,7 @@ def main(args):
 
     #rally = Rally(server, user, password, apikey=apikey, workspace=workspace, project=project, server_ping=False)
     rally = Rally(server, user, password, apikey=apikey,server_ping=False)
-    rally.enableLogging('rally.hist.avl')  # name of file you want the logging to go to
+    #rally.enableLogging('rally.hist.avl')  # name of file you want the logging to go to
 
     target = entity
     if entity in ['Story', 'User Story', 'UserStory']:
@@ -67,20 +67,22 @@ def main(args):
         print("Warnings: %s" % response.warnings)
     td = response.next()
 
-    for attribute in td.Attributes:
+    std_attributes    = sorted([attr for attr in td.Attributes if attr.ElementName[:2] != 'c_'], key=lambda x: x.ElementName)
+    custom_attributes = sorted([attr for attr in td.Attributes if attr.ElementName[:2] == 'c_'], key=lambda x: x.ElementName)
+    all_attributes = std_attributes + custom_attributes
+    for attribute in all_attributes:
         attr_name = attribute.Name.replace(' ', '')
         if attributes and attr_name not in attributes:
             continue
 
-        if attribute.AttributeType not in ['STATE', 'RATING', 'STRING']:
+        if attribute.AttributeType not in ['STATE', 'RATING', 'STRING', 'COLLECTION']:
             continue
 
         allowed_values = rally.getAllowedValues(target, attr_name)
-        if not allowed_values:
-            continue
-        print("    %-28.28s    (%s)" % (attr_name, attribute.AttributeType))
-        for av in allowed_values:
-            print("        |%s|" % av)
+        if allowed_values:
+            print("    %-28.28s    (%s)" % (attr_name, attribute.AttributeType))
+            for av in allowed_values:
+                print("        |%s|" % av)
 
 #################################################################################################
 #################################################################################################

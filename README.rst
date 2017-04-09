@@ -35,11 +35,20 @@ The git repository is available at https://github.com/RallyTools/RallyRestToolki
 Installation
 ````````````
 
+If you want to pull down the latest release from standard Python package repository
+(pypi.python.org) and install the package, the easiest way is to use
+pip, the Python package installation utility.::
+
+    pip install pyral
+
+Alternatively, if you've got the tar.gz or zip distribution on hand, as long as you've
+satisfied the dependency requirements on the six and requests packages, you can use
+the setup mechanism.
 Obtain the requests_ package and install it according to that package's directions.
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.3.0) has been tested using requests 2.12.5.
+The most recent release of pyral (1.3.1) has been tested using requests 2.12.5.
 
 Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
@@ -67,7 +76,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 3, 0)
+   (1, 3, 1)
 
 
 
@@ -273,6 +282,17 @@ Prerequisites
 
 Versions
 --------
+   **1.3.1**
+       Adjusted getAllowedValues so that custom fields with an allowedValues endpoint get resolved.
+       Disqualifed a group of standard attributes whose allowedValue is of type COLLECTION when retrieving 
+       allowed values in SchemaItem.complete(). This is primarily relevant only to attributes defined as
+       Drop Down List or Multi Value Drop Down List.
+       Fixed mechanism of supplying headers dict to Rally instantiation so that the X-RallyIntegration* 
+       headers get overwritten with supplied headers (for name, vendor, version) to better identify the 
+       origin of the integration.
+       Updated official name to reference Agile Central in setup.py, mention threads keyword arg in the
+       get method in the the interface.rst file.
+
    **1.3.0**
        Introduced automatic multi-threading for Rally.get operation to speed up retrieval of large
        result sets.  Implemented step two of the Pinger deprecation plan, ping=False is the new default.

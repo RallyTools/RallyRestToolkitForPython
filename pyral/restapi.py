@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 3, 0)
+__version__ = (1, 3, 1)
 
 import sys, os
 import re
@@ -52,6 +52,7 @@ HTTP_REQUEST_SUCCESS_CODE = 200
 PAGE_NOT_FOUND_CODE       = 404
 
 PROJECT_PATH_ELEMENT_SEPARATOR = ' // '
+INTEGRATION_HEADER_PREFIX = 'X-RallyIntegration'
 
 ###################################################################################################
 
@@ -224,6 +225,12 @@ class Rally(object):
 ##
         self.session = requests.Session()
         self.session.headers = RALLY_REST_HEADERS
+        if 'headers' in kwargs:
+            for header_name, header_value in kwargs['headers'].items():
+                matching_header = [key for key in self.session.headers
+                                       if key.replace(INTEGRATION_HEADER_PREFIX, '').lower() == header_name.lower()]
+                if matching_header:
+                    self.session.headers[matching_header[0]] = header_value
         if self.apikey:
             self.session.headers['ZSESSIONID'] = self.apikey
             self.user     = None
@@ -1498,12 +1505,19 @@ class Rally(object):
             PortfolioItem/Feature, ...) and an attribute of the Artifact sub-type,
             return the list of values currently defined for that field.  
             In most cases, the expected context will be that the attributeName type
-            is STATE, RATING or less expected, STRING. 
+            is STATE, RATING or less expected:, STRING or COLLECTION.
             While there are many STRING type attributes and they have allowedValues endpoints,
             most of them will return a boolean equivalent of True, making this method 
             less useful for those attributes.
-            The original intent of allowedValues was to define a relatively small set of 
-            values that would rarely be augmented.
+            There are COLLECTION type attributes that have allowedValues endpoints,
+            including several standard attributes on the most common entity types.
+            Most of the standard attributes having an allowedValues endpoint that is a
+            COLLECTION url are disqualified from the processing the actually chases the
+            url to retrieve the "allowed values" items with the justification that those
+            attributes allowed values are really specific artifact item dependent rather than
+            values for any and all such artifacts in the workspace (like Severity or Priority).
+            The original intent of allowedValues was to define a relatively small set of
+            values for all entities of a specific type and those values would rarely be augmented.
         """
 ##
 ##        print("%s attribute name: %s" % (entityName, attributeName))
@@ -1529,11 +1543,12 @@ class Rally(object):
             avs = attribute.resolveAllowedValues(context, getCollection)
             if type(avs) not in collection_types:
                 return [avs]
-            return [av.StringValue for av in avs]
+            return [getattr(av, 'LocalizedStringValue', getattr(av, 'StringValue', 'Not Available'))
+                        for av in avs]
 
-        # suggested by Scott Vitale to address issue in Rally WebServices response 
-        #   (sometimes value is present, other times StringValue must be used)
-        return [av.StringValue for av in attribute.AllowedValues]
+        avs = attribute.AllowedValues
+        return [getattr(av, 'LocalizedStringValue', getattr(av, 'StringValue', 'Not Available'))
+                    for av in avs]
 
 
     def addAttachment(self, artifact, filename, mime_type='text/plain'):
