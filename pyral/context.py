@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 3, 1)
+__version__ = (1, 3, 2)
 
 import sys, os
 import platform
@@ -18,6 +18,8 @@ import socket
 import json
 import re  # we use compile, match
 from pprint import pprint
+import six
+quote = six.moves.urllib.parse.quote
 
 # intra-package imports
 from .rallyresp import RallyRESTResponse
@@ -478,7 +480,8 @@ class RallyContextHelper(object):
         criteria = "(State = Open)"
         # if workspace then augment the query
         if isinstance(workspace, str) and len(workspace) > 0:
-            criteria = '((Name = "%s") AND %s)' % (workspace, criteria)
+            urlencoded_workspace_name = quote(workspace)
+            criteria = '((Name = "%s") AND %s)' % (urlencoded_workspace_name, criteria)
         workspaces_collection_url = '%s?fetch=true&query=%s&pagesize=200&start=1' % \
                 (wksp_coll_ref_base, criteria)
         timer_start = time.time()

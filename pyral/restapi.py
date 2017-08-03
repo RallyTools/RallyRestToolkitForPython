@@ -3,14 +3,14 @@
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 15 support for multi-threading for large query result sets
-#                   and non sub admins can get all user info
+#          round 16 moar movement towards parallel Rally/AgileCentral name access foar all the things
 #          notable dependencies:
 #               requests v2.12.5 or better
+#               six
 #
 ###################################################################################################
 
-__version__ = (1, 3, 1)
+__version__ = (1, 3, 2)
 
 import sys, os
 import re
@@ -57,7 +57,9 @@ INTEGRATION_HEADER_PREFIX = 'X-RallyIntegration'
 ###################################################################################################
 
 class RallyRESTAPIError(Exception): pass
+AgileCentralRESTAPIError = RallyRESTAPIError
 class RallyAttributeNameError(Exception): pass
+AgileCentralAttributeNameError = RallyAttributeNameError
 
 #
 # define a couple of entry point functions for use by other pkg modules and import the modules
@@ -139,8 +141,9 @@ from .hydrate   import EntityHydrator
 from .context   import RallyContext, RallyContextHelper
 from .entity    import validRallyType, DomainObject
 from .query_builder import RallyUrlBuilder
+from .query_builder import AgileCentralUrlBuilder
 
-__all__ = ["Rally", "getResourceByOID", "getCollection", "hydrateAnInstance", "RallyUrlBuilder"]
+__all__ = ["Rally", "getResourceByOID", "getCollection", "hydrateAnInstance", "RallyUrlBuilder", "AgileCentralUrlBuilder"]
 
 
 def _createShellInstance(context, entity_name, item_name, item_ref):
@@ -610,7 +613,7 @@ class Rally(object):
         # So we do a full bucket query on User and UserProfile separately and "join" them via our
         # own brute force method so that the the caller can access any UserProfile attribute
         # for a User.
-        user_attrs = ["Name", "UserName", "DisplayName", 
+        user_attrs = ["UserName", "DisplayName",
                       "FirstName", "LastName", "MiddleName",
                       "ShortDisplayName", "OnpremLdapUsername",
                       "CreationDate", "EmailAddress",
