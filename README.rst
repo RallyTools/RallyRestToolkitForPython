@@ -282,6 +282,9 @@ Prerequisites
 
 Versions
 --------
+   **1.3.2**
+       Allow for initial connection using a workspace name containing chars that need to be urlencoded.
+
    **1.3.1**
        Adjusted getAllowedValues so that custom fields with an allowedValues endpoint get resolved.
        Disqualifed a group of standard attributes whose allowedValue is of type COLLECTION when retrieving 

@@ -130,3 +130,6 @@
     origin of the integration.
     Updated official name to reference Agile Central in setup.py, mention threads keyword arg in the
     get method in the the interface.rst file.
+    
+1.3.2 - Aug 2017
+    Allow for initial connection using a workspace name containing chars that need to be urlencoded.
