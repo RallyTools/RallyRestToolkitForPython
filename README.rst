@@ -48,7 +48,7 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.3.1) has been tested using requests 2.12.5.
+The most recent release of pyral (1.3.2) has been tested using requests 2.12.5.
 
 Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
@@ -76,7 +76,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 3, 1)
+   (1, 3, 2)
 
 
 
@@ -282,6 +282,9 @@ Prerequisites
 
 Versions
 --------
+   **1.3.2**
+       Allow for initial connection using a workspace name containing chars that need to be urlencoded.
+
    **1.3.1**
        Adjusted getAllowedValues so that custom fields with an allowedValues endpoint get resolved.
        Disqualifed a group of standard attributes whose allowedValue is of type COLLECTION when retrieving 

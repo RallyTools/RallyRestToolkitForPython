@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 3, 1)
+__version__ = (1, 3, 2)
 
 import re
 import types
@@ -107,6 +107,8 @@ class RallyUrlBuilder(object):
 
     def beautifyResponse(self):
         self.pretty = True
+
+AgileCentralUrlBuilder = RallyUrlBuilder
 
 ##################################################################################################
 
@@ -257,5 +259,7 @@ class RallyQueryFormatter(object):
             raise Exception("Invalid query expression syntax in: %s" % (" ".join(parts)))
         
         return valid_parts
-    
+
+AgileCentralQueryFormatter = RallyQueryFormatter
+
 ##################################################################################################
