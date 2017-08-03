@@ -16,7 +16,7 @@ from pyral.cargotruck import CargoTruck
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD, API_KEY
 #from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 #from rally_targets import ORG_LEVEL_PROJECT
 ORG_LEVEL_PROJECT = 'AC Engineering'
@@ -30,10 +30,9 @@ def test_multiple_page_response_query():
         (Story) known to have more than 5 items.  Set the pagesize to 5 to
         force pyral to retrieve multiple pages to satisfy the query.
     """
-    APIKEY    = '_x6CZhqQgiist6kTtwthsAAKHtjWE7ivqimQdpP3T4'
     WORKSPACE = 'Rally'
     PROJECT   = 'AC Engineering'
-    rally = Rally(server=AGICEN, apikey=APIKEY, workspace=WORKSPACE, project=PROJECT)
+    rally = Rally(server=AGICEN, apikey=API_KEY, workspace=WORKSPACE, project=PROJECT)
     """
     response = rally.get('Story', fetch='ObjectID,FormattedID,Name', pagesize=100, limit=1500, projectScopeDown=True)
     count = 0

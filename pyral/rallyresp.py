@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 3, 1)
+__version__ = (1, 3, 2)
 
 import sys
 import re
@@ -21,7 +21,8 @@ from pprint import pprint
 from .hydrate    import EntityHydrator
 from .cargotruck import CargoTruck
 
-__all__ = ['RallyRESTResponse', 'ErrorResponse', 'RallyResponseError']
+__all__ = ['RallyRESTResponse', 'ErrorResponse', 'RallyResponseError',
+           'AgileCentralRESTResponse', 'AgileCentralResponseError']
 
 ##################################################################################################
 
@@ -30,6 +31,7 @@ errout = sys.stderr.write
 ##################################################################################################
 
 class RallyResponseError(Exception): pass
+AgileCentralResponseError = RallyResponseError
    
 class ErrorResponse(object):
 
@@ -502,5 +504,6 @@ class RallyRESTResponse(object):
                          (self.request_type, self.resultCount, self.content['QueryResult']['Results'])
             return "%s %s" % (self.status_code, blurb)
 
+AgileCentralRESTResponse = RallyRESTResponse
 ##################################################################################################
 
