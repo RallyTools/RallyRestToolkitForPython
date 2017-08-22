@@ -481,6 +481,39 @@ class PortfolioItem_Initiative(PortfolioItem): pass
 class PortfolioItem_Theme     (PortfolioItem): pass
 class PortfolioItem_Feature   (PortfolioItem): pass
 
+class Connection(WorkspaceDomainObject):
+
+    MINIMAL_WDO_ATTRIBUTES = ['_type',
+                         'oid', 'ref', 'ObjectID', 'ObjectUUID', '_ref',
+                         '_CreatedAt', '_hydrated', 'Subscription', 'Workspace']
+    CONNECTION_INFO_ATTRS = ['ExternalId', 'ExternalFormattedId', 'Name', 'Description', 'Url', 'Artifact']
+
+    def details(self):
+        tank = ['%s' % self._type]
+        for attribute_name in (Connection.MINIMAL_WDO_ATTRIBUTES + Connection.CONNECTION_INFO_ATTRIBUTES):
+            try:
+                value = getattr(self, attribute_name)
+            except AttributeError:
+                continue
+            if value is None:
+                continue
+            if 'pyral.entity.' not in str(type(value)):
+                anv = '    %-24s  : %s' % (attribute_name, value)
+            else:
+                mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
+                if mo:
+                    cln = mo.group(1)
+                    anv = "    %-24s  : %-20.20s   (OID  %s  Name: %s)" % \
+                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                else:
+                    anv = "    %-24s  : %s" % (attribute_name, value)
+            tank.append(anv)
+        tank.append("")
+        return tank
+
+
+class PullRequest(Connection): pass
+
 class CustomField(object):  
     """
         For non-Rally originated entities
@@ -614,6 +647,8 @@ classFor = { 'Persistable'             : Persistable,
              'IterationCumulativeFlowData' : IterationCumulativeFlowData,
              'RecycleBinEntry'         : RecycleBinEntry,
              'SearchObject'            : SearchObject,
+             'Connection'              : Connection,
+             'PullRequest'             : PullRequest,
            }
 
 for entity_name, entity_class in list(classFor.items()):
@@ -955,6 +990,73 @@ def processSchemaInfo(workspace, schema_info):
                     pass
             rally_entity_class = _createClass(pyralized_class_name, parentClass)
             classFor[typePath] = rally_entity_class
+
+    augmentSchemaWithPullRequestInfo(workspace)
+
+
+def puff(attr_name, attr_type, attr_required):
+    ad = {'_ref'           : 'attributedefinition/123456',
+          '_refObjectName' : attr_name,
+          'ElementName'    : attr_name,
+          'Name'           : attr_name,
+          'AttributeType'  : attr_type,
+          'Custom'         : False,
+          'Required'       : attr_required,
+          'ReadOnly'       : False,
+          'Filterable'     : True,
+          'SchemaType'     : 'abc',
+          'Hidden'         : False,
+          'Constrained'    : False,
+          'AllowedValueType' : False,
+          'AllowedValues'  : [],
+          'MaxLength'      : 255,
+          'MaxFractionalDigits' : 1
+    }
+    return ad
+
+
+def augmentSchemaWithPullRequestInfo(workspace):
+    wksp_name, wksp_ref = workspace
+    global _rally_schema
+    global _rally_entity_cache
+
+    pr_data  = {'_ref'            : 'pullrequest/1233456789',
+                '_refObjectName'  : 'Pull Request',
+                'ElementName'     : 'PullRequest',
+                'Name'            : 'pullRequest',
+                'DisplayName'     : 'PullRequest',
+                'TypePath'        : 'PullRequest',
+                'IDPrefix'        : 'PR',
+                'Abstract'        : False,
+                #'Parent'          : 'Connection',
+                'Parent'          : None,
+                'Creatable'       : True,
+                'ReadOnly'        : False,
+                'Queryable'       : False,
+                'Deletable'       : True,
+                'Restorable'      : False,
+                'Ordinal'         : 1,
+                'RevisionHistory' : 'putrid',
+                'Attributes'      : [],
+               }
+    pr_attr_names = [('ExternalId',  'STRING', True),
+                     ('ExternalFormattedId', 'STRING', True),
+                     ('Name',        'STRING', True),
+                     ('Description', 'TEXT',   False),
+                     ('Url',         'STRING', True),
+                     ('Artifact',    'OBJECT', True)]
+    #pr_attr_names = ['ExternalId',
+    #                 'ExternalFormattedId',
+    #                 'Name',
+    #                 'Description',
+    #                 'Url',
+    #                 'Artifact',
+    #                ]
+    #pr_data['Attributes']  = pr_attr_names
+    for pr_attr, pr_type, pr_reqd in pr_attr_names:
+        pr_data['Attributes'].append(puff(pr_attr, pr_type, pr_reqd))
+    _rally_schema[wksp_ref]['PullRequest'] = SchemaItem(pr_data)
+    _rally_schema[wksp_ref]['PullRequest'].completed = True
 
 
 def getSchemaItem(workspace, entity_name):
