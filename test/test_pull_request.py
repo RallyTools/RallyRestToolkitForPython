@@ -48,11 +48,11 @@ def test_create_local_pull_request_instance():
     assert pr.Workspace == DEFAULT_WORKSPACE
 
 def test_post_pull_request():
-    expectedErrMsg = "No such entity: PullRequest"
+    expectedErrMsg = '422 Requested type name "pullrequest" is unknown.'
     rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
     with py.test.raises(RallyRESTAPIError) as excinfo:
         rally.create('PullRequest', dummy_data)
-        actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-        assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-        assert expectedErrMsg in actualErrVerbiage
+    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+    assert expectedErrMsg == actualErrVerbiage
 
