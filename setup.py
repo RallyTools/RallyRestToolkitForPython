@@ -14,7 +14,7 @@ import sys
 from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '1.3.2'
+VERSION       = '1.4.0'
 OFFICIAL_NAME = 'Python toolkit for Agile Central (Rally) REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (CA Technologies, AgileCentral Business Unit)'
