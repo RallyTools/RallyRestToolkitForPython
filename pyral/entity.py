@@ -486,7 +486,7 @@ class Connection(WorkspaceDomainObject):
     MINIMAL_WDO_ATTRIBUTES = ['_type',
                          'oid', 'ref', 'ObjectID', 'ObjectUUID', '_ref',
                          '_CreatedAt', '_hydrated', 'Subscription', 'Workspace']
-    CONNECTION_INFO_ATTRS = ['ExternalId', 'ExternalFormattedId', 'Name', 'Description', 'Url', 'Artifact']
+    CONNECTION_INFO_ATTRIBUTES = ['ExternalId', 'ExternalFormattedId', 'Name', 'Description', 'Url', 'Artifact']
 
     def details(self):
         tank = ['%s' % self._type]
@@ -1039,7 +1039,7 @@ def augmentSchemaWithPullRequestInfo(workspace):
                 'RevisionHistory' : 'putrid',
                 'Attributes'      : [],
                }
-    pr_attr_names = [('ExternalId',  'STRING', True),
+    pr_attr_names = [('ExternalID',  'STRING', True),
                      ('ExternalFormattedId', 'STRING', True),
                      ('Name',        'STRING', True),
                      ('Description', 'TEXT',   False),
