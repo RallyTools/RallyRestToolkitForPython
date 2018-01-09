@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 0)
+__version__ = (1, 4, 1)
 
 import sys
 import re
@@ -420,7 +420,8 @@ class BuildMetricDefinition (WorkspaceDomainObject): pass  # query capable only
 class Change                (WorkspaceDomainObject): pass
 class Changeset             (WorkspaceDomainObject): pass
 class ConversationPost      (WorkspaceDomainObject): pass  # query capable only
-class Milestone             (WorkspaceDomainObject): pass 
+class FlowState             (WorkspaceDomainObject): pass
+class Milestone             (WorkspaceDomainObject): pass
 class Preference            (WorkspaceDomainObject): pass
 class PreliminaryEstimate   (WorkspaceDomainObject): pass
 class SCMRepository         (WorkspaceDomainObject): pass
@@ -428,6 +429,7 @@ class State                 (WorkspaceDomainObject): pass
 class TestCaseStep          (WorkspaceDomainObject): pass
 class TestCaseResult        (WorkspaceDomainObject): pass
 class TestFolder            (WorkspaceDomainObject): pass
+class TestFolderStatus      (WorkspaceDomainObject): pass
 class Tag                   (WorkspaceDomainObject): pass
 class TimeEntryItem         (WorkspaceDomainObject): pass
 class TimeEntryValue        (WorkspaceDomainObject): pass
@@ -617,6 +619,7 @@ classFor = { 'Persistable'             : Persistable,
              'TestCaseResult'          : TestCaseResult,
              'TestSet'                 : TestSet,
              'TestFolder'              : TestFolder,
+             'TestFolderStatus'        : TestFolderStatus,
              'TimeEntryItem'           : TimeEntryItem,
              'TimeEntryValue'          : TimeEntryValue,
              'Build'                   : Build,
@@ -627,6 +630,7 @@ classFor = { 'Persistable'             : Persistable,
              'DefectSuite'             : DefectSuite,
              'Change'                  : Change,
              'Changeset'               : Changeset,
+             'FlowState'               : FlowState,
              'PortfolioItem'           : PortfolioItem,
              'PortfolioItem_Strategy'  : PortfolioItem_Strategy,
              'PortfolioItem_Initiative': PortfolioItem_Initiative,

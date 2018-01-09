@@ -13,10 +13,11 @@ from pyral.restapi  import hydrateAnInstance
 from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 from rally_targets import ALTERNATE_WORKSPACE, ALTERNATE_PROJECT
+from internal_rally_targets import APIKEY
 
 AGICEN_SUB_100_USER = ''
 AGICEN_SUB_100_PSWD = ''
-AGICEN_SUB_100_API_KEY = '_37kqhjoDRf6fnZ6T1IiYXrrjcpVbTk7Llx2r7omTMQ'
+AGICEN_SUB_100_API_KEY = APIKEY
 
 REFABLE_ARTIFACT = 'hierarchicalrequirement/141184568124'
 

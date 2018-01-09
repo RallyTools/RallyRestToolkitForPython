@@ -10,7 +10,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 0)
+__version__ = (1, 4, 1)
 
 import sys, os
 import re
@@ -1205,12 +1205,12 @@ class Rally(object):
         auth_token = self.obtainSecurityToken()
         target_type = target._type
         item_types = [item._type for item in items]
-        item_type = item_types[0]
-        outliers = [item for item in item_types if item._type != item_type]
+        first_item_type = item_types[0]
+        outliers = [item_type for item_type in item_types if item_type != first_item_type]
         if outliers:
             raise RallyRESTAPIError("addCollectionItems: all items must be of the same type")
 
-        resource = "%s/%s/%ss/add" % (target_type, target.oid, item_type)
+        resource = "%s/%s/%ss/add" % (target_type, target.oid, first_item_type)
         collection_url = '%s/%s?fetch=Name&key=%s' % (self.service_url, resource, auth_token)
         payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
                     for item in items]}

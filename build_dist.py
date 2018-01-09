@@ -14,7 +14,7 @@ import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.4.0"
+VERSION      = "1.4.1"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 

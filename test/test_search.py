@@ -2,19 +2,16 @@
 
 import sys, os
 import types
-import urllib
 import py
 
 from pyral import Rally
 import pyral
 
 InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
-from pyral.query_builder import RallyUrlBuilder, RallyQueryFormatter
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
-from rally_targets import DEFAULT_WORKSPACE, NON_DEFAULT_PROJECT
+from internal_rally_targets import APIKEY, WORKSPACE, PROJECT
 
 ##################################################################################################
 
@@ -23,7 +20,7 @@ def test_basic_search():
         Using a known valid Rally server and known valid access credentials,
         issue a simple search query (basic qualifying criteria).
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(apikey=APIKEY, workspace=WORKSPACE, project=PROJECT)
     #
     #expectedErrMsg = u'The new search functionality is not turned on for your subscription'
     #
