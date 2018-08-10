@@ -48,7 +48,7 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.4.1) has been tested using requests 2.12.5.
+The most recent release of pyral (1.4.2) has been tested using requests 2.19.1.
 
 Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
@@ -72,11 +72,11 @@ relevant packages.
 :: 
 
    $ python
-   Python 3.5.2 [other Python interpreter info elided ...]
+   Python 3.6.4 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 4, 1)
+   (1, 4, 2)
 
 
 
@@ -264,17 +264,16 @@ The item names in config files **are** case sensitive.
   --apikey=<APIKey>                     valid Rally API Key value
   --rallyWorkspace=<bar>                Workspace in Rally you want to interact with
   --rallyProject=<bar>                  Project in Rally you want to interact with
-  --ping                                boolean, ping Rally server before connection attempt?
 ====================================== =========================================
 
 
 Prerequisites
 -------------
 
- * Python 3.5 or 3.6 (this package not tested with earlier versions of Python 3.x) OR
- * Python 2.6 or 2.7 (of these two, 2.7 is preferred)
+ * Python 3.5, 3.6 or 3.7 (this package not tested with earlier versions of Python 3.x) OR
+ * Python 2.7 (explicit support for this version will end with the 1.4.x line, 1.5.x will not support 2.7)
  * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy),
-   requests 2.12.5 is recommended.
+   requests 2.19.1 is recommended.
  * The six_ package.
 
 .. _requests: http://github.com/kennethreitz/requests
@@ -282,6 +281,9 @@ Prerequisites
 
 Versions
 --------
+   **1.4.2**
+       Fixed defect in returning RallyRESTResponse when pagesize set to 1
+
    **1.4.1**
        Support for TestFolderStatus attribute in TestFolder.
        Fixed defect in addCollectionItems

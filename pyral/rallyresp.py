@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 1)
+__version__ = (1, 4, 2)
 
 import sys
 import re
@@ -312,7 +312,7 @@ class RallyRESTResponse(object):
             elif self.max_threads > 1 and self._curIndex == len(self._page):  # exhausted current "chapter" ?
                 self._page[:]  = self.__retrieveNextPage()
                 self._curIndex = 0
-            elif self._curIndex == self.pageSize:   # in single threaded mode, the page is exhausted
+            elif self.max_threads == 1 and self._curIndex == self.pageSize:   # in single threaded mode, the page is exhausted
                 self._page[:]  = self.__retrieveNextPage()
                 self._curIndex = 0
             if not self._page:
