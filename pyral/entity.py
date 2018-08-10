@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 1)
+__version__ = (1, 4, 2)
 
 import sys
 import re
@@ -557,14 +557,14 @@ class SearchObject(object):
 
     def __init__(self, oid, name, resource_url, context):
         """
-            All sub-classes have an oid (Object ID), so it makes sense to provide the 
-            attribute storage here.
+            All sub-classes have an oid (normally an Object ID), but what we get for an oid here is actually a uuid,
+            attribute the ObjectID storage here (into which the uuid will be placed).
         """
-        self.oid = self.ObjectID = int(oid)
-        self.Name = name
-        self._ref = resource_url
+        self.oid       = self.ObjectID = oid
+        self.Name      = name
+        self._ref      = resource_url
         self._hydrated = True
-        self._context = context
+        self._context  = context
 
     def __setattr__(self, item, value):
         self.__dict__[item] = value
