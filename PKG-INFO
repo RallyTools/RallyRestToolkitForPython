@@ -73,7 +73,7 @@ Description: This is the README file for pyral, a package implementing a
         
 Keywords: rally,agilecentral,api
 Requires: six
-Requires: requests>=2.19.1
+Requires: requests>=2.12.5
 Platform: any
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: Web Environment
