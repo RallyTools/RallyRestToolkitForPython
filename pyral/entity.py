@@ -436,6 +436,7 @@ class TimeEntryValue        (WorkspaceDomainObject): pass
 class UserIterationCapacity (WorkspaceDomainObject): pass
 class RecycleBinEntry       (WorkspaceDomainObject): pass
 class RevisionHistory       (WorkspaceDomainObject): pass
+class ProfileImage          (WorkspaceDomainObject): pass
 class Revision              (WorkspaceDomainObject):
     INFO_ATTRS = ['RevisionNumber', 'Description', 'CreationDate', 'User']
     def info(self):
@@ -611,6 +612,7 @@ classFor = { 'Persistable'             : Persistable,
              'Preference'              : Preference,
              'SCMRepository'           : SCMRepository,
              'RevisionHistory'         : RevisionHistory,
+             'ProfileImage'            : ProfileImage,
              'Revision'                : Revision,
              'Attachment'              : Attachment,
              'AttachmentContent'       : AttachmentContent,
