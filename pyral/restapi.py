@@ -328,6 +328,8 @@ class Rally(object):
         """
         return self.contextHelper._inflated
 
+    def setSessionAdapter(self, adapter : requests.adapters.HTTPAdapter):
+        self.session.mount('https://', adapter)
 
     def serviceURL(self):
         """
