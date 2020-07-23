@@ -1696,8 +1696,7 @@ class Rally(object):
         if response.errors or response.resultCount != 1:
             return None
         att_content = response.next()
-        #att.Content = base64.decodestring(att_content.Content)  # maybe further txfm to Unicode ?
-        att.Content = base64.decodebytes(att_content.Content)  # maybe further txfm to Unicode ?
+        att.Content = base64.b64decode(att_content.Content)
         return att
 
 
