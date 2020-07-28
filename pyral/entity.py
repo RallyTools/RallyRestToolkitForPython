@@ -844,7 +844,7 @@ class SchemaItemAttribute(object):
             by chasing the collection URL left from initialization, does this method issue a
             call to resolve the collection URL via the getCollection callable parm.
             The need to use getCollection is based on whether the AllowedValues value 
-            is a string that matches the regex '^https?://.*/attributedefinition/-\d+/AllowedValues'
+            is a string that matches the regex r'^https?://.*/attributedefinition/-\\d+/AllowedValues'
         """
 ##
 ##        print("in resolveAllowedValues for |%s| is a %s" % (self.Name, type(self.Name)))
@@ -857,7 +857,7 @@ class SchemaItemAttribute(object):
             return True
         if type(self.AllowedValues) != str:  #previously was   != bytes
             return True
-        std_av_ref_pattern = '^https?://.*/\w+/-?\d+/AllowedValues$'
+        std_av_ref_pattern = r'^https?://.*/\w+/-?\d+/AllowedValues$'
         mo = re.match(std_av_ref_pattern, self.AllowedValues)
         if not mo:
             anomaly = "Standard AllowedValues ref pattern |%s| not matched by candidate |%s|" % \

@@ -17,7 +17,8 @@ def main(args):
     args    = [arg for arg in args if arg not in options]
     server, username, password, apikey, workspace, project = rallyWorkset(options)
     if apikey:
-        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+        #rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+        rally = Rally(server, apikey=apikey)
     else:
         rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
     rally.enableLogging('rally.hist.periscope')  # name of file for logging content

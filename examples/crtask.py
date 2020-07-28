@@ -30,7 +30,7 @@ def main(args):
     if apikey:
         rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
     else:
-        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
+        rally = Rally(server, user=user, password=password, workspace=workspace, project=project)
     rally.enableLogging("rally.history.crtask")
 
     # For a task: Workspace, Project, WorkProduct, Name, State, TaskIndex are required;

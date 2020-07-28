@@ -14,7 +14,7 @@ RallyResponseError = pyral.rallyresp.RallyResponseError
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD, HTTPS_PROXY
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD, HTTPS_PROXY
 from rally_targets import PROD, API_KEY
 from rally_targets import PROD_USER, PROD_PSWD
 
@@ -25,7 +25,7 @@ def test_basic_connection():
         Using a known valid Rally server and access credentials, issue a simple query 
         request against a known valid Rally entity.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Project', fetch=False, limit=10)
     assert response != None
     assert response.status_code == 200
@@ -38,7 +38,7 @@ def test_basic_connection():
 #    """
 #    os.environ['https_proxy'] = "http://%s" % HTTPS_PROXY
 #
-#    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+#    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
 #    response = rally.get('Project', fetch=False, limit=10)
 #    assert response != None
 #    assert response.status_code == 200
@@ -54,7 +54,7 @@ def test_basic_connection():
 #    """
 #    os.environ['https_proxy'] = "http://%s" % HTTPS_PROXY
 #
-#    rally = Rally(server=AGICEN, apikey=API_KEY, server_ping=False)
+#    rally = Rally(server=RALLY, apikey=API_KEY, server_ping=False)
 #    rally.setWorkspace('Rally')
 #    projects = rally.getProjects()
 #    project_names = sorted([proj.Name for proj in projects])
@@ -228,8 +228,8 @@ def test_bad_server_spec():
 
     #with py.test.raises(RallyRESTAPIError) as excinfo:
     #    rally = Rally(server=bad_server,
-    #                        user=AGICEN_USER,
-    #                        password=AGICEN_PSWD, timeout=3)
+    #                        user=RALLY_USER,
+    #                        password=RALLY_PSWD, timeout=3)
     #    response = rally.get('Project', fetch=False, limit=5)
     #actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     #assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -252,7 +252,7 @@ def test_insuff_credentials():
     expectedErrMsg = 'Invalid credentials'
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=AGICEN, user=AGICEN_USER, password="")
+        rally = Rally(server=RALLY, user=RALLY_USER, password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -261,7 +261,7 @@ def test_insuff_credentials():
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=AGICEN, user="", password="doofus")
+        rally = Rally(server=RALLY, user="", password="doofus")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -270,7 +270,7 @@ def test_insuff_credentials():
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=AGICEN, user="", password="")
+        rally = Rally(server=RALLY, user="", password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -279,7 +279,7 @@ def test_insuff_credentials():
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=AGICEN, user="guest", password="")
+        rally = Rally(server=RALLY, user="guest", password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -288,7 +288,7 @@ def test_insuff_credentials():
     time.sleep(1)
     
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=AGICEN, user="guest", password="doofus")
+        rally = Rally(server=RALLY, user="guest", password="doofus")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -297,7 +297,7 @@ def test_insuff_credentials():
     time.sleep(1)
 
     with py.test.raises(RallyRESTAPIError) as excinfo:
-        rally = Rally(server=AGICEN, user="guest")
+        rally = Rally(server=RALLY, user="guest")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'

@@ -34,12 +34,12 @@ RALLY_REST_HEADERS = \
     {
       #'X-RallyIntegrationName'     : 'Python toolkit for Rally REST API', # although syntactically this is the more correct
       'X-RallyIntegrationName'     : 'Rally REST API toolkit for Python',  # this matches the format of the other language toolkits
-      'X-RallyIntegrationVendor'   : 'CA Technologies', 
+      'X-RallyIntegrationVendor'   : 'Broadcom / Rally',
       'X-RallyIntegrationVersion'  :       '%s.%s.%s' % __version__,
       'X-RallyIntegrationLibrary'  : 'pyral-%s.%s.%s' % __version__,
       'X-RallyIntegrationPlatform' : 'Python %s' % platform.python_version(),
       'X-RallyIntegrationOS'       : platform.platform(),
-      'User-Agent'                 : 'Pyral Agile Central WebServices Agent',
+      'User-Agent'                 : 'Pyral Rally WebServices Agent',
       'Content-Type'               : 'application/json',
       'Accept-Encoding'            : 'gzip'
     }
@@ -52,10 +52,10 @@ def timestamp():
 
 ##################################################################################################
 
-CONFIG_SETTING_PATT     = re.compile('^([A-Z]+)\s*=\s*(.+)$')
-RALLY_ARG_SETTING_PATT1 = re.compile('^--(rally[SUPW][a-z]+)=(.+)\s*$')
-RALLY_ARG_SETTING_PATT2 = re.compile('^--([ASUPWasupw][a-z]+)=(.+)\s*$')
-RALLY_CONFIG_FILE_PATT  = re.compile('^--(cfg|conf|config|rallyConfig)=(\S+)$')
+CONFIG_SETTING_PATT     = re.compile(r'^([A-Z]+)\s*=\s*(.+)$')
+RALLY_ARG_SETTING_PATT1 = re.compile(r'^--(rally[SUPW][a-z]+)=(.+)\s*$')
+RALLY_ARG_SETTING_PATT2 = re.compile(r'^--([ASUPWasupw][a-z]+)=(.+)\s*$')
+RALLY_CONFIG_FILE_PATT  = re.compile(r'^--(cfg|conf|config|rallyConfig)=(\S+)$')
 
 TRUTHY_VALUES = ['t', 'true',  'y', 'yes', '1']
 FALSEY_VALUES = ['f', 'false', 'n', 'no',  '0']

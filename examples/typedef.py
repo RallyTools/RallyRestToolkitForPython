@@ -74,10 +74,12 @@ def main(args):
     server, username, password, apikey, workspace, project = rallyWorkset(options)
     print(" ".join(["|%s|" % item for item in [server, username, password, apikey, workspace, project]]))
     try:
-        rally = Rally(server, username, password, apikey=apikey, workspace=workspace, server_ping=False)
+        rally = Rally(server, username, password, apikey=apikey, server_ping=False)
     except Exception as ex:
         errout(str(ex.args[0]))       
         sys.exit(1)
+    
+    rally.setWorkspace(workspace)
 
     sub_name  = rally.subscriptionName()
     print("Subscription Name: %s" % sub_name)
@@ -94,8 +96,8 @@ def main(args):
     print("")
     print("-" * 64)
     print("")
-    for ix, ancestor in enumerate(typedef.inheritanceChain()):
-        print("%s %s" % (" " * (ix*4), ancestor))
+#    for ix, ancestor in enumerate(typedef.inheritanceChain()):
+#        print("%s %s" % (" " * (ix*4), ancestor))
 
 #################################################################################################
 
@@ -130,7 +132,7 @@ def showAttributes(rally, target, attributes):
                 tank.append("     ...  %d more values not shown" % (len(allowed_values) - av_limit))
 
     for item in required + optional:
-        print(item.encode('utf-8'))
+        print(item)
 
 #################################################################################################
 #################################################################################################

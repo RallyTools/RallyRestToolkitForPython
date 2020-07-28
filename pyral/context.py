@@ -751,7 +751,7 @@ class RallyContextHelper(object):
 
             if workspace not in eligible_workspace_names:
                 problem = 'Workspace specified: "%s" not accessible with current credentials'
-                raise RallyRESTAPIError(problem % workspace.Name)
+                raise RallyRESTAPIError(problem % workspace)
             if workspace not in self._workspaces and self._inflated != 'wide':  
                 ec_kwargs = {'workspace' : workspace}
                 self._establishContext(ec_kwargs)
@@ -775,7 +775,7 @@ class RallyContextHelper(object):
                 proj_path_leaf = self._findMultiElementPathToProject(project)
                 prj_ref = proj_path_leaf.ref
                 project = proj_path_leaf.Name
-            elif re.search('project/\d+$', project):
+            elif re.search(r'project/\d+$', project):
                 prj_ref = project
             else:
                 problem = 'Project specified: "%s" (in workspace: "%s") not accessible with current credentials' % \

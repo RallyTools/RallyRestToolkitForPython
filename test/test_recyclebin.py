@@ -13,7 +13,7 @@ from pyral.query_builder import RallyUrlBuilder, RallyQueryFormatter
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import DEFAULT_WORKSPACE, NON_DEFAULT_PROJECT
 
 ##################################################################################################
@@ -24,7 +24,7 @@ def test_basic_query():
         issue a simple filtering query targeting RecycleBinEntry items
         whose Name value does not contain a specific value.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('RecycleBinEntry', fetch="ObjectID,ID,Name", 
                           query='Name = "Gone but not forgotten with the wind"',
                           limit=100)

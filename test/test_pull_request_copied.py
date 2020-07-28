@@ -10,14 +10,14 @@ from pyral.restapi  import hydrateAnInstance
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 from rally_targets import ALTERNATE_WORKSPACE, ALTERNATE_PROJECT
 from internal_rally_targets import APIKEY
 
-AGICEN_SUB_100_USER = ''
-AGICEN_SUB_100_PSWD = ''
-AGICEN_SUB_100_API_KEY = APIKEY
+RALLY_SUB_100_USER = ''
+RALLY_SUB_100_PSWD = ''
+RALLY_SUB_100_API_KEY = APIKEY
 
 REFABLE_ARTIFACT = 'hierarchicalrequirement/141184568124'
 
@@ -46,7 +46,7 @@ dummy_data = {
 # def test_create_local_pull_request_instance():
 #     fake_oid = 12345698765
 #
-#     rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+#     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
 #     context1 = rally.contextHelper.currentContext()
 #     pr_class = classFor['PullRequest']
 #     pr = pr_class(fake_oid, dummy_data['Name'], dummy_data['Url'], context1)
@@ -64,8 +64,8 @@ dummy_data = {
 def test_post_pull_request():
     expectedErrMsg = '422 Requested type name "pullrequest" is unknown.'
     #rally = Rally(server=TESTN, user=TESTN_USER, password=TESTN_PSWD)
-    #rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
-    rally = Rally(server=AGICEN, apikey=AGICEN_SUB_100_API_KEY)
+    #rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    rally = Rally(server=RALLY, apikey=RALLY_SUB_100_API_KEY)
     #with py.test.raises(RallyRESTAPIError) as excinfo:
     pr = rally.create('PullRequest', dummy_data, project=None)
     assert pr is not None
@@ -75,9 +75,9 @@ def test_post_pull_request():
     #assert expectedErrMsg == actualErrVerbiage
 
 def test_query_pull_requests():
-    #rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    #rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     #rally = Rally(server=TESTN, user=TESTN_USER, password=TESTN_PSWD)
-    rally = Rally(server=AGICEN, apikey=AGICEN_SUB_100_API_KEY)
+    rally = Rally(server=RALLY, apikey=RALLY_SUB_100_API_KEY)
     attrs = "ExternalId,ExternalFormattedId,Artifact,Name,Url,Description"
     response = rally.get('PullRequest', fetch=attrs, project=None)
     assert response.status_code == 200
@@ -91,7 +91,7 @@ def test_query_pull_requests():
     print(prs[0].details())
 
 # def test_creation_date_query():
-#     rally = Rally(server=AGICEN, apikey=AGICEN_SUB_100_API_KEY)
+#     rally = Rally(server=RALLY, apikey=RALLY_SUB_100_API_KEY)
 #     ref_time_iso = '2017-08-30T14:00:00.000Z'
 #     attrs = "ExternalId,ExternalFormattedId,Artifact,Name,Url,Description"
 #     selectors = ['CreationDate >= %s' % ref_time_iso]
@@ -112,7 +112,7 @@ def test_query_pull_requests():
 
 def test_delete_pull_request():
     #rally = Rally(server=TESTN, user=TESTN_USER, password=TESTN_PSWD)
-    rally = Rally(server=AGICEN, apikey=AGICEN_SUB_100_API_KEY)
+    rally = Rally(server=RALLY, apikey=RALLY_SUB_100_API_KEY)
     attrs = "ExternalId,ExternalFormattedId,Artifact,Name,Url,Description"
     response = rally.get('PullRequest', fetch=attrs, project=None)
     assert response.status_code == 200

@@ -10,7 +10,7 @@ from pyral import Rally, RallyUrlBuilder
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import   DEFAULT_WORKSPACE,   DEFAULT_PROJECT
 from rally_targets import ALTERNATE_WORKSPACE, ALTERNATE_PROJECT
 from rally_targets import API_KEY
@@ -25,10 +25,10 @@ def test_get_default_workspace():
         calling the getWorkspace method returns info for the default
         workspace.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=DEFAULT_WORKSPACE)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, workspace=DEFAULT_WORKSPACE)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
 
@@ -40,7 +40,7 @@ def test_get_non_default_workspace():
         workspace value, the getWorkspace call correctly returns the
         newly set workspace value.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     rally.setWorkspace(ALTERNATE_WORKSPACE)
@@ -55,7 +55,7 @@ def test_warn_on_setting_invalid_workspace():
         something like a warning occurs and that a subsequent call to
         getWorkspace returns the default workspace.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     py.test.raises(Exception, "rally.setWorkspace('Constant Misbehavior')")
@@ -70,7 +70,7 @@ def test_warn_on_setting_invalid_project():
         something like a warning occurs and that a subsequent call to
         getProject returns the default project.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     project = rally.getProject()
     assert project.Name == DEFAULT_PROJECT
     py.test.raises(Exception, "rally.setProject('Thorny Buxcuit Weevilz')")
@@ -85,7 +85,7 @@ def test_disallow_project_value_invalid_for_workspace():
     """
     problem_text = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'" % (DEFAULT_WORKSPACE, ALTERNATE_PROJECT)
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+        rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                       workspace=DEFAULT_WORKSPACE, project=ALTERNATE_PROJECT, server_ping=False)
     actualErrVerbiage = excinfo.value.args[0]
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -97,7 +97,7 @@ def test_get_project():
         issue a simple query (no qualifying criteria) for a known valid 
         Rally entity.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=DEFAULT_WORKSPACE, project='Sample Project')
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, workspace=DEFAULT_WORKSPACE, project='Sample Project')
     response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
@@ -112,7 +112,7 @@ def test_get_named_project():
         call the Rally.getProject using a valid (but non-default and non-current)
         project name as a parameter to the call.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=DEFAULT_WORKSPACE, project='Sample Project')
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, workspace=DEFAULT_WORKSPACE, project='Sample Project')
     response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
@@ -129,7 +129,7 @@ def test_no_defaults_good_workspace_none_project():
     problem_text = problem % (nd_workspace, none_project)
 
     with py.test.raises(Exception) as excinfo:
-        agicen = Rally(AGICEN, no_defaults_user, no_defaults_password,
+        rally = Rally(RALLY, no_defaults_user, no_defaults_password,
                       workspace=nd_workspace, project=none_project, server_ping=False)
     actualErrVerbiage = excinfo.value.args[0]
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -142,7 +142,7 @@ def test_no_defaults_good_workspace_bad_project():
     problem_text = problem % (nd_workspace, bad_project)
 
     with py.test.raises(Exception) as excinfo:
-        agicen = Rally(AGICEN, no_defaults_user, no_defaults_password,
+        rally = Rally(RALLY, no_defaults_user, no_defaults_password,
                       workspace=nd_workspace, project=bad_project, server_ping=False)
     actualErrVerbiage = excinfo.value.args[0]
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -153,7 +153,7 @@ def test_ignore_defaults_use_good_workspace_none_project():
     good_project   = "Integrations Project"
     none_project   = None
 
-    rally = Rally(server=AGICEN, username=AGICEN_USER, password=AGICEN_PSWD, apikey=API_KEY,
+    rally = Rally(server=RALLY, username=RALLY_USER, password=RALLY_PSWD, apikey=API_KEY,
                   workspace=good_workspace, project=good_project, server_ping=False)
     workspace = rally.getWorkspace()
     project   = rally.getProject()
@@ -163,7 +163,7 @@ def test_ignore_defaults_use_good_workspace_none_project():
     problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
     problem_text = problem % (good_workspace, none_project)
     with py.test.raises(Exception) as excinfo:
-       rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, apikey=API_KEY,
+       rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, apikey=API_KEY,
                      workspace=good_workspace,
                      project=none_project, server_ping=False)
     actualErrVerbiage = excinfo.value.args[0]
@@ -180,7 +180,7 @@ def test_ignore_defaults_use_good_workspace_bad_project():
     problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
     problem_text = problem % (good_workspace, bad_project)
     with py.test.raises(Exception) as excinfo:
-       rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, apikey=API_KEY,
+       rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, apikey=API_KEY,
                      workspace=good_workspace,
                      project=bad_project, server_ping=False)
     actualErrVerbiage = excinfo.value.args[0]

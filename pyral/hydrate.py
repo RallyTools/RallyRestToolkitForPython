@@ -17,7 +17,8 @@ imp.reload(sys)  # Reload gets a sys module that has the setdefaultencoding befo
 import six
 six.PY2 and sys.setdefaultencoding('UTF8') # not required in python 3
 
-from .entity import classFor, VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES, PORTFOLIO_ITEM_SUB_TYPES
+from .entity import classFor, getSchemaItem, \
+                    VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES, PORTFOLIO_ITEM_SUB_TYPES
 
 ##################################################################################################
 
@@ -107,6 +108,11 @@ class EntityHydrator(object):
                     bonked = False
                 except KeyError as e:
                     raise
+            else:
+                wksp_oid = item['Workspace']['_ref'].split('/')[-1]
+                workspace = (self.context.workspace, f'workspace/{wksp_oid}')
+                si = getSchemaItem(workspace, str(itemType))
+                print(si)
             if bonked:    
                 print("No classFor item for |%s|" % itemType)
                 raise KeyError(itemType)
