@@ -1,0 +1,62 @@
+                                                                              class    importance     repro'ed          status
+#138 Impossible to retrieve attachments                                       Bug      High           yes               Fixed in 1.5.0
+        opened on Apr 20, 2018 by jfthuong
+
+#150 getAttachment*() functionality generally broken on pyral 1.4.2 and Python 3.6  Bug  High         yes               Fixed in 1.5.0
+        opened on Dec 6, 2018 by pgacv2
+        same as #138
+
+
+#151 post() failure 'No classFor item for EngrFeature'                       Bug       High           yes
+        opened on Apr 11, 2019 by NCarteazy
+
+#158 Keyerror while hydrating custom PortfolioItem after a post() or put()    Bug      Med            yes
+        opened on Oct 28, 2019 by Sssnek1
+
+#147 Can't parse portfolio_item                                              Bug       High           no
+        opened on Aug 24, 2018 by tsal
+         probably needs doc update to make clear what works
+         for a PortfolioItem sub-type
+
+#157 rally.get() returns wrong results for a query with char "&"              Bug      Med            yes
+        opened on Aug 28, 2019 by Kimudai94
+
+#154 Could not get Release...                                                 Bug      Med            no
+        opened on Jul 19, 2019 by KapsGit
+
+#134 LDAP username vs. authentication username                            Feature      Low           has PR that could be accepted
+        opened on Jan 29, 2018 by carlsonp
+
+#143 Unable to specify path to certfile in Rally() kwarg verify_ssl_cert   Feature     Med
+        opened on Jul 5, 2018 by Meussdorffer
+
+#169 Error trying to add a feature to collection (milestone)                  Bug      Low
+       opened 2 days ago by reddevil311
+       Milestone has a collection of Artifacts, Feature is a derivate of Artifact
+
+#167 get User call doesn't fetch all user fields using pyral                  Bug?     Low            no
+        opened on Jun 17 by Pravesh-dot-com
+
+#164 Workspace name includes a space                                          Bug?     Low    another customer has no problem with this
+        opened on May 21 by johnhaprian  (user error?)
+
+#159 How to call the service with an URL                                      Bug?     Low            no
+        opened on Jan 20 by KapsGit
+            does a get for a PortfolioItem subtype and wants to 
+            get a ref attribute's sub-attribute
+
+#152 Fails Initializing Rally when performed more than once in an application  UserBad  Low           yes   (have an entity PortfolioItem/Project)
+        opened on Jul 7, 2019 by jonvadney
+ 
+#149 Cannot add custom multi-select field to Feature                         Bug       Low            no
+        opened on Nov 19, 2018 by damon-11
+
+#144 No apparent way to fetch data about closed projects                   NonBug      Low            yes
+        opened on Jul 11, 2018 by pgacv2
+
+#137 addCollectionItems - TypeError: 'Tag' object is not iterable         UserError    Med 
+        opened on Mar 23, 2018 by ssah-blr
+         used tag instance as arg to addCollectionItems when shoudl be a list of tags
+
+#110 Cannot get all attachments if several attachments have the same name     ---    Low
+        opened on Jan 29, 2017 by jfthuong
