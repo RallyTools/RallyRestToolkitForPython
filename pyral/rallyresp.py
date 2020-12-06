@@ -223,7 +223,7 @@ class RallyRESTResponse(object):
         if self.resultCount > 0:
            self._servable = self.resultCount
            if self.startIndex > 1:
-               self._servable = self.resultCount - self.startIndex
+               self._servable = self.resultCount - self.startIndex + 1
         self._servable   = min(self._servable, self._limit)
         self._served     = 0
         self._curIndex   = 0
