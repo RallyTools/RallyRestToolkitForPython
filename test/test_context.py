@@ -8,7 +8,7 @@ from pyral import Rally, RallyUrlBuilder
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 from rally_targets import ALTERNATE_WORKSPACE, ALTERNATE_PROJECT
 
@@ -52,7 +52,7 @@ def test_default_context():
         Furthermore the construction of a GET related URL will contain
         the correct workspace and project specifications in the QUERY_STRING.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     context1 = rally.contextHelper.currentContext()
     workspace = rally.getWorkspace()
     project   = rally.getProject()
@@ -71,7 +71,7 @@ def test_default_context():
 
 # 2
 def test_explictly_set_workspace_as_default_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=DEFAULT_WORKSPACE)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, workspace=DEFAULT_WORKSPACE)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -85,7 +85,7 @@ def test_explictly_set_workspace_as_default_context():
 
 # 3
 def test_initial_workspace_not_default():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=ALTERNATE_WORKSPACE, 
                   warn=False)
     # Because no project=name arg was supplied, the project will be the User's default project
@@ -108,7 +108,7 @@ def test_initial_workspace_not_default():
 
 # 4
 def test_explicitly_set_workspace_and_project_as_default_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=DEFAULT_WORKSPACE,
                   project=DEFAULT_PROJECT)
     workspace = rally.getWorkspace()
@@ -124,7 +124,7 @@ def test_explicitly_set_workspace_and_project_as_default_context():
 
 # 5
 def test_set_default_workspace_non_default_project_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=DEFAULT_WORKSPACE,
                   project=NON_DEFAULT_PROJECT)
     workspace = rally.getWorkspace()
@@ -140,7 +140,7 @@ def test_set_default_workspace_non_default_project_context():
 
 # 6
 def test_set_non_default_workspace_and_project_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=ALTERNATE_WORKSPACE,
                   project=ALTERNATE_PROJECT)
     workspace = rally.getWorkspace()
@@ -156,7 +156,7 @@ def test_set_non_default_workspace_and_project_context():
 
 # 7
 def test_default_wksprj_with_set_workspace_with_default_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -175,7 +175,7 @@ def test_default_wksprj_with_set_workspace_with_default_context():
 
 #8
 def test_default_wksprj_with_set_non_default_workspace_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project   = rally.getProject()
@@ -203,7 +203,7 @@ def test_default_wksprj_with_set_non_default_workspace_context():
 
 #9
 def test_default_workspace_with_set_non_default_workspace_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=DEFAULT_WORKSPACE)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, workspace=DEFAULT_WORKSPACE)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -226,7 +226,7 @@ def test_default_workspace_with_set_non_default_workspace_context():
 
 #10
 def test_default_workspace_with_set_non_default_workspace_and_project_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=DEFAULT_WORKSPACE)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, workspace=DEFAULT_WORKSPACE)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -249,7 +249,7 @@ def test_default_workspace_with_set_non_default_workspace_and_project_context():
 
 #11
 def test_default_workspace_project_specify_project_equal_None_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -263,7 +263,7 @@ def test_default_workspace_project_specify_project_equal_None_context():
 
 #12
 def test_non_default_workspace_project_specify_project_equal_None_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=ALTERNATE_WORKSPACE,
                   project=ALTERNATE_PROJECT)
     workspace = rally.getWorkspace()
@@ -279,7 +279,7 @@ def test_non_default_workspace_project_specify_project_equal_None_context():
 
 #13
 def test_default_wksprj_with_set_non_default_workspace_specify_project_equal_None_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -296,7 +296,7 @@ def test_default_wksprj_with_set_non_default_workspace_specify_project_equal_Non
 
 #14
 def test_default_wksprj_with_set_non_default_workspace_and_project_specify_project_equal_None_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -317,7 +317,7 @@ def test_default_wksprj_with_set_non_default_workspace_and_project_specify_proje
 
 #15
 def test_default_wksprj_specify_workspace_and_project_equal_None_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -330,7 +330,7 @@ def test_default_wksprj_specify_workspace_and_project_equal_None_context():
 
 #16
 def test_non_default_wksprj_specify_workspace_and_project_equal_None_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=ALTERNATE_WORKSPACE,
                   project=ALTERNATE_PROJECT)
     workspace = rally.getWorkspace()
@@ -345,7 +345,7 @@ def test_non_default_wksprj_specify_workspace_and_project_equal_None_context():
 
 #17
 def test_default_wksprj_set_non_default_wksprj_specify_workspace_and_project_equal_None_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()

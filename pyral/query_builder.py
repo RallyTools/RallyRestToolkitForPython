@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 2)
+__version__ = (1, 5, 0)
 
 import re
 import types
@@ -108,17 +108,15 @@ class RallyUrlBuilder(object):
     def beautifyResponse(self):
         self.pretty = True
 
-AgileCentralUrlBuilder = RallyUrlBuilder
-
 ##################################################################################################
 
 class RallyQueryFormatter(object):
     CONJUNCTIONS = ['and', 'AND', 'or', 'OR']
-    CONJUNCTION_PATT = re.compile('\s+(AND|OR)\s+', re.I | re.M)
+    CONJUNCTION_PATT = re.compile(r'\s+(AND|OR)\s+', re.I | re.M)
     ATTR_IDENTIFIER = r'[\w\.]+[a-zA-Z0-9]'
     RELATIONSHIP    = r'=|!=|>|<|>=|<=|contains|!contains'
     ATTR_VALUE      = r'"[^"]+"|[^ ]+'
-    QUERY_CRITERIA_PATTERN = re.compile('^(%s) (%s) (%s)$' % (ATTR_IDENTIFIER, RELATIONSHIP, ATTR_VALUE), re.M)
+    QUERY_CRITERIA_PATTERN = re.compile(r'^(%s) (%s) (%s)$' % (ATTR_IDENTIFIER, RELATIONSHIP, ATTR_VALUE), re.M)
 
     @staticmethod
     def parenGroups(criteria):
@@ -185,14 +183,16 @@ class RallyQueryFormatter(object):
         # if caller has more than one opening paren, summarily return the query 
         # after stripping off the opening paren at the start of the string and the 
         # closing parent at the end of the string
-        # The assumption is that the caller has correctly done the parenthisized grouping 
+        # The assumption is that the caller has correctly done the parenthesized grouping
         # to end up in a binary form but we strip off the enclosing parens because the 
         # caller (RallyUrlBuilder) will be immediately supplying them after the return from here.
         if criteria.count('(') > 1:
             stripped_and_plugged  = criteria.strip()[1:-1].replace(' ', '%20')
             return stripped_and_plugged
 
-        criteria = criteria.replace('&', '%26')        
+        # commented out following substitution for 1.5.0, as later a call to quote(criteria ...)
+        # ends up url-encoding the %26 resulting a a value of %2526 which goofs things up on the back-end in Rally
+        #criteria = criteria.replace('&', '%26')
         parts = RallyQueryFormatter.CONJUNCTION_PATT.split(criteria.strip())
 ##
 ##        print("RallyQueryFormatter parts: %s" % repr(parts))
@@ -232,9 +232,9 @@ class RallyQueryFormatter(object):
         attr_ident   = r'[\w\.]+[a-zA-Z0-9]'
         relationship = r'=|!=|>|<|>=|<=|contains|!contains'
         attr_value   = r'"[^"]+"|[^" ]+'
-        criteria_pattern       = re.compile('^(%s) (%s) (%s)$'         % (attr_ident, relationship, attr_value))
-        quoted_value_pattern   = re.compile('^(%s) (%s) ("[^"]+")$'    % (attr_ident, relationship))
-        unquoted_value_pattern = re.compile('^(%s) (%s) ([^"].+[^"])$' % (attr_ident, relationship))
+        criteria_pattern       = re.compile(r'^(%s) (%s) (%s)$'         % (attr_ident, relationship, attr_value))
+        quoted_value_pattern   = re.compile(r'^(%s) (%s) ("[^"]+")$'    % (attr_ident, relationship))
+        unquoted_value_pattern = re.compile(r'^(%s) (%s) ([^"].+[^"])$' % (attr_ident, relationship))
 
         valid_parts = []
         front = ""
@@ -259,7 +259,5 @@ class RallyQueryFormatter(object):
             raise Exception("Invalid query expression syntax in: %s" % (" ".join(parts)))
         
         return valid_parts
-
-AgileCentralQueryFormatter = RallyQueryFormatter
 
 ##################################################################################################

@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 2)
+__version__ = (1, 5, 0)
 
 import datetime
 import os
@@ -34,12 +34,12 @@ RALLY_REST_HEADERS = \
     {
       #'X-RallyIntegrationName'     : 'Python toolkit for Rally REST API', # although syntactically this is the more correct
       'X-RallyIntegrationName'     : 'Rally REST API toolkit for Python',  # this matches the format of the other language toolkits
-      'X-RallyIntegrationVendor'   : 'CA Technologies', 
+      'X-RallyIntegrationVendor'   : 'Broadcom / Rally',
       'X-RallyIntegrationVersion'  :       '%s.%s.%s' % __version__,
       'X-RallyIntegrationLibrary'  : 'pyral-%s.%s.%s' % __version__,
       'X-RallyIntegrationPlatform' : 'Python %s' % platform.python_version(),
       'X-RallyIntegrationOS'       : platform.platform(),
-      'User-Agent'                 : 'Pyral Agile Central WebServices Agent',
+      'User-Agent'                 : 'Pyral Rally WebServices Agent',
       'Content-Type'               : 'application/json',
       'Accept-Encoding'            : 'gzip'
     }
@@ -52,10 +52,10 @@ def timestamp():
 
 ##################################################################################################
 
-CONFIG_SETTING_PATT     = re.compile('^([A-Z]+)\s*=\s*(.+)$')
-RALLY_ARG_SETTING_PATT1 = re.compile('^--(rally[SUPW][a-z]+)=(.+)\s*$')
-RALLY_ARG_SETTING_PATT2 = re.compile('^--([ASUPWasupw][a-z]+)=(.+)\s*$')
-RALLY_CONFIG_FILE_PATT  = re.compile('^--(cfg|conf|config|rallyConfig)=(\S+)$')
+CONFIG_SETTING_PATT     = re.compile(r'^([A-Z]+)\s*=\s*(.+)$')
+RALLY_ARG_SETTING_PATT1 = re.compile(r'^--(rally[SUPW][a-z]+)=(.+)\s*$')
+RALLY_ARG_SETTING_PATT2 = re.compile(r'^--([ASUPWasupw][a-z]+)=(.+)\s*$')
+RALLY_CONFIG_FILE_PATT  = re.compile(r'^--(cfg|conf|config|rallyConfig)=(\S+)$')
 
 TRUTHY_VALUES = ['t', 'true',  'y', 'yes', '1']
 FALSEY_VALUES = ['f', 'false', 'n', 'no',  '0']
@@ -107,19 +107,12 @@ def rallyWorkset(args):
                         server_creds[1] = value
                     elif item == 'PASSWORD':
                         server_creds[2] = value
-                    elif item == "APIKEY":
+                    elif item == "APIKEY" or item == "API_KEY":
                         server_creds[3] = value
                     elif item == 'WORKSPACE':
                         server_creds[4] = value
                     elif item == 'PROJECT':
                         server_creds[5] = value
-                    elif item == 'RALLY_PING':
-                        if value.lower()   in TRUTHY_VALUES:
-                            os.environ['RALLY_PING'] = 'true'
-                        elif value.lower() in FALSEY_VALUES:
-                            os.environ['RALLY_PING'] = 'false'
-                        else:
-                            os.environ['RALLY_PING'] = 'true'
             cf.close()
             sc = "%s, %s, %s, %s, %s, %s" % tuple(server_creds)
             return server_creds
@@ -159,7 +152,7 @@ def rallyWorkset(args):
     for arg in args:
         mo = RALLY_CONFIG_FILE_PATT.match(arg)
         if mo:
-            config_name, config_file = mo.groups()
+            config_token, config_file = mo.groups()
             server_creds = snarfSettings(config_file, server_creds)
 
     # #1
@@ -192,19 +185,12 @@ def rallyWorkset(args):
                 server_creds[1] = value
             elif item == 'password':
                 server_creds[2] = value
-            elif item == 'apikey':
+            elif item == 'apikey' or item == 'api_key':
                 server_creds[3] = value
             elif item == 'workspace':
                 server_creds[4] = value
             elif item == 'project':
                 server_creds[5] = value
-            elif item == 'ping':
-                if value.lower()   in TRUTHY_VALUES:
-                    os.environ['RALLY_PING'] = 'true'
-                elif value.lower() in FALSEY_VALUES:
-                    os.environ['RALLY_PING'] = 'false'
-                else:
-                    os.environ['RALLY_PING'] = 'true'
 
     return server_creds
 
@@ -212,6 +198,7 @@ def rallyWorkset(args):
 
 def rallySettings(args):
     """
+        ***********  DEPRECATED   *************
         priority order of Python Rally REST API server ident, credentials, workspace/project:
           1) command line args with --rallyServer, --rallyUser, --rallyPassword, --workspace, --project
           2) command line arg specifying a config file --rallyConfig=<config_file_name>
@@ -295,7 +282,7 @@ def rallySettings(args):
     for arg in args:
         mo = RALLY_CONFIG_FILE_PATT.match(arg)
         if mo:
-            config_name, config_file = mo.groups()
+            config_token, config_file = mo.groups()
             server_creds = snarfSettings(config_file, server_creds)
 
     # #1

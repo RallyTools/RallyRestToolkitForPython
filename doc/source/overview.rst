@@ -42,7 +42,7 @@ Here's a prototype of simple use of the **pyral** package.::
     response = rally.get('Release', fetch="Project,Name,ReleaseStartDate,ReleaseDate",
                          order="ReleaseDate")
 
-    for release in response:
+    for rls in response:
         rlsStart = rls.ReleaseStartDate.split('T')[0]  # just need the date part
         rlsDate  = rls.ReleaseDate.split('T')[0]       # ditto
         print "%-6.6s  %-16.16s   %s  -->  %s" % \
@@ -76,9 +76,11 @@ Full CRUD capability
 ====================
 
 The Python toolkit for the Rally REST API offers the full spectrum of CRUD capabilities that the 
-credentials supplied for your subscription/workspace/project permit.  While the Rally
-REST API itself doesn't support bulk operations, there are example usages of 
-**pyral** that you can adapt to offer the end-user or scriptwriter the
+credentials supplied for your subscription/workspace/project permit.  Rally
+REST API did not originally support bulk operations when this toolkit was written.
+Since the 2017/2018 timeframe the Rally REST WSAPI has provided some bulk operations, but this
+toolkit doesn't use those or provide access to them.
+There are example usages of **pyral** that you can adapt to offer the end-user or scriptwriter the
 capability of specifying ranges of identifiers of artifacts for querying/updating/deleting.
 
 Rally Introspection
@@ -94,7 +96,7 @@ Queries and Results
 
 The Rally REST API has two interesting characteristics that the Python toolkit for the Rally REST API 
 insulates the scriptwriter from having to deal with.  The first is that the Rally REST API
-has a maximum "pagesize" of 200 records to limit volume and prevent unwarranted hijacking of the
+has a maximum "pagesize" to limit volume and prevent unwarranted hijacking of the
 Rally SaaS servers.  But, having script writers deal with this directly to obtain further 
 "pages" would be burdensome and out of character with the mainstream of Python interfaces
 to SaaS services.  The Python toolkit for the Rally REST API (**pyral**) takes care 
@@ -104,15 +106,15 @@ requests on the Rally server.
 
 The second characteristic is that the Rally REST API for some queries and results returns
 not a scalar value but a reference to yet another entity in the Rally system.  A Project or
-a Release are good examples of these.  Say your query specified the retrieval of some UserStories,
+a Release are good examples of these.  Say your query specified the retrieval of some Stories,
 and you listed the Project as a field to return with these results.  From an end-user perspective,
 seeing the project name as opposed to an URL with an ObjectID value would be far more intuitive.
 
 The Python toolkit for the Rally REST API offers this sort of intuitive behavior by "chasing" the URL 
 to obtain the more human friendly and intuitive information for display.  This sort of behavior is 
-also present in so-called "lazy-evaluation" of entity attributes that may be containers as well
-as references.  The scriptwriter merely has to refer to the attribute with the dot ('.') notation
-and **pyral** takes care of the communication with the Rally server 
+also present in so-called "lazy-evaluation" of entity attributes that may be containers (collections)
+ as well as references.  The scriptwriter merely has to refer to the attribute with the
+ dot ('.') notation and **pyral** takes care of the communication with the Rally server
 to obtain the value.  There are two significant advantages to this, one being lightening 
 the load on the server with the reduction of data returned and the other being easy and 
 intuitive attribute access syntax.
@@ -126,6 +128,15 @@ reference these fields without having to use the 'c_' prefix.  For example, if y
 has a DisplayName of 'Burnt Offerings Index' you can use the String of 'BurntOfferingsIndex' in
 a fetch clause or a query clause or refer to the field directly on an artifact 
 as artifact.BurntOfferingsIndex.
+
+
+PortfolioItem tips
+==================
+Rally has 4 standard PortfolioItem sub-types (Theme, Strategy, Initiative, and Feature).
+In this toolkit, for the primary methods (get, create, update, delete), you must supply a
+entity name (eg, 'Story', 'Defect', 'Task', etc). For a PortfolioItem sub-type you may
+specify just the name of the sub-type, ie., 'Feature' or you may fully qualify it as
+'PortfolioItem/Feature'.
 
 Introduction of Dyna-Types
 ==========================
@@ -152,4 +163,9 @@ here is that if you don't use PortfolioItem instances with pyral, you don't have
 If you use PortfolioItem instances with pyral or you've defined your own "abstract" 
 parent types and specific sub-types thereof, you are strongly encouraged to use the slashed specification 
 to avoid ambiguity in identifying the Rally entity type.
+
+In the event your organization has created a sub-type with the same name as a standard Rally entity
+(eg, 'Project', 'Release', 'Milestone', etc.) you will be unable to use this toolkit to access those items.
+There will be no consideration given to supporting any custom PortfolioItem sub-type whose name conflicts with
+Rally standard entity name.
   

@@ -133,3 +133,10 @@
     
 1.3.2 - Aug 2017
     Allow for initial connection using a workspace name containing chars that need to be urlencoded.
+
+1.4.2 - Aug 2018
+
+1.5.0 - Feb 2021
+    Updated/fixed some doc verbiage.
+    Fixed retrieval of attachments.
+    Fixed return value of call to create an instance of a PortfolioItem custom sub-type.

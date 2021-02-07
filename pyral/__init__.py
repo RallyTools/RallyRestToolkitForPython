@@ -1,7 +1,6 @@
-__version__ = (1, 4, 2)
+__version__ = (1, 5, 0)
 from .config    import rallySettings, rallyWorkset
 from .restapi   import Rally, RallyRESTAPIError, RallyUrlBuilder
-from .restapi   import AgileCentral, AgileCentralRESTAPIError, AgileCentralUrlBuilder
+from .restapi   import AgileCentral
 from .rallyresp import RallyRESTResponse
-from .rallyresp import AgileCentralRESTResponse
 

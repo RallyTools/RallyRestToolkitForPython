@@ -8,7 +8,7 @@
 # NOTE: Be aware as of Oct 2016 that the only attributes that have _meaningful_ values
 #       are those of type RATING, STATE and some whose type STRING (but not all whose 
 #       type is STRING).
-#       There are numerous standard AgileCentral entity attributes of type STRING
+#       There are numerous standard Rally entity attributes of type STRING
 #       whose allowedValues reference url returns a True value upon hitting the endpoint.
 #       As it that is the only value, it's not really useful as compared to the other
 #       attributes that do have multiple allowed values.

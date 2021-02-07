@@ -1,16 +1,15 @@
-pyral - A Python toolkit for the Agile Central (Rally) REST API
-===============================================================
+pyral - A Python toolkit for the Rally REST API
+===============================================
 
 
 The `pyral <http://github.com/RallyTools/RallyRestToolkitForPython>`_ package enables you to push, pull
-and otherwise wrangle the data in your Agile Central (formerly named Rally) subscription using the popular
+and otherwise wrangle the data in your Rally subscription using the popular
 and productive Python language.
 The ``pyral`` package provides a smooth and easy to use veneer on top
-of the Agile Central (Rally) REST Web Services API using JSON.
+of the Rally REST Web Services API using JSON.
 
-As of July 2015, the Rally Software Development company was acquired by CA Technologies.
-The Rally product itself has been rebranded as 'Agile Central'.  Over time, the documentation
-will transition from using the term 'Rally' to using 'Agile Central'.
+This package is once again branded as a 'Rally' toolkit.
+The era of "Agile Central" branding is over, we'll not speak of it again...
 
 
 .. contents::
@@ -18,9 +17,9 @@ will transition from using the term 'Rally' to using 'Agile Central'.
 Getting started
 ---------------
 
-Agile Central (Rally) has created a Python package that you can quickly leverage to interact with the data in your
+Rally has created a Python package that you can quickly leverage to interact with the data in your
 subscription via the REST web services API.  You can create, read, update, and delete the common 
-artifacts and other entities via the Python toolkit for Agile Central (Rally).
+artifacts and other entities via the Python toolkit for Rally.
 
 Download
 ````````
@@ -48,7 +47,7 @@ Obtain the requests_ package and install it according to that package's directio
 As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 Use of requests-2.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.4.2) has been tested using requests 2.19.1.
+The most recent release of pyral (1.5.0) has been tested using requests 2.22.0.
 
 Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
 
@@ -72,11 +71,11 @@ relevant packages.
 :: 
 
    $ python
-   Python 3.6.4 [other Python interpreter info elided ...]
+   Python 3.7.5 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 4, 2)
+   (1, 5, 0)
 
 
 
@@ -94,13 +93,13 @@ assigned to the name **story**, the following code iterates over the tasks.
 
 There is no need to make a separate call to fetch all the tasks for the story.
 When you follow domain model attributes in the Python code, the Python toolkit for 
-Agile Central (Rally) REST API machinery automatically loads in the necessary objects for you.
+Rally REST API machinery automatically loads in the necessary objects for you.
 
 
 Full Documentation
 ``````````````````
 
-The complete documentation for the Python toolkit for Agile Central (Rally) REST API
+The complete documentation for the Python toolkit for Rally REST API
 is in the doc/build/html subdirectory in the repository.  
 The rendered version of this is also available at 
 http://pyral.readthedocs.io/en/latest/
@@ -117,7 +116,6 @@ Common setup code ::
     args    = [arg for arg in sys.argv[1:] if arg not in options]
     server, user, password, apikey, workspace, project = rallyWorkset(options)
     rally = Rally(server, user, password, apikey=apikey, workspace=workspace, project=project)
-    rally.enableLogging('mypyral.log')
 
 Show a TestCase identified by the **FormattedID** value.
   Copy the above boilerplate and the following code fragment and save it in a file named gettc.py
@@ -153,22 +151,6 @@ Get a list of workspaces and projects for your subscription
 
     python wksprj.py 
 
-Get a list of all users in a specific workspace
-  Copy the above boilerplate and the following code fragment and save it in a file called allusers.py 
-
-::
-
-    all_users = rally.getAllUsers()
-        for user in all_users:
-            tz   = user.UserProfile.TimeZone or 'default'
-            role = user.Role or '-No Role-'
-            values = (int(user.oid), user.Name, user.UserName, role, tz)
-            print("%12.12d %-24.24s %-30.30s %-12.12s" % values)
-
-- Run the script
-
-    python allusers.py --rallyWorkspace="Product Engineering"
-
 Create a new Defect
   Copy the above boilerplate and the following code fragment and save it in a file called crdefect.py 
 
@@ -176,8 +158,8 @@ Create a new Defect
 
     proj = rally.getProject()
 
-    # get the first (and hopefully only) user whose DisplayName is 'Sally Submitter' 
-    user = rally.getUserInfo(name='Sally Submitter').pop(0) 
+    # get the first (and hopefully only) user whose DisplayName is 'Sartorious Submitter' 
+    user = rally.getUserInfo(name='Sartorius Submitter').pop(0) 
 
     defect_data = { "Project" : proj.ref, "SubmittedBy" : user.ref, 
                     "Name" : name, "Severity" : severity, "Priority" : priority,
@@ -227,8 +209,8 @@ Update an existing Defect
 Config Options
 --------------
 
-The ``pyral`` package uses a priority
-chain of files, environment variables and command line arguments to set the 
+The ``pyral`` package uses a priority chain of files, 
+environment variables and command line arguments to set the 
 configuration context when an instance of the Rally class is created.
 See the complete documentation for detailed information on this mechanism.
 Here's a brief description of how you can specify a configuration when you 
@@ -270,10 +252,9 @@ The item names in config files **are** case sensitive.
 Prerequisites
 -------------
 
- * Python 3.5, 3.6 or 3.7 (this package not tested with earlier versions of Python 3.x) OR
- * Python 2.7 (explicit support for this version will end with the 1.4.x line, 1.5.x will not support 2.7)
+ * Python 3.5, 3.6 or 3.7 (this package not tested with earlier versions of Python 3.x)
  * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy),
-   requests 2.19.1 is recommended.
+   requests 2.22.0 or more recent is recommended.
  * The six_ package.
 
 .. _requests: http://github.com/kennethreitz/requests
@@ -281,6 +262,14 @@ Prerequisites
 
 Versions
 --------
+   **1.5.0**
+       Fixed defect where attachments were not returned from getAttachments method.
+       Fixed defect where the creation or update of a custom PortfolioItem sub-type did not return a
+       valid pyral instance of the sub-type.
+       Fixed defect in returning correct number of items when the start index is specified as an integer.
+       Fixed defect where a feature item could not be added to a Milestones collection
+       Fixed defect in query construction (and results) when a target attribute value contains a '&' character.
+
    **1.4.2**
        Fixed defect in returning RallyRESTResponse when pagesize set to 1
 
@@ -357,13 +346,13 @@ Versions
 
 TODO
 ----
-* Dynamically construct the Agile Central (Rally) schema class hierarchy economically.
+* Dynamically construct the Rally schema class hierarchy economically.
 
 
 License
 -------
 
-BSD3-style license. Copyright (c) 2015-2017 CA Technologies, 2010-2015 Rally Software Development.
+BSD3-style license. Copyright (c) 2018-2021 Broadcom, Inc., 2015-2018 CA Technologies, 2010-2015 Rally Software Development.
 
 See the LICENSE file provided with the source distribution for full details.
 
@@ -376,7 +365,7 @@ None. See the LICENSE file for full text regarding this issue.
 Support
 -------
 
-The use of this package is on an *as-is* basis and there is no official support offered by CA Technologies.
+The use of this package is on an *as-is* basis and there is no official support offered by Broadcom.
 The author of this module periodically checks the GitHub repository issues for this package in the
 interests of providing defect fixes and small feature enhancements as time permits, but is not obligated to
 respond or take action.
@@ -387,7 +376,7 @@ others who have some exposure to ``pyral`` and might be able to offer useful inf
 Author
 ------
 
-* Kip Lehman  <klehman@rallydev.com>
+* Kip Lehman  <kip.lehman@broadcom.com>
 
 
 Additional Credits
