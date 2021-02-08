@@ -47,38 +47,20 @@ PROJECT_SCOPING_TREE = {
                          }
 }
 
-
 HTTPS_PROXY = "127.0.0.1:3128"
 HTTPS_PROXY = "127.0.0.1:9654"
 
 #---------------------------------------------------------------------------
-
-# uncomment this block for entries for access to the alternate test environment
-
-#RALLY = 'us1.rallydev.com'
-#PROD  = 'us1.rallydev.com'
-
-#RALLY_USER = 'kip@closedprojects.com'
-#RALLY_PSWD = 'TwinLakes55'
-#RALLY_NICKNAME = 'Kip'
-
-#DEFAULT_WORKSPACE = 'NMDS'
-#DEFAULT_PROJECT   = 'My Project'
-#NON_DEFAULT_PROJECT = 'Sample Project'
-
-#ALTERNATE_WORKSPACE = '404'
-#ALTERNATE_PROJECT   = 'Name'
-
-#API_KEY = "_DFyvCutVTKAxibNJ7mHvABywT3UIwtspVjJNWf40"
-
+# uncomment this block for entries for access to an alternate test environment
+#RALLY = 'rally1.rallydev.com'
+#PROD  = 'rally1.rallydev.com'
 #PROD_USER = "rascal@mischief.com"
 #PROD_PSWD = "StRiPeSand-D-a-s-h-e-s"
-
 #-----------------------------------------------------------------------------------------
 
-
-__all__ = [RALLY, RALLY_USER, RALLY_PSWD, RALLY_NICKNAME, 
+__all__ = [RALLY, RALLY_USER, RALLY_PSWD, RALLY_NICKNAME,
            PROD,  PROD_USER,  PROD_PSWD,
            DEFAULT_WORKSPACE, DEFAULT_PROJECT, 
            NON_DEFAULT_PROJECT, ALTERNATE_WORKSPACE, ALTERNATE_PROJECT, 
            PROJECT_SCOPING_TREE, HTTPS_PROXY]
+
