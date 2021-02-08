@@ -1,14 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#try:
-#    from distutils2.core import setup
-#except:
-#    try:
-#        from distutils.core import setup
-#    except:
-#        from setuptools import setup
-
 from setuptools import setup
 
 PACKAGE       = 'pyral'
@@ -24,9 +16,10 @@ GITHUB_DISTS  = '%s/raw/master/dists' % GITHUB_SITE
 DOWNLOADABLE_ZIP = '%s/%s-%s.zip' % (GITHUB_DISTS, PACKAGE, VERSION)
 SHORT_DESCRIPTION = 'README.short'
 FULL_DESCRIPTION  = 'README.rst'
-LONG_DESCRIPTION  = ""
-with open(FULL_DESCRIPTION, 'r') as d:
-    LONG_DESCRIPTION = d.read()
+
+from os import path
+desc_file = path.join(path.abspath(path.dirname(__file__)), FULL_DESCRIPTION)
+with open(desc_file, encoding='utf-8') as df: long_description = df.read()
 
 MINIMUM_REQUESTS_VERSION = '2.12.5'  # although 2.22.x is recommended
 REQUIRES      = ['six', 
@@ -43,6 +36,7 @@ CLASSIFIERS   =  [ 'Development Status :: 5 - Production/Stable',
                    'Programming Language :: Python :: 3.5',
                    'Programming Language :: Python :: 3.6',
                    'Programming Language :: Python :: 3.7',
+                   'Programming Language :: Python :: 3.8',
                    'Topic :: Internet :: WWW/HTTP',
                    'Topic :: Software Development :: Libraries',
                  ]
@@ -56,7 +50,7 @@ setup(name=PACKAGE,
       author_email=AUTHOR_EMAIL,
       url=GITHUB_SITE,
       download_url=DOWNLOADABLE_ZIP,
-      long_description=LONG_DESCRIPTION,
+      long_description=long_description,
       long_description_type='text/x-rst',
       license=LICENSE,
       keywords=KEYWORDS,
