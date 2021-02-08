@@ -11,7 +11,7 @@ from pyral import Rally
 
 ##################################################################################################
 
-from rally_targets import RALLY, API_KEY
+from rally_targets import RALLY, APIKEY
 
 ##################################################################################################
 
@@ -21,7 +21,7 @@ def test_basic_connection_with_a_header():
         request against a known valid Rally entity.
     """
     headers = {'name': 'Fungibles Goods Burn Up/Down', 'vendor': 'Archimedes', 'version': '1.2.3'}
-    rally = Rally(RALLY, apikey=API_KEY, headers=headers)
+    rally = Rally(RALLY, apikey=APIKEY, headers=headers)
     response = rally.get('Project', fetch=False, limit=10)
     assert response != None
     assert response.status_code == 200

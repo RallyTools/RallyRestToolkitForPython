@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-
 #try:
 #    from distutils2.core import setup
 #except:
@@ -20,12 +18,15 @@ PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (Broadcom, Enterprise Software Division)'
 AUTHOR_EMAIL  = 'kip.lehman@broadcom.com'
 LICENSE       = 'BSD'
+KEYWORDS      = ['rally', 'api']
 GITHUB_SITE   = 'https://github.com/RallyTools/RallyRestToolkitForPython'
 GITHUB_DISTS  = '%s/raw/master/dists' % GITHUB_SITE
 DOWNLOADABLE_ZIP = '%s/%s-%s.zip' % (GITHUB_DISTS, PACKAGE, VERSION)
 SHORT_DESCRIPTION = 'README.short'
 FULL_DESCRIPTION  = 'README.rst'
-KEYWORDS      = ['rally', 'api']
+LONG_DESCRIPTION  = ""
+with open(FULL_DESCRIPTION, 'r') as d:
+    LONG_DESCRIPTION = d.read()
 
 MINIMUM_REQUESTS_VERSION = '2.12.5'  # although 2.22.x is recommended
 REQUIRES      = ['six', 
@@ -55,10 +56,11 @@ setup(name=PACKAGE,
       author_email=AUTHOR_EMAIL,
       url=GITHUB_SITE,
       download_url=DOWNLOADABLE_ZIP,
-      long_description=open(FULL_DESCRIPTION, 'r').read(),
+      long_description=LONG_DESCRIPTION,
+      long_description_type='text/x-rst',
       license=LICENSE,
       keywords=KEYWORDS,
       install_requires=REQUIRES,
       classifiers=CLASSIFIERS
      )
-        
+
