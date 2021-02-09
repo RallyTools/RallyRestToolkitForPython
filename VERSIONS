@@ -137,6 +137,12 @@
 1.4.2 - Aug 2018
 
 1.5.0 - Feb 2021
+    Dropped all support for Python 2.7 constructs.
+    Validated support for Python 3.7 and 3.8.
     Updated/fixed some doc verbiage.
     Fixed retrieval of attachments.
     Fixed return value of call to create an instance of a PortfolioItem custom sub-type.
+    Fixed defect in returning correct number of items when the start index is specified as an integer.
+    Fixed defect where a feature item could not be added to a Milestones collection
+    Fixed defect in query construction (and results) when a target attribute value contains a '&' character.
+

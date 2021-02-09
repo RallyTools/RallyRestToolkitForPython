@@ -263,6 +263,8 @@ Prerequisites
 Versions
 --------
    **1.5.0**
+       Dropped all support for Python 2.7 constructs.
+       Validated support for Python 3.7 and 3.8.
        Fixed defect where attachments were not returned from getAttachments method.
        Fixed defect where the creation or update of a custom PortfolioItem sub-type did not return a
        valid pyral instance of the sub-type.

@@ -12,10 +12,7 @@
 __version__ = (1, 5, 0)
 
 import sys
-import imp
-imp.reload(sys)  # Reload gets a sys module that has the setdefaultencoding before site.py deletes it
 import six
-six.PY2 and sys.setdefaultencoding('UTF8') # not required in python 3
 
 from .entity import classFor, getSchemaItem, addEntity, PortfolioItem, \
                     VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES, PORTFOLIO_ITEM_SUB_TYPES

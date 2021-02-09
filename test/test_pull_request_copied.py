@@ -75,8 +75,6 @@ def test_post_pull_request():
     #assert expectedErrMsg == actualErrVerbiage
 
 def test_query_pull_requests():
-    #rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
-    #rally = Rally(server=TESTN, user=TESTN_USER, password=TESTN_PSWD)
     rally = Rally(server=RALLY, apikey=RALLY_SUB_100_API_KEY)
     attrs = "ExternalId,ExternalFormattedId,Artifact,Name,Url,Description"
     response = rally.get('PullRequest', fetch=attrs, project=None)
@@ -87,8 +85,9 @@ def test_query_pull_requests():
     assert len(prs) > 0
     assert prs[0].Artifact
     assert prs[0].Artifact.__class__.__name__ == 'HierarchicalRequirement'
-    print (prs[0].Artifact.oid)
-    print(prs[0].details())
+    #print (prs[0].Artifact.oid)
+    #for wob in prs[0].details():
+    #    print(wob)
 
 # def test_creation_date_query():
 #     rally = Rally(server=RALLY, apikey=RALLY_SUB_100_API_KEY)
