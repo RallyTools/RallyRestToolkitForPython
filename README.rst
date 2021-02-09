@@ -7,7 +7,6 @@ and otherwise wrangle the data in your Rally subscription using the popular
 and productive Python language.
 The ``pyral`` package provides a smooth and easy to use veneer on top
 of the Rally REST Web Services API using JSON.
-
 This package is once again branded as a 'Rally' toolkit.
 The era of "Agile Central" branding is over, we'll not speak of it again...
 
