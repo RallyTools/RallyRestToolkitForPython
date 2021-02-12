@@ -16,9 +16,9 @@ Description: This is the README file for pyral, a package implementing a
         to interact with entities and artifacts in your Rally subscription.  The full
         spectrum of CRUD operations is available in your Rally Workspaces and Projects,
         providing of course that your Rally subscription credentials enable you to perform
-         those operations.  The toolkit insulates the package user from having to make 
+        those operations.  The toolkit insulates the package user from having to make
         multiple requests to obtain the full set of qualifying items by performing any 
-        subsequent "page" requests automatically.  
+        subsequent "page" requests automatically.
         An additional key feature is the ability to obtain entity sub fields
         that may be references or collections via the familiar dot '.' notation.
         
