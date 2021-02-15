@@ -1,26 +1,26 @@
 This is the README file for pyral, a package implementing a 
-Pythonic interface to the Agile Central (formerly Rally) REST API
+Pythonic interface to the Rally REST API
 
 Description
 -----------
 
 The Rally REST Tookit for Python consists of a package that provides a means
 to interact with entities and artifacts in your Rally subscription.  The full
-spectrum of CRUD operations is available in your Agile Central (Rally) Workspaces and Projects,
-providing of course that your Agile Central (Rally) subscription credentials enable you to perform
- those operations.  The toolkit insulates the package user from having to make 
+spectrum of CRUD operations is available in your Rally Workspaces and Projects,
+providing of course that your Rally subscription credentials enable you to perform
+those operations.  The toolkit insulates the package user from having to make
 multiple requests to obtain the full set of qualifying items by performing any 
-subsequent "page" requests automatically.  
+subsequent "page" requests automatically.
 An additional key feature is the ability to obtain entity sub fields
 that may be references or collections via the familiar dot '.' notation.
 
 Requirements
 ------------
 
-The pyral package requires the use of Kenneth Reitz's requests package using version 2.8.0 or better.
+The pyral package requires the use of Kenneth Reitz's requests package using version 2.12.0 or better.
 As of requests version 2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
 The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.4.2) has been tested with requests 2.19.1.
+The most recent release of pyral (1.5.0) has been tested with requests 2.22.0.
 The six module is also required.
 
 

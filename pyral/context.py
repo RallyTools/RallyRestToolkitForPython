@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 2)
+__version__ = (1, 5, 0)
 
 import sys, os
 import platform
@@ -28,7 +28,7 @@ from .entity    import InvalidRallyTypeNameError, UnrecognizedAllowedValuesRefer
 
 ###################################################################################################
 
-__all__ = ["RallyContext", "RallyContextHelper", "AgileCentralContext", "AgileCentralContextHelper"]
+__all__ = ["RallyContext", "RallyContextHelper"]
 
 ###################################################################################################
 
@@ -90,18 +90,15 @@ class RallyContext(object):
     def __repr__(self):
         return self.identity()
 
-AgileCentralContext = RallyContext
-        
 ##################################################################################################
 
 class RallyContextHelper(object):
 
-    def __init__(self, agent, server, user, password, server_ping):
+    def __init__(self, agent, server, user, password):
         self.agent  = agent
         self.server = server
         self.user   = user
         self.password = password
-        self.server_ping = server_ping
 
         # capture this user's User, UserProfile, Subscription records to extract 
         # the workspaces and projects this user has access to (and their defaults)
@@ -161,13 +158,6 @@ class RallyContextHelper(object):
 ##
         target_host = proxy_host or server
 
-        if self.server_ping:
-            reachable, problem = Pinger.ping(target_host)
-            if not reachable:
-                if not problem:
-                    problem = "host: '%s' non-existent or unreachable"  % target_host
-                raise RallyRESTAPIError(problem)
-
         user_response = self._getUserInfo()
         subscription = self._loadSubscription()
         # caller must either specify a valid workspace/project 
@@ -220,8 +210,8 @@ class RallyContextHelper(object):
             timer_stop = time.time()
         except Exception as ex:
 ##
-            print("-----")
-            print(str(ex))
+##            print("-----")
+##            print(str(ex))
 ##
             if str(ex.args[0]).startswith('404 Service unavailable'):
                 # TODO: discern whether we should mention server or target_host as the culprit
@@ -229,6 +219,10 @@ class RallyContextHelper(object):
             else:
                 raise 
         elapsed = timer_stop - timer_start
+##
+##        print(f'response.status_code: {response.status_code}')
+##        print(f'response data: {repr(response.data)}')
+##
         if response.status_code != 200:
 ##
 ##            print("context check response:\n%s\n" % response)
@@ -775,7 +769,7 @@ class RallyContextHelper(object):
                 proj_path_leaf = self._findMultiElementPathToProject(project)
                 prj_ref = proj_path_leaf.ref
                 project = proj_path_leaf.Name
-            elif re.search('project/\d+$', project):
+            elif re.search(r'project/\d+$', project):
                 prj_ref = project
             else:
                 problem = 'Project specified: "%s" (in workspace: "%s") not accessible with current credentials' % \
@@ -915,58 +909,4 @@ class RallyContextHelper(object):
         items.append('%s = %s' % ('_currentProject',    self._currentProject))
         representation = "\n".join(items)
         return representation
-
-AgileCentralContextHelper = RallyContextHelper 
-
-##################################################################################################
-
-class Pinger(object):
-    """
-        An instance of this class attempts a single ping against a given target.
-        Response to the ping command results in the ping method returning True,
-        otherwise a False is returned
-    """
-    called = False
-    MAX_PING_ATTEMPTS    = 2
-    DEFAULT_PING_TIMEOUT = 6
-    ping_timeout = os.getenv('PYRAL_PING_TIMEOUT', None)
-    if ping_timeout:
-         result = re.match(r'^(?P<digits>\d+)$', ping_timeout)
-         ping_timeout = result.groupdict('digits') if result else DEFAULT_PING_TIMEOUT
-    else:
-        ping_timeout = DEFAULT_PING_TIMEOUT
-
-    PING_COMMAND = {'Darwin'  : ["ping", "-o", "-c", str(MAX_PING_ATTEMPTS), "-t", str(ping_timeout)],
-                    'Unix'    : ["ping",       "-c", str(MAX_PING_ATTEMPTS), "-w", str(ping_timeout)],
-                    'Linux'   : ["ping",       "-c", str(MAX_PING_ATTEMPTS), "-w", str(ping_timeout)],
-                    'Windows' : ["ping",       "-n", str(MAX_PING_ATTEMPTS), "-w", str(ping_timeout)],
-                    'Cygwin'  : ["ping",       "-n", str(MAX_PING_ATTEMPTS), "-w", str(ping_timeout)]
-                   }
-
-    @classmethod
-    def ping(self, target):
-        Pinger.called = True
-        plat_ident = platform.system()
-        if plat_ident.startswith('CYGWIN'):
-            plat_ident = 'Cygwin'
-        vector = Pinger.PING_COMMAND[plat_ident][:]
-        vector.append(target)
-        bucket = ".ping-bucket"
-        result = ""
-        rc = -1
-        try:
-            with open(bucket, 'w') as sink:
-                rc = subprocess.call(vector, stdout=sink, stderr=sink)
-        except:
-            stuff = sys.exc_info()
-           #print(stuff)
-            result = stuff[1]
-        finally:
-            with open(bucket, 'r') as of:
-                result = of.read()
-            os.unlink(bucket)
-
-        return rc == 0, result
-
-##################################################################################################
 

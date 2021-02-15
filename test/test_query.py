@@ -18,7 +18,7 @@ from pyral.query_builder import RallyUrlBuilder, RallyQueryFormatter
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 from rally_targets import BOONDOCKS_WORKSPACE, BOONDOCKS_PROJECT
 from rally_targets import PROJECT_SCOPING_TREE
@@ -31,7 +31,7 @@ def test_basic_query():
         issue a simple query (no qualifying criteria) for a known valid 
         Rally entity.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
@@ -45,7 +45,7 @@ def test_simple_named_fields_query():
         Rally entity. The fetch specifies a small number of known valid
         attributes on the Rally entity.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Project', fetch="Owner,State", limit=10)
     assert response.status_code == 200
     assert len(response.errors) == 0
@@ -58,7 +58,7 @@ def test_all_fields_query():
         Rally entity.  The fetch value is True so each entity returned in
         the response (data) will have its _hydrated attribute value set to True.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Project', fetch=True, limit=10)
     assert response.status_code == 200
     assert len(response.errors) ==   0
@@ -75,7 +75,7 @@ def test_bogus_query():
         The status_code in the response must not indicate a valid request/response
         and the errors attribute must have some descriptive info about the error.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     bogus_entity = "Payjammas"
     expectedErrMsg = "not a valid Rally entity: %s" % bogus_entity
     with py.test.raises(InvalidRallyTypeNameError) as excinfo:
@@ -93,7 +93,7 @@ def test_good_and_bad_fields_query():
         in the response data should not have the invalid attribute names, but
         should have attribute names/values for the correctly specified entity attributes.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Project', fetch="Owner,State,Fabulote,GammaRays", limit=10)
     project = response.next()
     name  = None
@@ -130,7 +130,7 @@ def test_multiple_entities_query():
         As of Rally WSAPI 1.x, this is an invalid request; 
         only a single Rally entity can be specified.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     multiple_entities = "Project,Workspace"
     with py.test.raises(InvalidRallyTypeNameError) as excinfo:
         response = rally.get(multiple_entities, fetch=False, limit=10)
@@ -145,7 +145,7 @@ def test_multiple_page_response_query():
         (Defect) known to have more than 5 items.  Set the pagesize to 5 to
         force pyral to retrieve multiple pages to satisfy the query.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Defect', fetch=False, pagesize=5, limit=15)
     count = 0
     for ix, bugger in enumerate(response):
@@ -165,7 +165,7 @@ def test_defects_revision_history():
         Ultimately, the attributes deeper than the first level must be obtained
         and have their attributes filled out completely (_hydrated == True).
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Defect', fetch=True,  limit=10)
     
     defect1 = response.next()
@@ -198,7 +198,7 @@ def test_single_condition_query_plain_expression():
         one or more Defects. The qualifying criterion is a string that is _not_
         surrounded with paren chars.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     project   = rally.getProject()
     qualifier = 'State = "Submitted"'
@@ -214,7 +214,7 @@ def test_single_condition_query_parenned():
         one or more Defects. The qualifying criterion is a string that _is_
         surrounded with paren chars.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifier = "(State = Submitted)"
     #qualifier = '(FormattedID = "US100")'
     response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
@@ -229,7 +229,7 @@ def test_two_condition_query_in_unparenned_string():
         two condition strings, each condition string does _not_ have any 
         surrounding paren chars.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     double_qualifier = "State = Submitted AND FormattedID != US100"
     response = rally.get('Defect', fetch=True, query=double_qualifier, limit=10)
     assert response.resultCount > 0
@@ -243,7 +243,7 @@ def test_two_condition_query_parenned():
         surrounded with paren chars and each condition itself is surrounded by
         parens..
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifiers = "((State = Submitted) AND (FormattedID != US100))"
     response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
     assert response.resultCount > 0
@@ -251,9 +251,9 @@ def test_two_condition_query_parenned():
 def test_four_ored_conditions_in_parrened_string():
     """
         Take a user query with OR conditions in which the parenneg groups are 
-        already supplied in AgileCentral conformant "binary" condition style
+        already supplied in Rally conformant "binary" condition style
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=BOONDOCKS_WORKSPACE, project=BOONDOCKS_PROJECT)
     qualifiers = '((((Name = "Brazen%20Milliwogs") OR (Name = "Jenkins")) OR (Name = "Refusnik")) OR (Name = "Salamandra"))'
     response = rally.get('Project', fetch=True, query=qualifiers, limit=10)
@@ -263,7 +263,7 @@ def test_four_ored_conditions_in_parrened_string():
     assert response.resultCount == 2  # Only Jenkins and Salamandra exist or or accessible to the accessing account
 
 def test_single_condition_query_as_list():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifier = ['State != Open']
     response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
     assert response.resultCount > 0
@@ -277,7 +277,7 @@ def test_two_condition_query_in_list():
         two condition strings, each condition string does _not_ have any 
         surrounding paren chars.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifiers = ["State = Submitted", "FormattedID != US100"]
     response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
     assert response.resultCount > 0
@@ -291,14 +291,14 @@ def test_three_condition_query_in_list():
         three condition strings, each condition string does _not_ have any 
         surrounding paren chars.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     #qualifiers = ["State = Submitted", "FormattedID != DE100", "Owner.UserName != horsefeathers"]
     qualifiers = ["State = Submitted", "FormattedID != DE100", "Severity != UltraMegaHurt"]
     response = rally.get('Defect', fetch=True, query=qualifiers, limit=10)
     assert response.resultCount > 0
 
 def test_five_condition_query_in_list():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifiers = ["State = Submitted",
                   "FormattedID < DE22",
                   "FormattedID != DE17",
@@ -309,13 +309,13 @@ def test_five_condition_query_in_list():
     assert response.resultCount > 0
     
 def test_single_condition_query_as_dict():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifier = {'State' : 'Submitted'}
     response = rally.get('Defect', fetch=True, query=qualifier, limit=10)
     assert response.resultCount > 0
 
 def test_two_conditions_query_as_dict():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifiers = {'State' : 'Submitted',
                   'Ready' : 'False'
                  }
@@ -328,7 +328,7 @@ def test_three_conditions_query_as_dict():
     """
     # TODO: note that an attribute value containing a '/' char will fail
     #       have yet to determine how to get this to work with Rally WSAPI ...
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifiers = {"State"    : "Submitted",
                   "Priority" : "High Attention",
                   "Ready"    : "False"
@@ -342,7 +342,7 @@ def test_limit_query():
     """
         Use a pagesize of 200 and a limit of 80 in the params in the URL
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifier = "State = Submitted"
     response = rally.get('Defect', fetch=True, query=qualifier, pagesize=100, limit=30)
     items = [item for item in response]
@@ -352,7 +352,7 @@ def test_start_value_query():
     """
         Use a pagesize of 200 and a start index value of 10 in the params in the URL
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifier = "State = Submitted"
     response = rally.get('Defect', fetch=True, query=qualifier, pagesize=200, start=10)
     items = [item for item in response]
@@ -363,33 +363,12 @@ def test_start_and_limit_query():
     """
         Use a pagesize of 50 and a start index value of 10 and a limit of 40 in the params in the URL
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifier = "State = Submitted"
     response = rally.get('Defect', fetch=True, query=qualifier, pagesize=50, start=10,limit=40)
     items = [item for item in response]
     assert len(items) >  10
     assert len(items) <= 40
-
-def test_query_target_value_with_ampersand():
-    """
-        Query for a Project.Name = 'R&D'
-    """
-    criteria = ['Project.Name = R&D']
-    result = RallyQueryFormatter.parenGroups(criteria)
-    assert unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
-
-    criteria = ['Project.Name = "R&D"']
-    result = RallyQueryFormatter.parenGroups(criteria)
-    assert unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
-
-    criteria = ['Project.Name contains "R&D"']
-    result = RallyQueryFormatter.parenGroups(criteria)
-    assert unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
-
-    criteria = 'Railhead.Company.Name != "Atchison Topeka & Santa Fe & Cunard Lines"'
-    result = RallyQueryFormatter.parenGroups(criteria)
-    assert unquote(result) == criteria.replace('&', '%26')
-
 
 def test_query_target_value_with_and():
     """
@@ -408,7 +387,7 @@ def test_query_with_special_chars_in_criteria():
        DE3228 in DEFAULT_WORKSPACE / DEFAULT_PROJECT has Name = Special chars:/!@#$%^&*()-=+[]{};:./<>?/ 
        query for it by looking for it by the name value
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     rally.setWorkspace(DEFAULT_WORKSPACE)
     rally.setProject(DEFAULT_PROJECT)
     #rally.enableLogging('spec_char_query')
@@ -451,7 +430,7 @@ def test_query_with_matched_parens_in_condition_value():
         The default workspace and project has  a Release in it whose name contains a matched paren pair
         make sure a query containing a condition looking for the Release by this name succeeds.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     #rally.enableLogging('query_condition_value_has_matched_internal_parens')
 
     criteria = 'Name = "8.5 (Blah and Stuff)"'
@@ -472,7 +451,7 @@ def test_query_using_project_scoping_options():
         The query specifying projectScopeDown=True should return more Stories than the initial query
     """
     SCOPE_ROOT_PROJECT = 'Arctic Elevation'
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     projects = rally.getProjects(workspace=DEFAULT_WORKSPACE)
 
     rally.setProject(SCOPE_ROOT_PROJECT)
@@ -550,6 +529,44 @@ def test_query_using_project_scoping_options():
                          projectScopeUp=True, projectScopeDown=True)
     assert response.resultCount == 9
 
+def test_query_target_value_with_ampersand():
+    """
+        Query for a Project.Name = 'R&D'
+
+        Note: This test must be last as there is some weird interplay going on when this is higher up
+              in the file.  3 Tests fail having nothing to do with ampersands in the query criteria
+              when this test appears before them.
+    """
+    criteria = ['Project.Name = R&D']
+    result = RallyQueryFormatter.parenGroups(criteria)
+    #assert unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = R&D'
+
+    criteria = ['Project.Name = "R&D"']
+    result = RallyQueryFormatter.parenGroups(criteria)
+    #assert unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = "R&D"'
+
+    criteria = ['Project.Name contains "R&D"']
+    result = RallyQueryFormatter.parenGroups(criteria)
+    #assert unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name contains "R&D"'
+
+    criteria = 'Railhead.Company.Name != "Atchison Topeka & Santa Fe & Cunard Lines"'
+    result = RallyQueryFormatter.parenGroups(criteria)
+    #assert unquote(result) == criteria.replace('&', '%26')
+    assert unquote(result) == criteria
+
+    APIKEY = "_useYourRallyKey"
+    RALLY_100_APIKEY = "_lsMzURZTRyBoD3bwnpn5kUZvDQkRIoEeGkq7QNkg"
+    target_workspace = 'Rally'
+    target_project   = 'R&D'
+    rally = Rally(server='rally1.rallydev.com', apikey=RALLY_100_APIKEY, workspace=target_workspace, project=target_project)
+    pifs = rally.get('Feature', fetch='Name,FormattedID')
+    assert pifs.resultCount == 26  # as of 02/05/2021 this was correct, total of 26 Features for R&D
+    # The following does not work...
+    pifs = rally.get('Feature', fetch='Name,FormattedID', query=['Project.Name = "R&D"', 'Name contains "On-Prem"'])
+    assert pifs.resultCount == 7   # as of 02/05/2021 this was correct, 7 Features had "On-Prem" in the Name
 
 #test_basic_query()
 #test_simple_named_fields_query()
@@ -573,6 +590,6 @@ def test_query_using_project_scoping_options():
 #test_limit_query()
 #test_start_value_query()
 #test_start_and_limit_query()
-#test_query_target_value_with_ampersand()
 #test_query_target_value_with_and()
 #test_query_with_special_chars_in_criteria
+#test_query_target_value_with_ampersand()

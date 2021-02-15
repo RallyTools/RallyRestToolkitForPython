@@ -8,7 +8,7 @@ from pyral import Rally, RallyUrlBuilder
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 from rally_targets import ALTERNATE_WORKSPACE, ALTERNATE_PROJECT
 
@@ -52,7 +52,7 @@ def test_default_context():
         Furthermore the construction of a GET related URL will contain
         the correct workspace and project specifications in the QUERY_STRING.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, server_ping=False)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, server_ping=False)
     context1 = rally.contextHelper.currentContext()
     workspace = rally.getWorkspace()
     project   = rally.getProject()
@@ -82,7 +82,7 @@ def test_default_isolated_workspace():
         And any attempt to change the workspace via rally.setWorkspace(some_name)
         will result in a Exception being raised
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, server_ping=False, isolated_workspace=True)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, server_ping=False, isolated_workspace=True)
     context1 = rally.contextHelper.currentContext()
     workspace = rally.getWorkspace()
     project   = rally.getProject()
@@ -106,7 +106,7 @@ def test_default_isolated_workspace():
 
 # 3
 def test_explictly_set_workspace_as_default_context():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=DEFAULT_WORKSPACE)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, workspace=DEFAULT_WORKSPACE)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -123,7 +123,7 @@ def test_explictly_set_workspace_as_default_context():
 
 # 4
 def test_explictly_set_workspace_as_isolated_workspace():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, workspace=DEFAULT_WORKSPACE, isolated_workspace=True)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, workspace=DEFAULT_WORKSPACE, isolated_workspace=True)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
     project = rally.getProject()
@@ -143,7 +143,7 @@ def test_explictly_set_workspace_as_isolated_workspace():
 
 # 5
 def test_initial_workspace_not_default():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=ALTERNATE_WORKSPACE, 
                   warn=False)
     # Because no project=name arg was supplied, the project will be the User's default project
@@ -181,7 +181,7 @@ def test_initial_workspace_not_default():
 
 # 6
 def test_initial_non_default_workspace_as_isolated():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD,
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=ALTERNATE_WORKSPACE, 
                   warn=False, isolated_workspace=True)
     # Because no project=name arg was supplied, the project will be the User's default project

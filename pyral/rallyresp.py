@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 2)
+__version__ = (1, 5, 0)
 
 import sys
 import re
@@ -21,8 +21,7 @@ from pprint import pprint
 from .hydrate    import EntityHydrator
 from .cargotruck import CargoTruck
 
-__all__ = ['RallyRESTResponse', 'ErrorResponse', 'RallyResponseError',
-           'AgileCentralRESTResponse', 'AgileCentralResponseError']
+__all__ = ['RallyRESTResponse', 'ErrorResponse', 'RallyResponseError']
 
 ##################################################################################################
 
@@ -31,8 +30,7 @@ errout = sys.stderr.write
 ##################################################################################################
 
 class RallyResponseError(Exception): pass
-AgileCentralResponseError = RallyResponseError
-   
+
 class ErrorResponse(object):
 
     SECURITY_ERROR = 'An Authentication object was not found in the SecurityContext'
@@ -83,7 +81,7 @@ class RallyRESTResponse(object):
 ##        print("RRR.init request_path_elements =  %s " % repr(request_path_elements))
 ##
         self.target = request_path_elements[-1]
-        if re.match('^\d+$', self.target):
+        if re.match(r'^\d+$', self.target):
             self.target = request_path_elements[-2] # this happens on request for RevisionHistory
             if self.target.lower() == 'revisionhistory':
                 self.target = 'RevisionHistory'
@@ -237,7 +235,7 @@ class RallyRESTResponse(object):
 ##        print("RallyRESTResponse, self.resultCount: |%s|" % self.resultCount)
 ##        print("RallyRESTResponse, self._servable  : |%s|" % self._servable)
 ##        print("RallyRESTResponse._page: has %d items" % len(self._page))
-##        #print("RallyRESTResponse._page: %s" % self._page)
+##        print("RallyRESTResponse._page: %s" % self._page)
 ##        print("")
 ##
 
@@ -336,7 +334,7 @@ class RallyRESTResponse(object):
                         item = self.page[self._curIndex]
                     except:
                         exception_type, value, traceback = sys.exc_info()
-                        exc_name = re.search("'exceptions\.(.+)'", str(exception_type)).group(1)
+                        exc_name = re.search(r'\'exceptions\.(.+)\'', str(exception_type)).group(1)
                         problem = '%s: %s for response from request to get next data page for %s' % (exc_name, value, self.target)
                         errout("ERROR: %s\n" % problem)
                 if item is None:               
@@ -379,9 +377,9 @@ class RallyRESTResponse(object):
         underscore_prefix_keys = [key for key in all_item_keys if key[0] == u'_']
         std_underscore_prefix_keys = ['_type', '_ref', '_refObjectUUID', '_CreatedAt', '_objectVersion']
         for _key in std_underscore_prefix_keys:
-            try: 
-                print("    %20.20s: %s" % (_key, item[_key])) 
-            except: 
+            try:
+                print("    %20.20s: %s" % (_key, item[_key]))
+            except:
                 pass
         other_prefix_keys = [key for key in underscore_prefix_keys if key not in std_underscore_prefix_keys]
         for _key in other_prefix_keys:
@@ -390,9 +388,9 @@ class RallyRESTResponse(object):
         regular_keys = [key for key in all_item_keys if key[0] !='_']
         std_regular_keys = ['ObjectID', 'ObjectUUID', 'CreationDate']
         for key in std_regular_keys:
-            try: 
+            try:
                 print("    %20.20s: %s" % (key, item[key]))
-            except: 
+            except:
                 pass
         other_regular_keys = [key for key in regular_keys if key not in std_regular_keys]
         for key in other_regular_keys:
@@ -411,7 +409,7 @@ class RallyRESTResponse(object):
             return chapter
 
         self.startIndex += self.pageSize
-        nextPageUrl = re.sub('&start=\d+', '&start=%s' % self.startIndex, self.resource)
+        nextPageUrl = re.sub(r'&start=\d+', '&start=%s' % self.startIndex, self.resource)
         if not nextPageUrl.startswith('http'):
             nextPageUrl = '%s/%s' % (self.context.serviceURL(), nextPageUrl)
 ##
@@ -435,7 +433,7 @@ class RallyRESTResponse(object):
         """
             Use self._served, self._servable, self.resource, self.max_threads, self.pageSize 
             and self.startIndex to come up with suitable thread count to grab the 
-            next group of pages from AgileCentral.
+            next group of pages from Rally.
             There will be a thread per page still to be retrieved (including the ending partial page)
             up to self.max_threads.
             For the number of threads that will actually be used, populate a page_urls list
@@ -452,7 +450,7 @@ class RallyRESTResponse(object):
             full, leftovers = divmod(items_remaining, self.pageSize)
             num_threads = full + (1 if leftovers else 0)
         stixes = [i+1 for i in range(num_threads)] 
-        page_urls = [re.sub('&start=\d+', '&start=%s' % (self.startIndex + (i * self.pageSize)), self.resource)
+        page_urls = [re.sub(r'&start=\d+', '&start=%s' % (self.startIndex + (i * self.pageSize)), self.resource)
                         for i in stixes]
 
         success = False
@@ -504,6 +502,5 @@ class RallyRESTResponse(object):
                          (self.request_type, self.resultCount, self.content['QueryResult']['Results'])
             return "%s %s" % (self.status_code, blurb)
 
-AgileCentralRESTResponse = RallyRESTResponse
 ##################################################################################################
 

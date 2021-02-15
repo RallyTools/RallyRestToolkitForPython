@@ -9,15 +9,13 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 2)
+__version__ = (1, 5, 0)
 
 import sys
-import imp
-imp.reload(sys)  # Reload gets a sys module that has the setdefaultencoding before site.py deletes it
 import six
-six.PY2 and sys.setdefaultencoding('UTF8') # not required in python 3
 
-from .entity import classFor, VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES, PORTFOLIO_ITEM_SUB_TYPES
+from .entity import classFor, getSchemaItem, addEntity, PortfolioItem, \
+                    VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES, PORTFOLIO_ITEM_SUB_TYPES
 
 ##################################################################################################
 
@@ -89,12 +87,14 @@ class EntityHydrator(object):
             oid = resource_url.split('/')[-1]
         try:
             instance = classFor[str(itemType)](oid, name, resource_url, self.context)
+            instance.typePath = None
         except KeyError as e:
             bonked = True
             if '/' in itemType:  # valid after intro of dyna-types in 1.37
                 try:
-                    type_name, type_subdivision = itemType.split('/')
+                    type_name, type_subclass = itemType.split('/')
                     instance = classFor[str(type_name)](oid, name, resource_url, self.context)
+                    instance.typePath = itemType 
                     itemType = type_name
                     bonked = False
                 except KeyError as e:
@@ -103,13 +103,32 @@ class EntityHydrator(object):
                 try:
                     type_name = "PortfolioItem_%s" % itemType
                     instance = classFor[str(type_name)](oid, name, resource_url, self.context)
+                    instance.typePath = type_name.lower().replace('_', '/')
                     itemType = type_name
                     bonked = False
                 except KeyError as e:
                     raise
-            if bonked:    
-                print("No classFor item for |%s|" % itemType)
-                raise KeyError(itemType)
+            else:
+                wksp_oid = item['Workspace']['_ref'].split('/')[-1]
+                workspace = (self.context.workspace, 'workspace/{0}'.format(wksp_oid))
+                si = getSchemaItem(workspace, str(itemType))
+##
+##              print("SchemaItem for %s:\n%s" % (str(itemType, si)))
+##
+            if bonked:
+                if '/portfolioitem/' in resource_url:
+##
+##                  print('creating new PortfolioItem sub-type class for %s' % itemType)
+##
+                    sub_type_class = addEntity(itemType, PortfolioItem)
+                    full_type_name = "PortfolioItem_%s" % itemType
+                    instance = classFor[str(full_type_name)](oid, name, resource_url, self.context)
+##
+##                  print('instance of %s created using newly created class added to classFor cache' % itemType)
+##
+                else:
+                    sys.stderr.write("No classFor item for |%s|\n" % itemType)
+                    raise KeyError(itemType)
 
         instance._type = itemType  # although, this info is also available via instance.__class__.__name__
         if itemType == 'AllowedAttributeValue':
@@ -171,17 +190,6 @@ class EntityHydrator(object):
             subAttrValue = attrValue.get(subAttrName)
             self._setAppropriateAttrValueForType(attrInstance, subAttrName, subAttrValue, level+1)
 
-        # the following left over from refactoring.
-        # commented out as it led to entities being set as being fully hydrated when
-        # in fact, they weren't.  May want to determine if the commenting out has a
-        # an impact in terms of unnecessary requests back to Rally to get 
-        # attribute.sub-attr values when they might actually be hydrated.
-        # 
-        # Addendum 2015-02-21: this has been commented out since 0.9.x timeframe
-        #                      get rid of these comments and commented out code
-        #                      as part of 1.2.0 release
-        #if self.hydration == 'full':
-        #    attrInstance._hydrated = True
         return
 
 

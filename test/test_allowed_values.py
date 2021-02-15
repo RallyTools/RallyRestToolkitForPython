@@ -11,8 +11,9 @@ RallyRESTAPIError = pyral.context.RallyRESTAPIError
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
-from rally_targets import API_KEY
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
+#from rally_targets import APIKEY
+from internal_rally_targets import APIKEY
 from rally_targets import LARGE_WORKSPACE, LARGE_PROJECT_TREE_BASE
 
 ##################################################################################################
@@ -23,7 +24,7 @@ def test_getAllowedValues_query():
         request the allowed value information for the State field of the Defect entity and
         request the allowed value information for the PrimaryColor field of the Defect entity.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     avs = rally.getAllowedValues('Defect', 'State')
     assert len(avs) > 0
     assert len(avs) >= 4
@@ -53,7 +54,7 @@ def test_getAllowedValues_for_UserStory_Milestone():
         with the same sort of semantic that are excluded from chasing the COLLECTION url and
         returning some list of values.  (like, Changesets, Discussions, Tags, etc.)
     """
-    rally = Rally(server=AGICEN, apikey=API_KEY)
+    rally = Rally(server=RALLY, apikey=APIKEY)
 
     avs = rally.getAllowedValues('Story', 'Milestones')
     assert avs == [True]
@@ -69,7 +70,7 @@ def test_getAllowedValues_for_UserStory_Milestone():
 
 
 def test_getAllowedValues_for_custom_collections_field_Defect():
-    rally = Rally(server=AGICEN, apikey=API_KEY, workspace='Rally', project='Rally')
+    rally = Rally(server=RALLY, apikey=APIKEY, workspace='Rally', project='Rally')
     avs = rally.getAllowedValues('Defect', 'MobileOS')
     assert len(avs) > 0
     target_value = 'Android'

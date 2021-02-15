@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 4, 2)
+__version__ = (1, 5, 0)
 
 import sys
 import re
@@ -569,7 +569,7 @@ class SearchObject(object):
 
     def __setattr__(self, item, value):
         self.__dict__[item] = value
-        if item == 'MatchingText':
+        if item == 'MatchingText' and value is not None:
             # scrub out the alm specific html tags 
             scrubbed = re.sub(self.tagged_field_name_pattern, so_element_text, value)
             scrubbed = re.sub(self.bolding_pattern, so_bolded_text, scrubbed)
@@ -844,7 +844,7 @@ class SchemaItemAttribute(object):
             by chasing the collection URL left from initialization, does this method issue a
             call to resolve the collection URL via the getCollection callable parm.
             The need to use getCollection is based on whether the AllowedValues value 
-            is a string that matches the regex '^https?://.*/attributedefinition/-\d+/AllowedValues'
+            is a string that matches the regex r'^https?://.*/attributedefinition/-\\d+/AllowedValues'
         """
 ##
 ##        print("in resolveAllowedValues for |%s| is a %s" % (self.Name, type(self.Name)))
@@ -857,7 +857,7 @@ class SchemaItemAttribute(object):
             return True
         if type(self.AllowedValues) != str:  #previously was   != bytes
             return True
-        std_av_ref_pattern = '^https?://.*/\w+/-?\d+/AllowedValues$'
+        std_av_ref_pattern = r'^https?://.*/\w+/-?\d+/AllowedValues$'
         mo = re.match(std_av_ref_pattern, self.AllowedValues)
         if not mo:
             anomaly = "Standard AllowedValues ref pattern |%s| not matched by candidate |%s|" % \
@@ -1086,8 +1086,17 @@ def _createClass(name, parentClass):
     globals()[name] = rally_entity_class
     return rally_entity_class
 
+def addEntity(name, parentClass):
+    new_class = _createClass(name, parentClass)
+    if parentClass.__name__ == 'PortfolioItem':
+        full_name = "%s_%s" % (parentClass.__name__, name)
+        classFor[full_name] = new_class
+        PORTFOLIO_ITEM_SUB_TYPES.append(name)
+    else:
+        classFor[name] = new_class
+    return new_class
 
 __all__ = [processSchemaInfo, classFor, validRallyType, getSchemaItem,
            InvalidRallyTypeNameError, UnrecognizedAllowedValuesReference,
-           PORTFOLIO_ITEM_SUB_TYPES
+           addEntity, PORTFOLIO_ITEM_SUB_TYPES
           ]

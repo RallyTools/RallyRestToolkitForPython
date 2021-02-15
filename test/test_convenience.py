@@ -8,8 +8,8 @@ from pyral import Rally
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
-from rally_targets import AGICEN_NICKNAME, DEFAULT_WORKSPACE
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
+from rally_targets import RALLY_NICKNAME, DEFAULT_WORKSPACE
 
 ##################################################################################################
 
@@ -19,7 +19,7 @@ def test_getSchemaInfo():
         obtain a Rally instance and call the getSchemaInfo method for the
         default workspace.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     schema_info = rally.getSchemaInfo(rally.getWorkspace())
     assert type(schema_info) == list
     assert len(schema_info) > 50
@@ -37,7 +37,7 @@ def test_getWorkspace():
         Rally entity. The fetch specifies a small number of known valid
         attributes on the Rally entity.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert int(workspace.oid) > 10000
     assert len(workspace.Name) > 6
@@ -49,7 +49,7 @@ def test_getProject():
         issue a simple query (no qualifying criteria) for a known valid 
         Rally entity.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, version="v2.0")
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, version="v2.0")
     response = rally.get('Project', fetch=False, limit=10)
     assert response.status_code == 200
     assert response.errors   == []
@@ -67,12 +67,12 @@ def test_getUserInfo_query():
         Using a known valid Rally server and known valid access credentials,
         request the information associated with a single username.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
-    qualifiers = rally.getUserInfo(username=AGICEN_USER)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    qualifiers = rally.getUserInfo(username=RALLY_USER)
     assert len(qualifiers) == 1
     user = qualifiers.pop()
-    assert user.Name     == AGICEN_NICKNAME
-    assert user.UserName == AGICEN_USER
+    assert user.Name     == RALLY_NICKNAME
+    assert user.UserName == RALLY_USER
     assert user.UserProfile.DefaultWorkspace.Name == DEFAULT_WORKSPACE
     #assert user.Role == 'CONTRIBUTOR'  # or this may be set to ORGANIZER
     #assert user.Role == 'Developer'  # not set for yeti@rallydev.com on the trial instance...
@@ -86,7 +86,7 @@ def test_getAllUsers_query():
         Using a known valid Rally server and known valid access credentials,
         request information about every user associated with the current subscription.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     everybody = rally.getAllUsers()
     assert len(everybody) > 0
     assert len([user for user in everybody if user.DisplayName == 'da Kipster']) == 1
@@ -97,7 +97,7 @@ def test_typedef():
         exercise the Rally.typedef convenience method using 'Portfolio/Feature' 
         as a target.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     target_type = 'PortfolioItem/Feature'
     td = rally.typedef(target_type)
     assert td != None
@@ -111,7 +111,7 @@ def test_getStates():
         get all the State entity instances for Initiative via the
         Rally.getStates convenience method.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     target_entity = 'Initiative'
     states = rally.getStates(target_entity)
     assert len(states) == 4
@@ -125,10 +125,10 @@ def test_getCollection():
         url using the workspace.ObjectID.
         Call the rally.getCollection with the confabulated collection url.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace is not None
-    proj_collection_url = "http://%s/slm/webservice/v2.0/Workspace/%s/Projects" % (AGICEN, workspace.ObjectID)
+    proj_collection_url = "http://%s/slm/webservice/v2.0/Workspace/%s/Projects" % (RALLY, workspace.ObjectID)
     response = rally.getCollection(proj_collection_url)
     assert response.__class__.__name__ == 'RallyRESTResponse'
     projects = [proj for proj in response]

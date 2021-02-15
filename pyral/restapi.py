@@ -1,16 +1,16 @@
-#!/usr/local/bin/python3.5
+#!/usr/local/bin/python3.7
 
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 16 moar movement towards parallel Rally/AgileCentral name access foar all the things
+#          round 17  strip out AgileCentral naming except for synonym to Rally class
 #          notable dependencies:
-#               requests v2.12.5 or better
+#               requests v2.21.0 or better
 #               six
 #
 ###################################################################################################
 
-__version__ = (1, 4, 2)
+__version__ = (1, 5, 0)
 
 import sys, os
 import re
@@ -57,9 +57,7 @@ INTEGRATION_HEADER_PREFIX = 'X-RallyIntegration'
 ###################################################################################################
 
 class RallyRESTAPIError(Exception): pass
-AgileCentralRESTAPIError = RallyRESTAPIError
 class RallyAttributeNameError(Exception): pass
-AgileCentralAttributeNameError = RallyAttributeNameError
 
 #
 # define a couple of entry point functions for use by other pkg modules and import the modules
@@ -141,9 +139,8 @@ from .hydrate   import EntityHydrator
 from .context   import RallyContext, RallyContextHelper
 from .entity    import validRallyType, DomainObject
 from .query_builder import RallyUrlBuilder
-from .query_builder import AgileCentralUrlBuilder
 
-__all__ = ["Rally", "getResourceByOID", "getCollection", "hydrateAnInstance", "RallyUrlBuilder", "AgileCentralUrlBuilder"]
+__all__ = ["Rally", "getResourceByOID", "getCollection", "hydrateAnInstance", "RallyUrlBuilder"]
 
 
 def _createShellInstance(context, entity_name, item_name, item_ref):
@@ -198,12 +195,6 @@ class Rally(object):
         self._logDest     = None
         self._logAttrGet  = False
         self._warn        = warn
-        self._server_ping = False   # this is the default for 1.3.0
-        if 'RALLY_PING' in os.environ:
-            if os.environ['RALLY_PING'].lower() in ['t', 'true', 'y', 'yes', '1']:
-                self._server_ping = True
-        if server_ping == True:
-            self._server_ping = True
         self.isolated_workspace = isolated_workspace
         config = {}
         if kwargs and 'debug' in kwargs and kwargs.get('debug', False):
@@ -247,8 +238,7 @@ class Rally(object):
         
         global _rallyCache
 
-        self.contextHelper = RallyContextHelper(self, self.server, self.user, self.password or self.apikey, 
-                                                      self._server_ping)
+        self.contextHelper = RallyContextHelper(self, self.server, self.user, self.password or self.apikey)
         _rallyCache[self.contextHelper.context] = {'rally' : self }
         wksp = None
         proj = None
@@ -799,7 +789,7 @@ class Rally(object):
             for value in item_data[attr_name]:
                 # is value like "someentityname/34223214" ?
                 if (type(value) == str or type(value) == bytes) and '/' in value \
-                and re.match('^\d+$', value.split('/')[-1]):
+                and re.match(r'^\d+$', value.split('/')[-1]):
                     obj_list.append({"_ref" : value})  # transform to a dict instance
                 elif issubclass(value.__class__, DomainObject):
                     obj_list.append({"_ref" : value.ref})  # put the ref in a dict instance
@@ -930,7 +920,7 @@ class Rally(object):
         return response
 
 
-    def get(self, entity, fetch=False, query=None, order=None, **kwargs):
+    def get(self, entity, fetch=False, query=None, order=None, **kwargs) -> object:
         """
             A REST approach has the world seen as resources with the big 4 ops available on them
             (GET, PUT, POST, DELETE). There are other ops but we don't care about them here.
@@ -1084,7 +1074,9 @@ class Rally(object):
         response = self.session.post(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
-            raise RallyRESTAPIError('Unable to update the %s' % entityName)
+            problem = "ERRORS: %s\nWARNINGS: %s\n" % ("\n".join(response.errors), 
+                                                      "\n".join(response.warnings))
+            raise RallyRESTAPIError("Unable to update the %s\n%s" % (entityName, problem))
 
         # now issue a request to get the entity item (mostly so we can get the FormattedID)
         # and return it
@@ -1112,7 +1104,7 @@ class Rally(object):
         # guess at whether itemIdent is an ObjectID or FormattedID via 
         # regex matching (all digits or 1-2 upcase chars + digits)
         objectID = itemIdent  # at first assume itemIdent is the ObjectID
-        if re.match('^[A-Z]{1,2}\d+$', str(itemIdent)):
+        if re.match(r'^[A-Z]{1,2}\d+$', str(itemIdent)):
             fmtIdQuery = 'FormattedID = "%s"' % itemIdent
             response = self.get(entityName, fetch="ObjectID", query=fmtIdQuery, 
                                 workspace=workspace, project=project)
@@ -1203,7 +1195,7 @@ class Rally(object):
         """
         if not items: return None
         auth_token = self.obtainSecurityToken()
-        target_type = target._type
+        target_type =  target.typePath or self._officialRallyEntityName(target._type)
         item_types = [item._type for item in items]
         first_item_type = item_types[0]
         outliers = [item_type for item_type in item_types if item_type != first_item_type]
@@ -1561,7 +1553,7 @@ class Rally(object):
             contents of filename into Rally and associate that Attachment 
             with the Artifact.
             Upon the successful creation of the Attachment and linkage to the artifact,
-            return an instance of the succesfully added Attachment.
+            return an instance of the successfully added Attachment.
             Exceptions are raised for other error conditions, such as the filename
             identified by the filename parm not existing, or not being a file, or the 
             attachment file exceeding the maximum allowed size, or failure
@@ -1696,7 +1688,7 @@ class Rally(object):
         if response.errors or response.resultCount != 1:
             return None
         att_content = response.next()
-        att.Content = base64.b64decode(att_content.Content)
+        att.Content = base64.b64decode(att_content.Content)  # contrib by jfthuong
         return att
 
 
@@ -1738,7 +1730,11 @@ class Rally(object):
 
         # get the target Attachment and the associated AttachmentContent item
         attachment = hits.pop(0)
-        if attachment.Content and attachment.Content.oid:
+        if isinstance(attachment.Content, (bytes, bytearray)):
+            # have to query for the attachment again so that when we access attachment.Content the
+            # Content attribute is an instance of AttachmentContent (with the attendant oid attribute)
+            attachment = self.get('Attachment', query='ObjectID = %s' % attachment.oid, instance=True)
+        if attachment and attachment.Content and attachment.Content.oid:
             success = self.delete('AttachmentContent', attachment.Content.oid, project=None)
             if not success:
                 print("ERROR: Unable to delete AttachmentContent item for %s" % attachment.Name)
@@ -1750,7 +1746,7 @@ class Rally(object):
             return False
         remaining_attachments = [att for att in current_attachments if att.ref != attachment.ref]
         att_refs = [dict(_ref=str(att.ref)) for att in remaining_attachments]
-        artifact_info = { 'ObjectID'    : artifact.ObjectID,
+        artifact_info = { 'ObjectID'    : artifact.oid,
                           'Attachments' : att_refs,
                         }
         updated = self.update(art_type, artifact_info, project=None)
@@ -1850,9 +1846,9 @@ class Rally(object):
 
     def _postRankRequest(self, target_artifact, resource, update_item):
         """
-            Given an AgileCentral target Artifact and a resource URI (sans the self.service_url prefix)
+            Given an Rally target Artifact and a resource URI (sans the self.service_url prefix)
             and a dict that serves as a "container" for the target item's _ref value,
-            obtain the security token we need to post to AgileCentral, construct the
+            obtain the security token we need to post to Rally, construct the
             full url along with the query string containing the workspace ref and the security token.
             POST to the resource supplying the update_item "container" and catch any
             non success status code returned from the operation.
@@ -1890,6 +1886,6 @@ class Rally(object):
 
         return target_artifact.__class__.__name__.lower()
 
-AgileCentral = Rally
+AgileCentral = Rally  # for backwards compatibility sake
 
 ####################################################################################################

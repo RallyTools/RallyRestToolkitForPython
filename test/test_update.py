@@ -17,7 +17,7 @@ RallyRESTAPIError  = pyral.context.RallyRESTAPIError
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import         YETI_USER,   YETI_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 from rally_targets import BOONDOCKS_WORKSPACE, BOONDOCKS_PROJECT
@@ -32,7 +32,7 @@ def test_update_defect_in_other_project():
         Update the State value of a Defect identified by a FormattedID that
         is associated with a non-DEFAULT_PROJECT project in the DEFAULT_WORKSPACE.
     """
-    rally = Rally(server=AGICEN, user=YETI_USER, password=YETI_PSWD,
+    rally = Rally(server=RALLY, user=YETI_USER, password=YETI_PSWD,
                                  workspace=DEFAULT_WORKSPACE, project=DEFAULT_PROJECT)
     response = rally.get('Project', fetch=False, limit=100)
     proj = response.next()

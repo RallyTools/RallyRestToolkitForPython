@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-import sys, os
-import pprint
+#import sys, os
+#import pprint
 
 from pyral import Rally
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 
 ##################################################################################################
 
@@ -16,7 +16,7 @@ def test_rank_story_above():
         Using a known valid Rally server and known valid access credentials,
         obtain a Rally instance and issue a get for Story items ordered by Rank ASC.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, server_ping=False, isolated_workspace=True)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, server_ping=False, isolated_workspace=True)
     response = rally.get('Story', fetch="FormattedID,Name,Description,State,DragAndDropRank", 
                                   order="Rank ASC", limit=100)
     stories = [story for story in response]
@@ -35,7 +35,7 @@ def test_rank_story_above():
     assert stories[0].DragAndDropRank < story2.DragAndDropRank
 
 def test_rank_story_below():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, server_ping=False, isolated_workspace=True)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, server_ping=False, isolated_workspace=True)
     response = rally.get('Story', fetch="FormattedID,Name,Description,State,DragAndDropRank", 
                                   order="Rank ASC", limit=100)
     stories = [story for story in response]
@@ -59,7 +59,7 @@ def test_rank_story_below():
 def test_rank_story_to_top():
     """
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, server_ping=False, isolated_workspace=True)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, server_ping=False, isolated_workspace=True)
     response = rally.get('Story', fetch="FormattedID,Name,Description,State,DragAndDropRank", 
                                   order="Rank ASC", limit=100)
     stories = [story for story in response]
@@ -80,7 +80,7 @@ def test_rank_story_to_top():
     assert top_story.DragAndDropRank < stories[1].DragAndDropRank
 
 def test_rank_story_to_bottom():
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD, server_ping=False, isolated_workspace=True)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, server_ping=False, isolated_workspace=True)
     response = rally.get('Story', fetch="FormattedID,Name,Description,State,DragAndDropRank", 
                                   order="Rank ASC", limit=100)
     stories = [story for story in response]

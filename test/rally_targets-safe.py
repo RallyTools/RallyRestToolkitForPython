@@ -1,21 +1,30 @@
 
-AGICEN = "rally1.rallydev.com"
-PROD   = "rally1.rallydev.com"
+RALLY = "1yllar.rallydev.com"
+PROD  = "officialness.rallydev.com"
 
-AGICEN_USER = "yeti@rallydev.com"
-AGICEN_PSWD = "Vistabahn"
-AGICEN_NICKNAME = "Yeti"
-#API_KEY = "_ABC123DEF456GHI789JKL012MNO345PQR678STU901VWXZ"
+RALLY_USER = "usernumbernonei@acme.com"
+RALLY_PSWD = "B1G^S3Kretz"
+RALLY_NICKNAME = "Wiley"
+APIKEY     = "_ABC123DEF456GHI789JKL012MNO345PQR678STU901VWXZ"
 
-DEFAULT_WORKSPACE    = "AC WSAPI Toolkit Python"
-DEFAULT_PROJECT      = "Sample Project"
-NON_DEFAULT_PROJECT  = "My Project"
+DEFAULT_WORKSPACE    = "Your Default Workspace"
+DEFAULT_PROJECT      = "Your Default Project"
+
+NON_DEFAULT_PROJECT  = "A non-default Project"
+
 ALTERNATE_WORKSPACE  = "An Alternate Workspace"
-#ALTERNATE_PROJECT   = "Dynamic"
 ALTERNATE_PROJECT    = "An Alternate Project"
 
 BOONDOCKS_WORKSPACE  = 'Darwin Social Club'
 BOONDOCKS_PROJECT    = 'Linoleum Blast'
+
+LARGE_WORKSPACE         = "Bonktorius Maximus"
+LARGE_PROJECT_TREE_BASE = "Amalgamated Hoodoo"
+
+PROD_USER = "somebody@aplace.com"
+PROD_PSWD = "urSECr8He@R"
+
+ACCOUNT_WITH_NO_DEFAULTS_CREDENTIALS = ('mortel.e.woonded@torso00bam.com', 'T2Y*&9mm409')
 
 PROJECT_SCOPING_TREE = {
     'TOP_LEVEL_PROJECT' : {'Arctic Elevation' :
@@ -38,12 +47,20 @@ PROJECT_SCOPING_TREE = {
                          }
 }
 
-ACCOUNT_WITH_NO_DEFAULTS_CREDENTIALS = ('mortel.e.woonded@torso00bam.com', 'T2Y*&9mm409')
-
-
 HTTPS_PROXY = "127.0.0.1:3128"
+HTTPS_PROXY = "127.0.0.1:9654"
 
-__all__ = [AGICEN, AGICEN_USER, AGICEN_PSWD, AGICEN_NICKNAME, PROD,
+#---------------------------------------------------------------------------
+# uncomment this block for entries for access to an alternate test environment
+#RALLY = 'rally1.rallydev.com'
+#PROD  = 'rally1.rallydev.com'
+#PROD_USER = "rascal@mischief.com"
+#PROD_PSWD = "StRiPeSand-D-a-s-h-e-s"
+#-----------------------------------------------------------------------------------------
+
+__all__ = [RALLY, RALLY_USER, RALLY_PSWD, RALLY_NICKNAME,
+           PROD,  PROD_USER,  PROD_PSWD,
            DEFAULT_WORKSPACE, DEFAULT_PROJECT, 
            NON_DEFAULT_PROJECT, ALTERNATE_WORKSPACE, ALTERNATE_PROJECT, 
            PROJECT_SCOPING_TREE, HTTPS_PROXY]
+

@@ -24,17 +24,17 @@ def main(args):
     #print(" ".join(["|%s|" % item for item in [server, user, password, apikey[:8], workspace, project]]))
 
     # If you want to use BasicAuth, use the following form
-    rally = Rally(server, user, password, workspace=workspace, project=project) 
+    #rally = Rally(server, user, password, workspace=workspace, project=project) 
 
     # If you want to use API Key, you can use the following form
     #rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
 
     # the following form of obtaining a Rally instance will use the apikey if it is present (non None)
     # otherwise it will use the user and password for BasicAuth
-    # add in the debug=True keyword arg if you want more verbiage ...
-    #rally = Rally(server, user, password, apikey=apikey, workspace=workspace, project=project,
-    #              debug=True, server_ping=False, isolated_workspace=True)
-    rally.enableLogging('fire.log')
+    # add in the debug=True keyword arg pair if you want more verbiage ...
+    rally = Rally(server, user, password, apikey=apikey, 
+                  workspace=workspace, project=project,
+                  debug=True, isolated_workspace=True)
     specified_workspace = workspace
 
     workspace = rally.getWorkspace()

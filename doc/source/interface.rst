@@ -268,8 +268,8 @@ Rally
 
 To instantiate a Rally object, you'll need to provide these arguments:
         * **server**    usually rally1.rallydev.com unless you are using an OnPrem version
-        * **user**      AgileCentral UserName
-        * **password**  AgileCentral password for the given user
+        * **user**      Rally UserName
+        * **password**  Rally password for the given user
 
     either in this specific order or as keyword arguments.
 
@@ -281,8 +281,8 @@ To instantiate a Rally object, you'll need to provide these arguments:
 
     You can optionally specify the following as keyword arguments:
         * apikey      (alternate credential specification)
-        * workspace   (name of the AgileCentral workspace)
-        * project     (name of the AgileCentral project)
+        * workspace   (name of the Rally workspace)
+        * project     (name of the Rally project)
         * verify_ssl_cert  (True or False, default is True)
         * warn     (True or False, default is True) 
                     Controls whether a warning is issued if no project is specified
@@ -307,7 +307,7 @@ To instantiate a Rally object, you'll need to provide these arguments:
                    For subscriptions with a small to moderate number of workspaces (up to a few dozen),
                    the performance savings will be relatively minor when using isolated_workspace=True
                    vs. isolated_workspace=False.  However, for subscriptions with a large number of
-                   workspaces, using isolated_workspace=False results in a request to AgileCentral
+                   workspaces, using isolated_workspace=False results in a request to Rally
                    for each workspace, which can result in a noticeable lag before the instantiation
                    statement returns a ready-for-use Rally instance.
         * headers  dict with entries for name, vendor, version of software/integration using this package.
@@ -707,11 +707,11 @@ pyral.Rally experimental convenience methods
 .. warning:: 
 
         This method only works when the collection attribute on the target_item is Modifiable.
-        Consult the AgileCentral WSAPI documentation for the target_item attributes to see whether
+        Consult the Rally WSAPI documentation for the target_item attributes to see whether
         the attribute of interest has a notation of 'Collection Modifiable  yes'.  If there is no 
         'Colletion Modifiable' notation or the value for that is 'no', then use of this method 
         should not be attempted.
-        At this time, the AgileCentral WSAPI schema endpoint does not include information about 
+        At this time, the Rally WSAPI schema endpoint does not include information about 
         'Collection Modifiable' for any of the attributes, you'll have to consult the documentation.
 
 .. method:: dropCollectionItems(target_item, collection_items)

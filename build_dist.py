@@ -14,7 +14,7 @@ import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.4.2"
+VERSION      = "1.5.0"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -25,8 +25,8 @@ AUX_FILES  = ['MANIFEST.in',
               'template.cfg', 
               'rallyfire.py'
              ]
-EXAMPLES   = ['getitem.py', 
-              'periscope.py', 
+EXAMPLES   = ['periscope.py', 
+              'getitem.py', 
               'showdefects.py', 
               'crtask.py', 
               'uptask.py',
@@ -38,14 +38,17 @@ EXAMPLES   = ['getitem.py',
               'wkspcounts.py',
               'builddefs.py',
               'creattach.py',
+              'get_artifact.py',
+              'get_schedulable_artifacts.py',
               'get_attachments.py',
               'get_milestones.py',
-              'get_schedulable_artifacts.py',
               'add_tcrs.py',
               'defrevs.py',
               'updtag.py',
               'addtags.py'
              ]
+
+
 DOC_FILES  = ['doc/Makefile',
               'doc/source/conf.py',
               'doc/source/index.rst',
@@ -66,19 +69,24 @@ DOC_FILES  = ['doc/Makefile',
 # The TEST_FILES are **NOT** placed into the distribution packages
 #
 TEST_FILES = ['test/rally_targets.py', 
+              'test/test_allowed_values.py',
+              'test/test_attachments.py',
+              'test/test_big_query.py',
               'test/test_conn.py',
               'test/test_context.py',
               'test/test_convenience.py',
-              'test/test_inflation.py',
               'test/test_field_access.py',
-              'test/test_workspaces.py'
-              'test/test_allowed_values.py',
-              'test/test_wksprj_setting.py',
+              'test/test_folder_misc.py',
+              'test/test_inflation.py',
+              'test/test_portfolio_items.py',
+              'test/test_project_pathing.py',
+              'test/test_pull_request_copied.py',
               'test/test_query.py',
-              'test/test_big_query.py',
-              'test/test_attachments.py',
               'test/test_ranking.py'
+              'test/test_recyclebin.py'
               'test/test_search.py',
+              'test/test_wksprj_setting.py',
+              'test/test_workspaces.py'
              ]
 
 ################################################################################
@@ -106,8 +114,9 @@ def main(args):
         print("%-52.52s   %6d (%2d%%)" % (info.filename, info.compress_size, reduction_pct))
 
     # in order to get a wheel file built, the python used has to have available a setup.py
-    # that exposes a bdist_wheel method, which in versions of python beyond 2.7, like 3.5., 3.6, etc
-    # you'll need to have done a 'pip install wheel' which sets up the necessary infrastructure.
+    # that exposes a bdist_wheel method, which is in versions of python beyond 2.7, 
+    # like 3.5., 3.6, 3.7, etc.
+    # you'll need to have done a 'pip3 install wheel' which sets up the necessary infrastructure.
     os.system('python setup.py bdist_wheel')
     wheel_file = "%s-%s-py2.py3-none-any.whl" % (PACKAGE_NAME, VERSION)
     # the wheel_file gets written into the dist  subdir by default, no need for a copy...

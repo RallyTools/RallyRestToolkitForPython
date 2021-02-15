@@ -8,7 +8,7 @@ import pyral
 
 ##################################################################################################
 
-from rally_targets import AGICEN, AGICEN_USER, AGICEN_PSWD
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 
 ##################################################################################################
 
@@ -19,7 +19,7 @@ def test_story_fields():
         Rally entity, and observe that you can access both standard and 
         custom fields by the field Display Name.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Story', fetch=True, query=['NumberofCases = 9', 'AffectedCustomers = "abc, xyz"'])
     assert response.status_code == 200
     story = response.next()
@@ -35,7 +35,7 @@ def test_defect_fields():
         Rally entity, and observe that you can access both standard and 
         custom fields by the field Display Name.
     """
-    rally = Rally(server=AGICEN, user=AGICEN_USER, password=AGICEN_PSWD)
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     cust_field_criteria = {"BugzillaID" : 7224, "JiraKey" : "SLO-109", "QCDefectID" : 5724}
     response = rally.get('Defect', fetch=True, query=cust_field_criteria)
     assert response.status_code == 200

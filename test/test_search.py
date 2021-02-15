@@ -37,6 +37,7 @@ def test_basic_search():
     print(response.resultCount)
     for entry in response:
         print(entry.ObjectID, entry.FormattedID, entry.Name)
+        print("|" + entry.MatchingText + "|")
 
 
 #def test_simple_named_fields_query():
