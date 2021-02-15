@@ -9,9 +9,24 @@
 #
 ###################################################################################################
 
+<<<<<<< HEAD
 __version__ = (1, 7, 0)
+||||||| parent of 36ca7ed (mods for 1.5.0 from dev fork (#173))
+__version__ = (1, 4, 2)
+=======
+__version__ = (1, 5, 0)
+>>>>>>> 36ca7ed (mods for 1.5.0 from dev fork (#173))
 
 import sys
+<<<<<<< HEAD
+||||||| parent of 36ca7ed (mods for 1.5.0 from dev fork (#173))
+import imp
+imp.reload(sys)  # Reload gets a sys module that has the setdefaultencoding before site.py deletes it
+import six
+six.PY2 and sys.setdefaultencoding('UTF8') # not required in python 3
+=======
+import six
+>>>>>>> 36ca7ed (mods for 1.5.0 from dev fork (#173))
 
 from .entity import classFor, getSchemaItem, addEntity, PortfolioItem, \
                     VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES, PORTFOLIO_ITEM_SUB_TYPES
