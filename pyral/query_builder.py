@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 0)
+__version__ = (1, 5, 1)
 
 import re
 import types
@@ -113,9 +113,9 @@ class RallyUrlBuilder(object):
 class RallyQueryFormatter(object):
     CONJUNCTIONS = ['and', 'AND', 'or', 'OR']
     CONJUNCTION_PATT = re.compile(r'\s+(AND|OR)\s+', re.I | re.M)
-    ATTR_IDENTIFIER = r'[\w\.]+[a-zA-Z0-9]'
-    RELATIONSHIP    = r'=|!=|>|<|>=|<=|contains|!contains'
-    ATTR_VALUE      = r'"[^"]+"|[^ ]+'
+    ATTR_IDENTIFIER = r'[\w\.]+[a-zA-Z0-9]'  # gotta be word-like possibly separated by '.' chars
+    RELATIONSHIP    = r'=|!=|>|<|>=|<=|contains|!contains|in|!in|between|!between'
+    ATTR_VALUE      = r'"[^"]+"|[^ ]+'  # double quoted value or has no leading, embedded or trailing spaces
     QUERY_CRITERIA_PATTERN = re.compile(r'^(%s) (%s) (%s)$' % (ATTR_IDENTIFIER, RELATIONSHIP, ATTR_VALUE), re.M)
 
     @staticmethod
@@ -230,7 +230,7 @@ class RallyQueryFormatter(object):
     @staticmethod
     def validatePartsSyntax(parts):
         attr_ident   = r'[\w\.]+[a-zA-Z0-9]'
-        relationship = r'=|!=|>|<|>=|<=|contains|!contains'
+        relationship = r'=|!=|>|<|>=|<=|contains|!contains|in|!in|between|!between'
         attr_value   = r'"[^"]+"|[^" ]+'
         criteria_pattern       = re.compile(r'^(%s) (%s) (%s)$'         % (attr_ident, relationship, attr_value))
         quoted_value_pattern   = re.compile(r'^(%s) (%s) ("[^"]+")$'    % (attr_ident, relationship))
