@@ -147,6 +147,6 @@
     Fixed defect in query construction (and results) when a target attribute value contains a '&' character.
 
 
-1.5.1 - Jun 2021
+1.5.1 - Jul 2021
     Fixed query builder to accommodate subset criteria (in | !in) and range criteria (between | !between)
 

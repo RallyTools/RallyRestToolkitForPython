@@ -1,0 +1,65 @@
+
+Issue Num and Summary                                                        class    importance  repro'ed     status
+#138 Impossible to retrieve attachments                                       Bug      High         yes       Fixed in 1.5.0
+        opened on Apr 20, 2018 by jfthuong
+
+#150 getAttachment*() functionality generally broken on pyral 1.4.2           Bug      High         yes       Fixed in 1.5.0
+        opened on Dec 6, 2018 by pgacva (dup of #138)
+
+#169 Error trying to add a feature to collection (milestone)                  Bug      Low          yes       Fixed in 1.5.0
+       opened July 20, 2020 by reddevil311
+
+#151 post() failure 'No classFor item for EngrFeature'                        Bug      High         yes       Fixed in 1.5.0
+        opened on Apr 11, 2019 by NCarteazy
+
+#170  First python example in Simple Use section of overview.rst has a bug    Bug      Med          yes       Fixed in 1.5.0
+        opened on Aug 1, 2020 by stumpjumper
+
+#158 Keyerror while hydrating custom PortfolioItem after a post() or put()    Bug      Med          yes       Fixed in 1.5.0 (via #170)
+        opened on Oct 28, 2019 by Sssnek1
+
+#147 Can't parse portfolio_item                                               Bug      High         no        doc update in 1.5.0 to clarify
+        opened on Aug 24, 2018 by tsal
+         needs doc update to make clear what works for PI sub-type
+
+#159 How to call the service with an URL                                      Bug      Low          yes       Fixed in 1.5.0
+        opened on Jan 20 by KapsGit
+            does a get for a PortfolioItem subtype and wants to 
+            get a ref attribute's sub-attribute
+            ... like: PortfolioItem_Feature.Parent.State
+
+#157 rally.get() returns wrong results for a query with char "&"              Bug      Med          yes       fixed in 1.5.0
+        opened on Aug 28, 2019 by Kimudai94
+
+#154 Could not get Release...                                                 Bug      Med          no        provided info in issue/closed
+        opened on Jul 19, 2019 by KapsGit
+
+#137 addCollectionItems - TypeError: 'Tag' object is not iterable         UserError    Med          yes       provided info in issue/closed
+        opened on Mar 23, 2018 by ssah-blr
+         used tag instance as arg to addCollectionItems when should be a list of tags
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+#134 LDAP username vs. authentication username                            Feature       Low           has PR that could be accepted  (On-Prem customer)
+        opened on Jan 29, 2018 by carlsonp
+
+#143 Unable to specify path to certfile in Rally() kwarg verify_ssl_cert   Feature      Med
+        opened on Jul 5, 2018 by Meussdorffer
+
+#164 Workspace name includes a space                                          Bug?      Low           no     other customer has no problem with this
+        opened on May 21 by johnhaprian  (user error?)
+
+#152 Fails Initializing Rally when performed more than once in an application  UserBad  Low           yes   (have an entity PortfolioItem/Project)
+        opened on Jul 7, 2019 by jonvadney
+ 
+#149 Cannot add custom multi-select field to Feature                          Bug       Low           no
+        opened on Nov 19, 2018 by damon-11
+
+#167 get User call doesn't fetch all user fields using pyral                  Bug?      Low           no            
+        opened on Jun 17 by Pravesh-dot-com
+
+#144 No apparent way to fetch data about closed projects                   NonBug       Low           yes          will not fix, no WSAPI support
+        opened on Jul 11, 2018 by pgacv2
+
+#110 Cannot get all attachments if several attachments have the same name     ---       Low           yes          will not fix, poor practice
+        opened on Jan 29, 2017 by jfthuong

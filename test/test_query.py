@@ -529,6 +529,56 @@ def test_query_using_project_scoping_options():
                          projectScopeUp=True, projectScopeDown=True)
     assert response.resultCount == 9
 
+
+def test_query_in_subset_operator():
+    """
+        Query for State in the subset of {'Defined', 'In-Progress'}
+    """
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    qualifier = "State in Defined, In-Progress"
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=100, limit=100)
+    print(response.status_code)
+    assert response.status_code == 200
+    print(response.errors)
+    print(response.warnings)
+
+    items = [item for item in response]
+
+    assert len(items) > 10
+    defined = [item for item in items if item.ScheduleState == 'Defined']
+    inprog  = [item for item in items if item.ScheduleState == 'In-Progress']
+    cmplted = [item for item in items if item.ScheduleState == 'Completed']
+    accpted = [item for item in items if item.ScheduleState == 'Accepted']
+    assert len(defined) > 0
+    assert len(inprog)  > 0
+    assert len(cmplted) == 0
+    assert len(accpted) == 0
+
+#def test_query_not_in_subset_operator():
+#    """
+#        Query for Priority not in the subset of {'Trivial', 'Low'}
+#    """
+#
+#    assert result of query has no items with Trivial or Low and has some items with different Priority values
+#
+#
+#def test_query_between_range_operator():
+#    """
+#        Query for CreatedDate between 2021-01-01T00:00:00Z and 2021-05-31T23:59:59.999Z'
+#    """
+#    
+#    assert result of query is exactly equal to the intersection of two other queries 1) >= date_1 2) <= date_2
+#
+#
+#def test_query_not_between_range_operator():
+#    """
+#        Query for CreatedDate !between 2020-12-24T12:00:00Z and 2021-01-02T06:00:00Z'
+#    """
+#
+#    assert result of query is has some elements less than date_1, and some greater than date@ and none in the 
+#    range specified
+#
+
 def test_query_target_value_with_ampersand():
     """
         Query for a Project.Name = 'R&D'
