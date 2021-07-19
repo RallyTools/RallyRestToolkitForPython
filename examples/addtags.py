@@ -67,7 +67,7 @@ def main(args):
                        query="FormattedID = %s" % story_id,
                        server_ping=False, isolated_workspace=True, instance=True)
     #print(story.details())
-    print "story tags after deleting the '%s' Tag" % (droppable_tags[0].Name)
+    print("story tags after deleting the '%s' Tag" % (droppable_tags[0].Name))
 
     story_tags = [str(tag.Name) for tag in story.Tags]
     print(story_tags)

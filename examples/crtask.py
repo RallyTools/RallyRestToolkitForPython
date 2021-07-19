@@ -26,7 +26,7 @@ def main(args):
         sys.exit(1)
     storyID = args[0]
 
-    server, user, password, apikey, workspace, project = rallyWorkset(options)
+    server, username, password, apikey, workspace, project = rallyWorkset(options)
     if apikey:
         rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
     else:
