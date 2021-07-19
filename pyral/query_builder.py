@@ -197,10 +197,22 @@ class RallyQueryFormatter(object):
 ##
 ##        print("RallyQueryFormatter parts: %s" % repr(parts))
 ##
-        
         # if no CONJUNCTION is in parts, use the condition as is (simple case)
         conjunctions = [p for p in parts if p in RallyQueryFormatter.CONJUNCTIONS]
         if not conjunctions:
+            if mo := re.search(r'^(\w+)\s+(!?in)\s+(.+)$', criteria, flags=re.I):
+                attr_name, cond, values = mo.group(1), mo.group(2), mo.group(3)
+                # Rally WSAPI supports attr_name in value1,value2,...  directly but not so with !in
+                if cond.lower() == '!in':   # we must construct an OR'ed express with != for each listed value
+                    # Rally WSAPI supports attr_name in value1,value2,...  directly but not so with !in
+                    criteria = RallyQueryFormatter.constructORedExpression(attr_name, cond, values)
+            elif  mo := re.search(r'^(\w+) (!?between)\s+(.+)\s+and\s+(.+)$', criteria, flags=re.I):
+                attr_name, cond, lesser, greater = mo.group(1), mo.group(2), mo.group(3), mo.group(4)
+                rlns = ['>=', '<='] if cond.lower() == 'between' else ['<', '>']
+                rln_op = 'AND' if cond.lower() == 'between' else 'OR'
+                lcond = '%s %s %s' % (attr_name, rlns[0], lesser)
+                gcond = '%s %s %s' % (attr_name, rlns[1], greater)
+                criteria = "(%s) %s (%s)" % (lcond, rln_op, gcond)
             expression = quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
 ##
 ##            print("RallyQueryFormatter.no_conjunctions: |%s|" % expression)
@@ -218,13 +230,12 @@ class RallyQueryFormatter(object):
                 cond = quote(item)
                 binary_expression = "(%s) %s" % (cond, binary_expression)
 
-        final_expression = binary_expression.replace('%28', '(')
-        final_expression =  final_expression.replace('%29', ')')
+        encoded_parened_expression = binary_expression.replace('%28', '(').replace('%29', ')')
 ##
-##        print("RallyQueryFormatter.final_expression: |%s|" % final_expression)
-##        print("==============================================")
+##        print("RallyQueryFormatter.encoded_parened_expression: |{0}|".format(encoded_parened_expression))
+##        print("=============================================================")
 ##
-        final_expression = final_expression.replace(' ', '%20')
+        final_expression = encoded_parened_expression.replace(' ', '%20')
         return final_expression
 
     @staticmethod
@@ -235,11 +246,37 @@ class RallyQueryFormatter(object):
         criteria_pattern       = re.compile(r'^(%s) (%s) (%s)$'         % (attr_ident, relationship, attr_value))
         quoted_value_pattern   = re.compile(r'^(%s) (%s) ("[^"]+")$'    % (attr_ident, relationship))
         unquoted_value_pattern = re.compile(r'^(%s) (%s) ([^"].+[^"])$' % (attr_ident, relationship))
+        subset_pattern         = re.compile(r'(%s) (in|!in) (%s)'       % (attr_ident, attr_value), flags=re.I)
+        range_pattern          = re.compile(r'(%s) (between|!between) (%s) and (%s)' % (attr_ident, attr_value, attr_value), flags=re.I)
 
         valid_parts = []
         front = ""
         while parts:
             part = "%s%s" % (front, parts.pop(0))
+            mo = subset_pattern.match(part)
+            if mo:
+                rln = '!=' if mo.group(1).startswith('!') else '='
+                attr_name, values = mo.group(0), mo.group(2)
+                # if rln == '=':
+                #   binary_expr = constructORedExpression(attr_name, rln, values)
+                # else:
+                #   binary_expr = constructANDedExpression(attr_name, rln, values)
+                valid_parts.append(binary_expr)
+                continue
+            mo = range_pattern.match(part)
+            if mo:
+                attr_name, cond = mo.group(0), mo.group(1)
+                lesser_val, greater_val = mo.group(2), mo.group(3)
+                rlns = ['<', '>'] if cond.startswith('!') else ['>=', '<=']
+                # in range
+                if cond.lower() == 'between':
+                    binary_expr = '((%s %s %s) AND (%s %s %s))' % \
+                                  (attr_name, rlns[0], lesser_val, attr_name, rlns[1], greater_val)
+                else:
+                    binary_expr = '((%s %s %s) OR (%s %s %s))' % \
+                                  (attr_name, rlns[0], lesser_val, attr_name, rlns[1], greater_val)
+                valid_parts.append(binary_expr)
+                continue
             mo = criteria_pattern.match(part)
             if mo:
                 valid_parts.append(part)
@@ -259,5 +296,45 @@ class RallyQueryFormatter(object):
             raise Exception("Invalid query expression syntax in: %s" % (" ".join(parts)))
         
         return valid_parts
+
+    # subset and range related ops for building queries
+
+    @staticmethod
+    def constructORedExpression(field, relation, values):
+        """
+            intended for use when a subset operator (in or !in) is in play
+            State in Defined, Accepted, Relased
+               needs an ORed expression ((f = D OR f = A) OR ((f = R)))
+            State !in Working, Fixed, Testing
+               needs an ANDed expression ((f != W AND f != F) AND ((f != T)))
+        """
+        operator = "="
+        if relation == '!in':
+            operator = "!="
+        if len(values) == 1:
+            return f'({field} {operator} "{values[0]})"'
+        binary_expression = f'(({field} {operator} "{values[0]}") OR ({field} {operator} "{values[1]}"))'
+        for value in values[2:]:
+            binary_expression = f'({binary_expression} OR ({field} {operator} "{value}"))'
+        return binary_expression
+
+    @staticmethod
+    def constructANDedExpression(field, relation, values):
+        """
+            intended for use when a range operator (between or !between) is in play
+            DevPhase between 2021-05-23 and 2021-07-09
+               needs a single ANDed expression  ((dp >= d1) AND (dp <= d1)))
+            DevPhase !between 2021-12-19 and 2022-01-03
+               needs a single ORed expression  ((dp < d1) OR (dp > d1)))
+        """
+        operator = "="
+        if relation == '!in':
+            operator = "!="
+        if len(values) == 1:
+            return f'({field} {operator} "{values[0]})"'
+        binary_expression = f'(({field} {operator} "{values[0]}") AND ({field} {operator} "{values[1]}"))'
+        for value in values[2:]:
+            binary_expression = f'({binary_expression} AND ({field} {operator} "{value}"))'
+        return binary_expression
 
 ##################################################################################################

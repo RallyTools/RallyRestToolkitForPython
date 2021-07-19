@@ -21,7 +21,7 @@ from os import path
 desc_file = path.join(path.abspath(path.dirname(__file__)), FULL_DESCRIPTION)
 with open(desc_file, encoding='utf-8') as df: long_description = df.read()
 
-MINIMUM_REQUESTS_VERSION = '2.12.5'  # although 2.22.x is recommended
+MINIMUM_REQUESTS_VERSION = '2.25.1'  # although 2.25.x is recommended
 REQUIRES      = ['six', 
                  'requests>=%s' % MINIMUM_REQUESTS_VERSION
                 ]
@@ -33,10 +33,9 @@ CLASSIFIERS   =  [ 'Development Status :: 5 - Production/Stable',
                    'License :: OSI Approved :: BSD License',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
-                   'Programming Language :: Python :: 3.5',
-                   'Programming Language :: Python :: 3.6',
                    'Programming Language :: Python :: 3.7',
                    'Programming Language :: Python :: 3.8',
+                   'Programming Language :: Python :: 3.9',
                    'Topic :: Internet :: WWW/HTTP',
                    'Topic :: Software Development :: Libraries',
                  ]

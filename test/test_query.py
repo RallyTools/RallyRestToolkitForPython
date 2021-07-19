@@ -22,6 +22,9 @@ from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 from rally_targets import BOONDOCKS_WORKSPACE, BOONDOCKS_PROJECT
 from rally_targets import PROJECT_SCOPING_TREE
+TLP_DICT = PROJECT_SCOPING_TREE['TOP_LEVEL_PROJECT']
+TLP_DICT_keys = [key for key in TLP_DICT.keys()]
+COLD_PROJECT = TLP_DICT_keys[0]
 
 ##################################################################################################
 
@@ -535,29 +538,57 @@ def test_query_in_subset_operator():
         Query for State in the subset of {'Defined', 'In-Progress'}
     """
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
-    qualifier = "State in Defined, In-Progress"
+    #qualifier = '(ScheduleState In "Defined,In-Progress")'   # works cuz expression is parenned
+    #qualifier = 'ScheduleState In "Defined,In-Progress"'     # works when subset is quoted
+    qualifier = 'ScheduleState In Defined,In-Progress'        # works when no space after comma
     response = rally.get('Defect', fetch=True, query=qualifier, pagesize=100, limit=100)
     print(response.status_code)
     assert response.status_code == 200
-    print(response.errors)
-    print(response.warnings)
+    assert len(response.errors) == 0
+    assert len(response.warnings) == 0
 
     items = [item for item in response]
 
     assert len(items) > 10
-    defined = [item for item in items if item.ScheduleState == 'Defined']
-    inprog  = [item for item in items if item.ScheduleState == 'In-Progress']
-    cmplted = [item for item in items if item.ScheduleState == 'Completed']
-    accpted = [item for item in items if item.ScheduleState == 'Accepted']
+    defined   = [item for item in items if item.ScheduleState == 'Defined']
+    inprog    = [item for item in items if item.ScheduleState == 'In-Progress']
+    completed = [item for item in items if item.ScheduleState == 'Completed']
+    accepted  = [item for item in items if item.ScheduleState == 'Accepted']
     assert len(defined) > 0
     assert len(inprog)  > 0
-    assert len(cmplted) == 0
-    assert len(accpted) == 0
+    assert len(completed) == 0
+    assert len(accepted)  == 0
 
-#def test_query_not_in_subset_operator():
-#    """
-#        Query for Priority not in the subset of {'Trivial', 'Low'}
-#    """
+def test_query_not_in_subset_operator():
+    """
+        Query for Priority not in the subset of {'Trivial', 'Low'}
+    """
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
+                  project=COLD_PROJECT)
+    qualifier = 'ScheduleState !in Defined,Completed'
+    #qualifier = '((ScheduleState != Defined) AND (ScheduleState != Completed))'
+    response = rally.get('Story', fetch=True, query=qualifier, pagesize=100, limit=100, projectScopeDown=True)
+    assert response.status_code == 200
+    assert len(response.errors) == 0
+    assert len(response.warnings) == 0
+
+    items = [item for item in response]
+    sched_states = [item.ScheduleState for item in items]
+    ss = list(set(sorted(sched_states)))
+    assert len(ss) == 2
+
+    defined   = [item for item in items if item.ScheduleState == 'Defined']
+    inprog    = [item for item in items if item.ScheduleState == 'In-Progress']
+    completed = [item for item in items if item.ScheduleState == 'Completed']
+    accepted  = [item for item in items if item.ScheduleState == 'Accepted']
+
+    assert len(defined) == 0
+    assert len(inprog)  > 0
+    assert len(completed) == 0
+    assert len(accepted)  > 0
+
+
+
 #
 #    assert result of query has no items with Trivial or Low and has some items with different Priority values
 #
