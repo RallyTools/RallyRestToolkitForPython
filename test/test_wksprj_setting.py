@@ -57,7 +57,9 @@ def test_warn_on_setting_invalid_workspace():
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
-    py.test.raises(Exception, "rally.setWorkspace('Constant Misbehavior')")
+    with py.test.raises(Exception) as exc:
+        rally.setWorkspace('Constant Misbehavior')
+    assert 'Specified workspace not valid for your credentials or is in a Closed state' in str(exc)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
 
@@ -72,7 +74,9 @@ def test_warn_on_setting_invalid_project():
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     project = rally.getProject()
     assert project.Name == DEFAULT_PROJECT
-    py.test.raises(Exception, "rally.setProject('Thorny Buxcuit Weevilz')")
+    with py.test.raises(Exception) as exc:
+        rally.setProject('Thorny Buxcuit Weevilz')
+    assert 'Specified project not valid for your current workspace or credentials' in str(exc)
     project = rally.getProject()
     assert project.Name == DEFAULT_PROJECT
 
