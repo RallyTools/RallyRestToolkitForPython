@@ -350,7 +350,7 @@ class Rally(object):
         self._log = True
         if hasattr(dest, 'write'):
             self._logDest = dest
-        elif type(dest) == bytes:
+        elif isinstance(dest, (str,bytes)):
             try:
                 mode = 'w'
                 if append:

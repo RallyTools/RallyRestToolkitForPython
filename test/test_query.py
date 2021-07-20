@@ -638,7 +638,7 @@ def test_query_between_range_operator():
         Query for CreatedDate between 2016-09-30T00:00:00Z and 2016-10-04T23:59:59.999Z'
         Should get 1 item
     """
-    # Use DEFAULT_WORKSPACE, DEFAULT_WORKSPACE
+    # Uses DEFAULT_WORKSPACE, DEFAULT_PROJECT
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     response = rally.get('Story', fetch=True, pagesize=100, limit=100)
     all_stories = [item for item in response]
@@ -666,7 +666,7 @@ def test_query_not_between_range_operator():
         #assert result of query is has some elements less than date_1, and
         # has some greater than date_2 and none in the range specified
     """
-    # Use DEFAULT_WORKSPACE, DEFAULT_WORKSPACE
+    # Uses DEFAULT_WORKSPACE, DEFAULT_PROJECT
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     range_start_date = '2016-09-30T00:00:00Z'
     range_end_date   = '2016-11-01T00:00:00Z'
@@ -680,7 +680,7 @@ def test_query_not_between_range_operator():
     assert after_date_stories
     assert len(prior_date_stories) + len(after_date_stories) == len(target_stories)
     tweener_stories     = [story for story in target_stories
-                           if story.CreationDate >= range_start_date
+                           if  story.CreationDate >= range_start_date
                            and story.CreationDate <= range_end_date]
     assert len(tweener_stories) == 0
 
