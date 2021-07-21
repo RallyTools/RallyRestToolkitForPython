@@ -73,7 +73,7 @@ Description: This is the README file for pyral, a package implementing a
         
 Keywords: rally,api
 Requires: six
-Requires: requests>=2.18.0
+Requires: requests>=2.25.1
 Platform: any
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: Web Environment
@@ -81,7 +81,6 @@ Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: BSD License
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python
-Classifier: Programming Language :: Python :: 3.5
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8
