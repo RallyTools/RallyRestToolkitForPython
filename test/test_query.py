@@ -22,6 +22,9 @@ from rally_targets import RALLY, RALLY_USER, RALLY_PSWD
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT, NON_DEFAULT_PROJECT
 from rally_targets import BOONDOCKS_WORKSPACE, BOONDOCKS_PROJECT
 from rally_targets import PROJECT_SCOPING_TREE
+TLP_DICT = PROJECT_SCOPING_TREE['TOP_LEVEL_PROJECT']
+TLP_DICT_keys = [key for key in TLP_DICT.keys()]
+COLD_PROJECT = TLP_DICT_keys[0]
 
 ##################################################################################################
 
@@ -456,15 +459,24 @@ def test_query_using_project_scoping_options():
 
     rally.setProject(SCOPE_ROOT_PROJECT)
 
-    response = rally.get('Story', fetch="FormattedID,Name,State,Project")
-    #assert response.resultCount == 11  # pre 1.2.4 behavior
-    assert response.resultCount == 4  # expected 1.2.4 behavior
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project", project=SCOPE_ROOT_PROJECT)
+    stories = [item for item in response]
+    proj_scope_stories = [story for story in stories if story.Project.Name == SCOPE_ROOT_PROJECT]
+    assert len(proj_scope_stories) == len(stories)
+    ps_pop = len(stories)
 
-    response = rally.get('Story', fetch="FormattedID,Name,State", projectScopeDown=True)
-    assert response.resultCount == 11
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project", project=SCOPE_ROOT_PROJECT,
+                         projectScopeDown=True)
+    downscope_stories = [item for item in response]
+    underfoot = [story for story in downscope_stories if story.Project.Name != SCOPE_ROOT_PROJECT]
+    assert underfoot
+    assert len(downscope_stories) > len(underfoot)
+    assert len(downscope_stories) > ps_pop
 
-    response = rally.get('Story', fetch="FormattedID,Name,State", projectScopeDown=False)
-    assert response.resultCount == 4
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project", project=SCOPE_ROOT_PROJECT,
+                         projectScopeDown=False)
+    upper_crust_stories = [item for item in response]
+    assert len(upper_crust_stories) == ps_pop
 
     ISOLATED_SUB_PROJECT = 'Aurora Borealis'
     #print("\nISOLATED_SUB_PROJECT: %s" % ISOLATED_SUB_PROJECT)
@@ -474,60 +486,204 @@ def test_query_using_project_scoping_options():
                          order="FormattedID,Project.Name")
     assert response.resultCount == 2
 
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=ISOLATED_SUB_PROJECT, projectScopeDown=True)
     assert response.resultCount == 2
 
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=ISOLATED_SUB_PROJECT, projectScopeUp=True)
-    assert response.resultCount == 6
+    all_stories = [item for item in response]
+    iso_sp_stories = [item for item in all_stories if item.Project.Name == ISOLATED_SUB_PROJECT]
+    other_stories  = [item for item in all_stories if item.Project.Name != ISOLATED_SUB_PROJECT]
+    assert len(iso_sp_stories) == 2
+    assert len(other_stories)  > 0
 
 
     BEEFIER_SUB_PROJECT = 'Sub Arctic Conditions'
     #print("BEEFIER_SUB_PROJECT: %s" % BEEFIER_SUB_PROJECT)
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=BEEFIER_SUB_PROJECT,
                          projectScopeDown=False)
-    assert response.resultCount == 3
+    initial_q_stories = [item for item in response]
+    orig_bfee_stories = [story for story in initial_q_stories if story.Project.Name == BEEFIER_SUB_PROJECT ]
+    assert initial_q_stories
+    assert orig_bfee_stories
+    assert len(orig_bfee_stories) == len(initial_q_stories)
 
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=BEEFIER_SUB_PROJECT,
                          projectScopeUp=True,
                          projectScopeDown=False)
-    assert response.resultCount == 7
+    assert response.resultCount > len(initial_q_stories)
 
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=BEEFIER_SUB_PROJECT,
                          projectScopeDown=True)
     assert response.resultCount == 5
 
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=BEEFIER_SUB_PROJECT,
                          projectScopeUp=False,
                          projectScopeDown=True)
     assert response.resultCount == 5
 
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=BEEFIER_SUB_PROJECT,
                          projectScopeUp=True,
                          projectScopeDown=True)
-    assert response.resultCount == 9
+    all_stories = [item for item in response]
+    bfee_sp_stories = [item for item in all_stories if item.Project.Name == BEEFIER_SUB_PROJECT]
+    other_stories   = [item for item in all_stories if item.Project.Name != BEEFIER_SUB_PROJECT]
+    assert len(bfee_sp_stories) == len(orig_bfee_stories)
+    assert len(other_stories)  > 0
 
     # BOTTOM_PROJECT is a sub-project under BEEFIER_SUB_PROJECT
     BOTTOM_PROJECT = 'Bristol Bay Barons'
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=BOTTOM_PROJECT)
     assert response.resultCount == 2
 
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=BOTTOM_PROJECT,
                          projectScopeDown=True)
     assert response.resultCount == 2
 
-    response = rally.get('Story', fetch="FormattedID,Name,State",
+    response = rally.get('Story', fetch="FormattedID,Name,State,Project",
                          project=BOTTOM_PROJECT,
                          projectScopeUp=True, projectScopeDown=True)
-    assert response.resultCount == 9
+    assert response.resultCount > len(bfee_sp_stories)
+
+
+def test_query_in_subset_operator():
+    """
+        Query for State in the subset of {'Defined', 'In-Progress'}
+    """
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    #qualifier = '(ScheduleState In "Defined,In-Progress")'   # works cuz expression is parenned
+    #qualifier = 'ScheduleState In "Defined,In-Progress"'     # works when subset is quoted
+    qualifier = 'ScheduleState In Defined,In-Progress'        # works when no space after comma
+    response = rally.get('Defect', fetch=True, query=qualifier, pagesize=100, limit=100)
+    print(response.status_code)
+    assert response.status_code == 200
+    assert len(response.errors) == 0
+    assert len(response.warnings) == 0
+
+    items = [item for item in response]
+
+    assert len(items) > 10
+    defined   = [item for item in items if item.ScheduleState == 'Defined']
+    inprog    = [item for item in items if item.ScheduleState == 'In-Progress']
+    completed = [item for item in items if item.ScheduleState == 'Completed']
+    accepted  = [item for item in items if item.ScheduleState == 'Accepted']
+    assert len(defined) > 0
+    assert len(inprog)  > 0
+    assert len(completed) == 0
+    assert len(accepted)  == 0
+
+def test_query_not_in_subset_operator():
+    """
+        Query for Priority not in the subset of {'Defined', 'Completed'}
+    """
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, project=COLD_PROJECT)
+    qualifier = 'ScheduleState !in Defined,Completed'
+    #qualifier = '((ScheduleState != Defined) AND (ScheduleState != Completed))'
+    response = rally.get('Story', fetch=True, query=qualifier, pagesize=100, limit=100, projectScopeDown=True)
+    assert response.status_code == 200
+    assert len(response.errors) == 0
+    assert len(response.warnings) == 0
+
+    items = [item for item in response]
+    sched_states = [item.ScheduleState for item in items]
+    ss = list(set(sorted(sched_states)))
+    assert len(ss) == 2
+
+    defined   = [item for item in items if item.ScheduleState == 'Defined']
+    inprog    = [item for item in items if item.ScheduleState == 'In-Progress']
+    completed = [item for item in items if item.ScheduleState == 'Completed']
+    accepted  = [item for item in items if item.ScheduleState == 'Accepted']
+
+    assert len(defined)   == 0
+    assert len(completed) == 0
+    assert len(inprog)    > 0
+    assert len(accepted)  > 0
+
+def test_query_not_in_subset_with_3_exclusion_values():
+    """
+        Query for Priority not in the subset of {'Defined', 'Completed', 'Accepted'}
+    """
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, project=COLD_PROJECT)
+    qualifier = 'ScheduleState !in Defined,Completed,Accepted'
+    response = rally.get('Story', fetch=True, query=qualifier, pagesize=100, limit=100, projectScopeDown=True)
+    assert response.status_code == 200
+    assert len(response.errors) == 0
+    assert len(response.warnings) == 0
+
+    items = [item for item in response]
+    sched_states = [item.ScheduleState for item in items]
+    ss = list(set(sorted(sched_states)))
+    #assert len(ss) > 2
+
+    defined   = [item for item in items if item.ScheduleState == 'Defined']
+    inprog    = [item for item in items if item.ScheduleState == 'In-Progress']
+    completed = [item for item in items if item.ScheduleState == 'Completed']
+    accepted  = [item for item in items if item.ScheduleState == 'Accepted']
+
+    assert len(defined)   == 0
+    assert len(completed) == 0
+    assert len(accepted)  == 0
+    assert len(inprog)    > 0
+
+def test_query_between_range_operator():
+    """
+        Query for CreatedDate between 2016-09-30T00:00:00Z and 2016-10-04T23:59:59.999Z'
+        Should get 1 item
+    """
+    # Uses DEFAULT_WORKSPACE, DEFAULT_PROJECT
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    response = rally.get('Story', fetch=True, pagesize=100, limit=100)
+    all_stories = [item for item in response]
+    assert len(all_stories) > 8
+    cds = [story.CreationDate for story in all_stories]
+    range_start_date = '2016-09-30T00:00:00Z'
+    range_end_date   = '2016-10-04T23:59:59Z'
+    prior_to_start_date = [story for story in all_stories if story.CreationDate < range_start_date]
+    after_end_date      = [story for story in all_stories if story.CreationDate > range_end_date]
+    assert prior_to_start_date
+    assert after_end_date
+    tweener_stories     = [story for story in all_stories
+                                  if story.CreationDate >= range_start_date
+                                 and story.CreationDate <= range_end_date]
+    assert len(tweener_stories) == 1
+
+    criteria = f'CreationDate between {range_start_date} and {range_end_date}'
+    response = rally.get('Story', fetch=True, query=criteria, pagesize=100, limit=100)
+    target_stories = [story for story in response]
+    assert len(target_stories) == 1
+
+def test_query_not_between_range_operator():
+    """
+        Query for CreatedDate !between 2016-09-30T00:00:00Z and 2016-11-01T00:00:09Z'
+        #assert result of query is has some elements less than date_1, and
+        # has some greater than date_2 and none in the range specified
+    """
+    # Uses DEFAULT_WORKSPACE, DEFAULT_PROJECT
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    range_start_date = '2016-09-30T00:00:00Z'
+    range_end_date   = '2016-11-01T00:00:00Z'
+    criteria = f'CreationDate !between {range_start_date} and {range_end_date}'
+    response = rally.get('Story', fetch=True, query=criteria, pagesize=100, limit=100)
+    target_stories = [story for story in response]
+    assert len(target_stories) > 2
+    prior_date_stories = [story for story in target_stories if story.CreationDate < range_start_date]
+    after_date_stories = [story for story in target_stories if story.CreationDate > range_end_date]
+    assert prior_date_stories
+    assert after_date_stories
+    assert len(prior_date_stories) + len(after_date_stories) == len(target_stories)
+    tweener_stories     = [story for story in target_stories
+                           if  story.CreationDate >= range_start_date
+                           and story.CreationDate <= range_end_date]
+    assert len(tweener_stories) == 0
+
 
 def test_query_target_value_with_ampersand():
     """

@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 0)
+__version__ = (1, 5, 1)
 
 import re
 import types
@@ -113,9 +113,9 @@ class RallyUrlBuilder(object):
 class RallyQueryFormatter(object):
     CONJUNCTIONS = ['and', 'AND', 'or', 'OR']
     CONJUNCTION_PATT = re.compile(r'\s+(AND|OR)\s+', re.I | re.M)
-    ATTR_IDENTIFIER = r'[\w\.]+[a-zA-Z0-9]'
+    ATTR_IDENTIFIER = r'[\w\.]+[a-zA-Z0-9]'  # gotta be word-like possibly separated by '.' chars
     RELATIONSHIP    = r'=|!=|>|<|>=|<=|contains|!contains'
-    ATTR_VALUE      = r'"[^"]+"|[^ ]+'
+    ATTR_VALUE      = r'"[^"]+"|[^ ]+'  # double quoted value or has no leading, embedded or trailing spaces
     QUERY_CRITERIA_PATTERN = re.compile(r'^(%s) (%s) (%s)$' % (ATTR_IDENTIFIER, RELATIONSHIP, ATTR_VALUE), re.M)
 
     @staticmethod
@@ -197,14 +197,26 @@ class RallyQueryFormatter(object):
 ##
 ##        print("RallyQueryFormatter parts: %s" % repr(parts))
 ##
-        
         # if no CONJUNCTION is in parts, use the condition as is (simple case)
+        # OR if the criteria looks like subset query or a range query
         conjunctions = [p for p in parts if p in RallyQueryFormatter.CONJUNCTIONS]
-        if not conjunctions:
+        if not conjunctions or re.search(r'!?between .+\s+and\s+', criteria, flags=re.I):
+            # Is this a subset expression, foo in baz,korn  or foo !in burgers,fries,toast
+            mo = re.search(r'^(\w+)\s+(!?in)\s+(.+)$', criteria, flags=re.I)
+            if mo:
+                attr_name, cond, values = mo.group(1), mo.group(2), mo.group(3)
+                # Rally WSAPI supports attr_name in value1,value2,...  directly but not so with !in
+                if cond.lower() == '!in':   # we must construct an OR'ed express with != for each listed value
+                    # Rally WSAPI supports attr_name in value1,value2,...  directly but not so with !in
+                    criteria = RallyQueryFormatter.constructSubsetExpression(attr_name, cond, values)
+            else:
+                # Is this a range expression,  someDate between today and nextYear
+                mo = re.search(r'^(\w+) (!?between)\s+(.+)\s+and\s+(.+)$', criteria, flags=re.I)
+                if mo:
+                    attr_name, cond, lesser, greater = mo.group(1), mo.group(2), mo.group(3), mo.group(4)
+                    criteria = RallyQueryFormatter.constructRangefulExpression(attr_name, cond, lesser, greater)
+
             expression = quote(criteria.strip()).replace('%28', '(').replace('%29', ')')
-##
-##            print("RallyQueryFormatter.no_conjunctions: |%s|" % expression)
-##
             return expression
 
         parts = RallyQueryFormatter.validatePartsSyntax(parts)
@@ -218,13 +230,12 @@ class RallyQueryFormatter(object):
                 cond = quote(item)
                 binary_expression = "(%s) %s" % (cond, binary_expression)
 
-        final_expression = binary_expression.replace('%28', '(')
-        final_expression =  final_expression.replace('%29', ')')
+        encoded_parened_expression = binary_expression.replace('%28', '(').replace('%29', ')')
 ##
-##        print("RallyQueryFormatter.final_expression: |%s|" % final_expression)
-##        print("==============================================")
+##        print("RallyQueryFormatter.encoded_parened_expression: |{0}|".format(encoded_parened_expression))
+##        print("=============================================================")
 ##
-        final_expression = final_expression.replace(' ', '%20')
+        final_expression = encoded_parened_expression.replace(' ', '%20')
         return final_expression
 
     @staticmethod
@@ -259,5 +270,50 @@ class RallyQueryFormatter(object):
             raise Exception("Invalid query expression syntax in: %s" % (" ".join(parts)))
         
         return valid_parts
+
+    #
+    # subset and range related ops for building queries
+    #
+    @staticmethod
+    def constructSubsetExpression(field, relation, values):
+        """
+            intended for use when a subset operator (in or !in) is in play
+            State in Defined, Accepted, Relased
+               needs an ORed expression ((f = D OR f = A) OR ((f = R)))
+            State !in Working, Fixed, Testing
+               needs an ANDed expression ((f != W AND f != F) AND ((f != T)))
+        """
+        operator, conjunction = "=", 'OR'
+        if relation.lower() == '!in':
+            operator = "!="
+            conjunction = 'AND'
+        if isinstance(values, str):
+            if values.count(',') == 0:   # no commas equal only 1 value considered, put it in a list
+                values = [values]
+            else:
+                values = [item.lstrip().rstrip() for item in values.split(',')]
+        if len(values) == 1:
+            return f'{field} {operator} "{values[0]}"'
+        val1, val2 = values[:2]
+        binary_expression = f'({field} {operator} "{val1}") {conjunction} ({field} {operator} "{val2}")'
+        for value in values[2:]:
+            binary_expression = f'({binary_expression}) {conjunction} ({field} {operator} "{value}")'
+        return binary_expression
+
+    @staticmethod
+    def constructRangefulExpression(attr_name, cond, lesser, greater):
+        """
+            intended for use when a range operator (between or !between) is in play
+            DevPhase between 2021-05-23 and 2021-07-09
+               needs a single ANDed expression  ((dp >= d1) AND (dp <= d1)))
+            DevPhase !between 2021-12-19 and 2022-01-03
+               needs a single ORed expression  ((dp < d1) OR (dp > d1)))
+        """
+        rlns = ['>=', '<='] if cond.lower() == 'between' else ['<', '>']
+        conjunction= 'AND'  if cond.lower() == 'between' else 'OR'
+        lcond = '%s %s %s' % (attr_name, rlns[0], lesser)
+        gcond = '%s %s %s' % (attr_name, rlns[1], greater)
+        expression = "(%s) %s (%s)" % (lcond, conjunction, gcond)
+        return expression
 
 ##################################################################################################
