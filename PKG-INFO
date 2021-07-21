@@ -1,11 +1,11 @@
 Metadata-Version: 1.1
 Name: pyral
-Version: 1.5.0
+Version: 1.5.1
 Summary: Python toolkit for Rally REST API
 Home-page: https://github.com/RallyTools/RallyRestToolkitForPython
 Author: Kip Lehman (Broadcom, Enterprise Software Division)
 License: BSD
-Download-URL: https://github.com/RallyTools/RallyRestToolkitForPython/raw/master/dists/pyral-1.5.0.zip
+Download-URL: https://github.com/RallyTools/RallyRestToolkitForPython/raw/master/dists/pyral-1.5.1.zip
 Description: This is the README file for pyral, a package implementing a 
         Pythonic interface to the Rally REST API
         
@@ -28,7 +28,7 @@ Description: This is the README file for pyral, a package implementing a
         The pyral package requires the use of Kenneth Reitz's requests package using version 2.12.0 or better.
         As of requests version 2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
         The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-        The most recent release of pyral (1.5.0) has been tested with requests 2.22.0.
+        The most recent release of pyral (1.5.1) has been tested with requests 2.22.0.
         The six module is also required.
         
         
@@ -73,7 +73,7 @@ Description: This is the README file for pyral, a package implementing a
         
 Keywords: rally,api
 Requires: six
-Requires: requests>=2.12.5
+Requires: requests>=2.25.1
 Platform: any
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: Web Environment
@@ -81,9 +81,9 @@ Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: BSD License
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python
-Classifier: Programming Language :: Python :: 3.5
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
 Classifier: Topic :: Internet :: WWW/HTTP
 Classifier: Topic :: Software Development :: Libraries

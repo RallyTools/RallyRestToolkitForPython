@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 0)
+__version__ = (1, 5, 1)
 
 import datetime
 import os
@@ -74,7 +74,7 @@ def rallyWorkset(args):
                                                     or --cfg=<config_file_name>
           3) ENV variable with location of rally-<version>.cfg --> RALLY_CONFIG
           4) current directory with rally-<version>.cfg
-          5) RALLY_SERVER, RALLY_USER_NAME, RALLY_PASSWORD, APIKEY, RALLY_WORKSPACE, RALLY_PROJECT, RALLY_PING env VARS
+          5) RALLY_SERVER, RALLY_USER_NAME, RALLY_PASSWORD, APIKEY, RALLY_WORKSPACE, RALLY_PROJECT env VARS
           6) SERVER, USER_NAME, PASSWORD defined in this module
 
         start by priming the return values with #6 and work your way up the priority ladder
@@ -122,7 +122,6 @@ def rallyWorkset(args):
     # #5
     # if there are environment vars, use them
     #
-    # purposely excluding RALLY_PING, we'll recognize in the environment later, don't want to make it part of server_creds ...
     for ix, name in enumerate(['RALLY_SERVER', 'RALLY_USER', 'RALLY_PASSWORD', 'APIKEY', 'RALLY_WORKSPACE', 'RALLY_PROJECT']):
         if name in os.environ:
             server_creds[ix] = os.environ[name]
