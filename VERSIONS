@@ -148,5 +148,8 @@
 
 
 1.5.1 - Jul 2021
-    Fixed query builder to accommodate subset criteria (in | !in) and range criteria (between | !between)
+    Fixed query builder to accommodate subset criteria (in | !in) and range criteria (between | !between).
+    Dropped mention of Python 3.5 as a supported version in PKG-INFO.
+    Added mention of Python 3.9 as a supported version in PKG-INFO.
+    Excised all mentions of AgileCentral in the docs, replaced by 'Rally'.
 
