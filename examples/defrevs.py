@@ -28,6 +28,7 @@ def main(args):
     criteria = "FormattedID = %s" % target 
 
     defect = rally.get('Defect', fetch=fields, query=criteria, instance=True)
+    print(defect)
 
     print("%s  %10.10s  %-11s  %s" % (defect.FormattedID, defect.CreationDate, 
                                       defect.State, defect.Name))

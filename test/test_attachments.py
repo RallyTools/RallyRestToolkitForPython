@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/local/bin/python3.8
 
 import sys, os
 import types
@@ -16,14 +16,15 @@ from rally_targets import RALLY, RALLY_USER, RALLY_PSWD, APIKEY
 from rally_targets import DEFAULT_WORKSPACE, DEFAULT_PROJECT
 from rally_targets import YETI_USER, YETI_PSWD, YETI_NAME
 
-EXAMPLE_ATTACHMENT_CONTENT = "The quick brown fox eluded the lumbering sloth\n"
+EXAMPLE_ATTACHMENT_CONTENT = b'SERVER    = trial.rallydev.com\nUSER      = primavera@rallydev.com\nPASSWORD  = RallyDev\nWORKSPACE = Primavera\nPROJECT   = Sample Project\n'
+EXAMPLE_TEXT_ATTACHMENT_CONTENT = "The quick brown fox eluded the lumbering sloth\n"
 
 ##################################################################################################
 
 def conjureUpAttachmentFile(filename, content=None, mimetype="text/plain"):
     """
     """
-    file_content = content or EXAMPLE_ATTACHMENT_CONTENT
+    file_content = content or EXAMPLE_TEXT_ATTACHMENT_CONTENT
     with open(filename, 'w') as af:
         af.write(file_content)
     return True
@@ -143,25 +144,26 @@ def test_add_attachment():
 def test_get_attachment():
     """
     """
-    #rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     rally = Rally(server=RALLY, user=RALLY_USER, apikey=APIKEY)
-    candidate_story = "US2" # was this in trial -> "US80"
+    candidate_story = "US2"
     target = 'FormattedID = "%s"' % candidate_story
     response = rally.get("UserStory", fetch=True, query=target, project=None)
     assert response.resultCount == 1
     story = response.next()
-##
-    assert True == True
-    return True
-##
-    assert len(story.Attachments) == 1
-    attachment = story.Attachments[0]
-    expected_attachment_name = "Addendum.txt"
-    assert attachment.Name   == expected_attachment_name
+
+    atts = story.Attachments
+    assert len(atts) == 2
+    att1 = story.Attachments[0]
+    expected_attachment_name = "buster.cbq"
+    assert att1.Name  == expected_attachment_name
+
+    att2 = story.Attachments[1]
+    expected_attachment_name = 'prima.cfg'
+    assert att2.Name == expected_attachment_name
 
     attachment = rally.getAttachment(candidate_story, expected_attachment_name)
     assert attachment.Name    == expected_attachment_name
-    assert attachment.Content == EXAMPLE_ATTACHMENT_CONTENT
+    assert EXAMPLE_ATTACHMENT_CONTENT == attachment.Content
 
 def test_add_tcr_attachment():
     """
@@ -220,10 +222,10 @@ def test_add_tcr_attachment():
     actual_attachment_content = attachment.Content.decode('UTF-8').replace("\r", '')
     att_content               =        att.Content.decode('UTF-8').replace("\r", '')
 
-    assert actual_attachment_content == EXAMPLE_ATTACHMENT_CONTENT
-    assert               att_content == EXAMPLE_ATTACHMENT_CONTENT
-    #assert attachment.Content.decode('UTF-8') == EXAMPLE_ATTACHMENT_CONTENT
-    #assert att.Content.decode('UTF-8')        == EXAMPLE_ATTACHMENT_CONTENT
+    assert actual_attachment_content == EXAMPLE_TEXT_ATTACHMENT_CONTENT
+    assert               att_content == EXAMPLE_TEXT_ATTACHMENT_CONTENT
+    #assert attachment.Content.decode('UTF-8') == EXAMPLE_TEXT_ATTACHMENT_CONTENT
+    #assert att.Content.decode('UTF-8')        == EXAMPLE_TEXT_ATTACHMENT_CONTENT
     rally.deleteAttachment(tcr, attachment_name)
     rally.delete('TestCaseResult', tcr)
     rally.delete('TestCase', test_case)

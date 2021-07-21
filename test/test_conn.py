@@ -3,6 +3,7 @@
 import sys, os
 import types
 import py
+import pytest
 import time
 import re
 
@@ -101,7 +102,7 @@ def test_basic_connection_with_bad_api_key():
     """
     BOGUS_API_KEY = "_ABC123DEF456GHI789JKL012MNO345PQR678STUVZ"
     expectedErrMsg = 'Invalid credentials'
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(PROD, "zooka@fluffernetter.com", "manict0X0", apikey=BOGUS_API_KEY)
     actualErrVerbiage = excinfo.value.args[0]
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -117,7 +118,7 @@ def test_basic_connection_with_good_up_and_bad_api_key():
     """
     BOGUS_API_KEY = "_ABC123DEF456GHI789JKL012MNO345PQR678STUVZ"
     expectedErrMsg = 'Invalid credentials'
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(PROD, user=PROD_USER, password=PROD_PSWD, apikey=BOGUS_API_KEY)
     actualErrVerbiage = excinfo.value.args[0]
     assert expectedErrMsg == actualErrVerbiage
@@ -134,7 +135,7 @@ def test_nonexistent_server():
     bogus_server = "bogus.notreally.bug"
     expectedErrMsg = "Target Rally host: '%s' non-existent or unreachable" % bogus_server
     #print expectedErrMsg
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=bogus_server)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     #print actualErrVerbiage
@@ -155,14 +156,12 @@ def test_non_rally_server():
     non_rally_server = 'www.irs.gov'
     #non_rally_server = 'www.espn.com'
 
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as exc:
         rally = Rally(server=non_rally_server, timeout=5)
-    print("Exception typename: %s" % excinfo.typename)
-    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
-    print(actualErrVerbiage)
-    expectedErrMsg = "Target host: '%s' is either not reachable or " % non_rally_server
-    ex_value_mo = re.search(expectedErrMsg, actualErrVerbiage)
-    assert ex_value_mo is not None
+    print("Exception typename: %s" % exc.typename)
+    print(str(exc))
+    expected_error = "404 Target host: 'www.irs.gov' is either not reachable or doesn't support the Rally WSAPI"
+    assert expected_error in str(exc)
     time.sleep(1)
 
 
@@ -175,13 +174,13 @@ def test_bad_server_spec():
         The status_code in the response must indicate a non-success condition.
     """
     bad_server = "ww!w.\fo,o\r\n.c%om"
-    expectedErrMsg = "404 Target host: 'ww!w.\x0co,o\r\n.c%om' is either not reachable or doesn't support the Rally WSAPI"
+    expectedErrMsg = "host: 'ww!w.\x0co,o\r\n.c%om' is either not reachable or doesn't support the Rally WSAPI"
     print("expectedErrMesssage |{0}|".format(expectedErrMsg))
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as exc:
         rally = Rally(server=bad_server, timeout=3)
-    actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
+    actualErrVerbiage = exc.value.args[0]
     print("actualErrVerbiage   |{0}|".format(actualErrVerbiage))
-    assert actualErrVerbiage == expectedErrMsg
+    assert expectedErrMsg in actualErrVerbiage
     time.sleep(1)
 
 
@@ -200,7 +199,7 @@ def test_insuff_credentials():
     """
     expectedErrMsg = 'Invalid credentials'
 
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=RALLY, user=RALLY_USER, password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
@@ -209,7 +208,7 @@ def test_insuff_credentials():
     #print "detected valid user, missing password condition"
     time.sleep(1)
 
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=RALLY, user="", password="doofus")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
@@ -218,7 +217,7 @@ def test_insuff_credentials():
     #print "detected blank user, invalid password condition"
     time.sleep(1)
 
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=RALLY, user="", password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
@@ -227,7 +226,7 @@ def test_insuff_credentials():
     #print "detected blank user and password condition"
     time.sleep(1)
 
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=RALLY, user="guest", password="")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
@@ -236,7 +235,7 @@ def test_insuff_credentials():
     #print "detected invalid user, blank password condition"
     time.sleep(1)
     
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=RALLY, user="guest", password="doofus")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
@@ -245,7 +244,7 @@ def test_insuff_credentials():
     #print "detected invalid user, invalid password condition"
     time.sleep(1)
 
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally = Rally(server=RALLY, user="guest")
         response = rally.get('Project', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(

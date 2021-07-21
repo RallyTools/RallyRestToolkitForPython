@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/local/bin/python3.8
 
 ###############################################################################
 #
@@ -21,26 +21,26 @@ ELEMENTS_WITH_VERSION_IDENTITIERS = """
 
 in README.rst:
       $ python
-      Python 2.7.5 [other Python interpreter info elided ...]
+      Python 3.8.9 [other Python interpreter info elided ...]
       >> import requests
       >> import pyral
       >> pyral.__version__
-      (1, 1, 0)
+      (1, 5, 1)
 
 in build_dist.py:
-VERSION      = "1.1.0"
+VERSION      = "1.5.1"
 
 
 in setup.py:
-VERSION       = '1.1.0'
+VERSION       = '1.5.1'
 
 modifies version identifier in all pyral/*.py files
 
 in doc/source/conf.py:
 # The short X.Y version.
-version = '1.1.0'
+version = '1.5.1'
 # The full version, including alpha/beta/rc tags.
-release = '1.1.0'
+release = '1.5.1'
 
        assumes invocation is done in the base directory of the pyral dev tree
 """

@@ -14,7 +14,7 @@ import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.5.0"
+VERSION      = "1.5.1"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -63,6 +63,12 @@ DOC_FILES  = ['doc/Makefile',
               'doc/build/html/objects.inv',
               'doc/build/html/_sources',
               'doc/build/html/_static',
+              'doc/build/html/_static/css',
+              'doc/build/html/_static/css/fonts',
+              'doc/build/html/_static/fonts',
+              'doc/build/html/_static/fonts/Lato',
+              'doc/build/html/_static/fonts/RobotoSlab',
+              'doc/build/html/_static/js',
              ]
 
 #
@@ -243,10 +249,10 @@ def make_online_docs_zipfile(pkg_name, pkg_version, doc_dir, doc_files):
     zf_name = '%s-%s.docs.html.zip' % (pkg_name, pkg_version)
     cur_dir = os.getcwd()
     os.chdir(doc_dir)
-    zf = zipfile.ZipFile(zf_name, 'w')
-    for fn in doc_files:
-        zf.write(fn, fn, zipfile.ZIP_DEFLATED)
-    zf.close()
+    #zf = zipfile.ZipFile(zf_name, 'w')
+    #for fn in doc_files:
+    #    zf.write(fn, fn, zipfile.ZIP_DEFLATED)
+    #zf.close()
 
     ##  The following is what has been done before on the command line, when you
     ## get the recursion opt on the above logic you can drop the os.system call

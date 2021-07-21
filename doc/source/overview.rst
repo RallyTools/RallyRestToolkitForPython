@@ -17,13 +17,8 @@ For more information on how workspaces and projects in Rally are set up and conf
 the Rally documentation available via the 'Help' link from the Rally landing page 
 displayed after your initial login.
 
-.. warning::
-
-   As of the 1.0.0 version of **pyral** (the Python toolkit for the Rally REST API),
-   the implementation works with Rally WSAPI 2.0 and is **not** backward compatible 
-   with Rally WSAPI 1.x.
-
 .. _Rally: http://www.rallydev.com
+
 
 Simple Use
 ==========
@@ -45,8 +40,8 @@ Here's a prototype of simple use of the **pyral** package.::
     for rls in response:
         rlsStart = rls.ReleaseStartDate.split('T')[0]  # just need the date part
         rlsDate  = rls.ReleaseDate.split('T')[0]       # ditto
-        print "%-6.6s  %-16.16s   %s  -->  %s" % \
-              (rls.Project.Name, rls.Name, rlsStart, rlsDate)
+        print("%-6.6s  %-16.16s   %s  -->  %s" % \
+              (rls.Project.Name, rls.Name, rlsStart, rlsDate))
 
 
 Rally Data Model
@@ -72,6 +67,7 @@ But, it is not limited to those as it is very possible to view/operate on other 
 entities such as Workspace, Project, UserProfile, Release, Iteration, TestCaseResult, 
 TestFolder, Tag and others.
 
+
 Full CRUD capability
 ====================
 
@@ -83,6 +79,7 @@ toolkit doesn't use those or provide access to them.
 There are example usages of **pyral** that you can adapt to offer the end-user or scriptwriter the
 capability of specifying ranges of identifiers of artifacts for querying/updating/deleting.
 
+
 Rally Introspection
 ===================
 
@@ -90,6 +87,8 @@ The Python toolkit for the Rally REST API makes it easy to obtain the names of R
 and the attributes associated with each type.  You can also use **pyral** capabilities
 to obtain the list of allowed values for Rally type attributes that have a pre-allocated
 list of values.
+
+
 
 Queries and Results
 ===================
@@ -119,6 +118,18 @@ to obtain the value.  There are two significant advantages to this, one being li
 the load on the server with the reduction of data returned and the other being easy and 
 intuitive attribute access syntax.
 
+The query relational operators that pyral supports are: 
+   =  !=  >  <  >=  <=  contains  !contains  in  !in  between  !between
+The contains and !contains relational operators a helpful in expressing a condition where 
+you are looking for a field that does (or does not) contain a specific substring.
+For example 'Name contains "Prior Art"' or 'ThermalPhase !contains "hot lava"'.
+The in and !in relational operators are commonly used for expressions involving subsets of a
+finite set of values.  For example 'Severity in High, Burning, Explosive' or 'Priority !in Moribund, Meh'.
+The between and !between relation operators are commonly used for expressions involving date ranges.
+For example 'CreatedDate between 2018 and 2022' or 'LastUpdated !between 2021-09-22T00:00:00.000Z and 2021-09-22T07:59:59.999Z'.
+
+
+
 Custom Fields
 =============
 
@@ -138,11 +149,12 @@ entity name (eg, 'Story', 'Defect', 'Task', etc). For a PortfolioItem sub-type y
 specify just the name of the sub-type, ie., 'Feature' or you may fully qualify it as
 'PortfolioItem/Feature'.
 
+
 Introduction of Dyna-Types
 ==========================
 
-As of Rally WebServices API 1.37, Rally has introduced a modification of their data model, which
-is termed dyna-types.  This modification offers a means of establishing and using a parent type
+Prior to the release of Rally WebServices API v2.0, Rally introduced a modification of their data model, 
+which is termed dyna-types.  This modification offers a means of establishing and using a parent type
 and defining sub-types of that parent.  The PortfolioItem type is now an "abstract" type from which
 there are some pre-defined sub-types (Theme, Strategy, Initiative, Feature).  
 By convention, the preferred way to identify a PortfolioItem sub-type is via slashed 
@@ -166,6 +178,7 @@ to avoid ambiguity in identifying the Rally entity type.
 
 In the event your organization has created a sub-type with the same name as a standard Rally entity
 (eg, 'Project', 'Release', 'Milestone', etc.) you will be unable to use this toolkit to access those items.
-There will be no consideration given to supporting any custom PortfolioItem sub-type whose name conflicts with
-Rally standard entity name.
+There will be no consideration given to supporting any custom PortfolioItem sub-type whose name conflicts 
+with a Rally standard entity name.
   
+

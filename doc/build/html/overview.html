@@ -1,56 +1,58 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Python toolkit for the Rally REST API &mdash; pyral 1.4.2 documentation</title>
+  <title>Python toolkit for the Rally REST API &mdash; pyral 1.5.1 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
 
   
+  
 
   
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="pyral 1.4.2 documentation" href="index.html"/>
-        <link rel="next" title="Primary pyral classes and functions" href="interface.html"/>
-        <link rel="prev" title="Python toolkit for the Rally REST API" href="index.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Primary pyral classes and functions" href="interface.html" />
+    <link rel="prev" title="Python toolkit for the Rally REST API" href="index.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -64,7 +66,7 @@
             
             
               <div class="version">
-                1.4.2
+                1.5.1
               </div>
             
           
@@ -81,11 +83,15 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
             
-                <ul class="current">
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Python toolkit for the Rally REST API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#simple-use">Simple Use</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#rally-data-model">Rally Data Model</a></li>
@@ -94,6 +100,7 @@
 <li class="toctree-l1"><a class="reference internal" href="#rally-introspection">Rally Introspection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#queries-and-results">Queries and Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#custom-fields">Custom Fields</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#portfolioitem-tips">PortfolioItem tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#introduction-of-dyna-types">Introduction of Dyna-Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="interface.html">Primary <em>pyral</em> classes and functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="interface.html#rallyworkset">rallyWorkset</a></li>
@@ -106,24 +113,36 @@
             
           
         </div>
+        
       </div>
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">pyral</a>
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyral</a>
+        
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
- 
+
+
+
+
+
+
+
+
+
 
 
 
@@ -132,18 +151,25 @@
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Python toolkit for the Rally REST API</li>
-    <li class="wy-breadcrumbs-aside">
-      
-          
-          <a href="_sources/overview.txt" rel="nofollow"> View page source</a>
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      
-    </li>
+      <li>Python toolkit for the Rally REST API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/overview.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -156,24 +182,18 @@ entities in Rally, create entities in Rally, update existing entities in Rally a
 with proper permissions, delete entities in Rally.</p>
 <p>Once you have the <strong>pyral</strong> package installed, all you need is a valid subscription
 to Rally, working credentials and the name of
-the workspace and project you want to interact with and you&#8217;re on your way!</p>
+the workspace and project you want to interact with and you’re on your way!</p>
 <p>For more information on obtaining a Rally subscription, visit the <a class="reference external" href="http://www.rallydev.com">Rally</a> website.</p>
 <p>For more information on how workspaces and projects in Rally are set up and configured, consult
-the Rally documentation available via the &#8216;Help&#8217; link from the Rally landing page
+the Rally documentation available via the ‘Help’ link from the Rally landing page
 displayed after your initial login.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">As of the 1.0.0 version of <strong>pyral</strong> (the Python toolkit for the Rally REST API),
-the implementation works with Rally WSAPI 2.0 and is <strong>not</strong> backward compatible
-with Rally WSAPI 1.x.</p>
-</div>
 </div>
 <div class="section" id="simple-use">
 <h1>Simple Use<a class="headerlink" href="#simple-use" title="Permalink to this headline">¶</a></h1>
-<p>Here&#8217;s a prototype of simple use of the <strong>pyral</strong> package.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<p>Here’s a prototype of simple use of the <strong>pyral</strong> package.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
 
-<span class="kn">from</span> <span class="nn">pyral</span> <span class="k">import</span> <span class="n">Rally</span><span class="p">,</span> <span class="n">rallyWorkset</span>
+<span class="kn">from</span> <span class="nn">pyral</span> <span class="kn">import</span> <span class="n">Rally</span><span class="p">,</span> <span class="n">rallyWorkset</span>
 
 <span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="n">opt</span> <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">opt</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="p">)]</span>
 <span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">apikey</span><span class="p">,</span> <span class="n">workspace</span><span class="p">,</span> <span class="n">project</span> <span class="o">=</span> <span class="n">rallyWorkset</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
@@ -183,11 +203,11 @@ with Rally WSAPI 1.x.</p>
 <span class="n">response</span> <span class="o">=</span> <span class="n">rally</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Release&#39;</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="s2">&quot;Project,Name,ReleaseStartDate,ReleaseDate&quot;</span><span class="p">,</span>
                      <span class="n">order</span><span class="o">=</span><span class="s2">&quot;ReleaseDate&quot;</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">release</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+<span class="k">for</span> <span class="n">rls</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
     <span class="n">rlsStart</span> <span class="o">=</span> <span class="n">rls</span><span class="o">.</span><span class="n">ReleaseStartDate</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># just need the date part</span>
     <span class="n">rlsDate</span>  <span class="o">=</span> <span class="n">rls</span><span class="o">.</span><span class="n">ReleaseDate</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>       <span class="c1"># ditto</span>
-    <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">%-6.6s</span><span class="s2">  </span><span class="si">%-16.16s</span><span class="s2">   </span><span class="si">%s</span><span class="s2">  --&gt;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> \
-          <span class="p">(</span><span class="n">rls</span><span class="o">.</span><span class="n">Project</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">rls</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">rlsStart</span><span class="p">,</span> <span class="n">rlsDate</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%-6.6s</span><span class="s2">  </span><span class="si">%-16.16s</span><span class="s2">   </span><span class="si">%s</span><span class="s2">  --&gt;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> \
+          <span class="p">(</span><span class="n">rls</span><span class="o">.</span><span class="n">Project</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">rls</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">rlsStart</span><span class="p">,</span> <span class="n">rlsDate</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -198,7 +218,7 @@ is a descendent of the PersistableObject class.  There are several branches in t
 model, and each branch has its own set of attributes differentiated according to the
 functional capabilities and information tracking needs that characterize the branch.
 For more information on the Rally data model, consult the Rally documentation available
-via the &#8216;Help&#8217; link from the Rally page displayed after the initial login.</p>
+via the ‘Help’ link from the Rally page displayed after the initial login.</p>
 </div>
 <div class="section" id="rally-entities-and-artifacts">
 <h1>Rally Entities and Artifacts<a class="headerlink" href="#rally-entities-and-artifacts" title="Permalink to this headline">¶</a></h1>
@@ -214,9 +234,11 @@ TestFolder, Tag and others.</p>
 <div class="section" id="full-crud-capability">
 <h1>Full CRUD capability<a class="headerlink" href="#full-crud-capability" title="Permalink to this headline">¶</a></h1>
 <p>The Python toolkit for the Rally REST API offers the full spectrum of CRUD capabilities that the
-credentials supplied for your subscription/workspace/project permit.  While the Rally
-REST API itself doesn&#8217;t support bulk operations, there are example usages of
-<strong>pyral</strong> that you can adapt to offer the end-user or scriptwriter the
+credentials supplied for your subscription/workspace/project permit.  Rally
+REST API did not originally support bulk operations when this toolkit was written.
+Since the 2017/2018 timeframe the Rally REST WSAPI has provided some bulk operations, but this
+toolkit doesn’t use those or provide access to them.
+There are example usages of <strong>pyral</strong> that you can adapt to offer the end-user or scriptwriter the
 capability of specifying ranges of identifiers of artifacts for querying/updating/deleting.</p>
 </div>
 <div class="section" id="rally-introspection">
@@ -230,88 +252,114 @@ list of values.</p>
 <h1>Queries and Results<a class="headerlink" href="#queries-and-results" title="Permalink to this headline">¶</a></h1>
 <p>The Rally REST API has two interesting characteristics that the Python toolkit for the Rally REST API
 insulates the scriptwriter from having to deal with.  The first is that the Rally REST API
-has a maximum &#8220;pagesize&#8221; of 200 records to limit volume and prevent unwarranted hijacking of the
+has a maximum “pagesize” to limit volume and prevent unwarranted hijacking of the
 Rally SaaS servers.  But, having script writers deal with this directly to obtain further
-&#8220;pages&#8221; would be burdensome and out of character with the mainstream of Python interfaces
+“pages” would be burdensome and out of character with the mainstream of Python interfaces
 to SaaS services.  The Python toolkit for the Rally REST API (<strong>pyral</strong>) takes care
 of the paging transparently, allowing the scriptwriter to treat a result set as an iterator,
 merely looping through the results without any indication of any sequence of further
 requests on the Rally server.</p>
 <p>The second characteristic is that the Rally REST API for some queries and results returns
 not a scalar value but a reference to yet another entity in the Rally system.  A Project or
-a Release are good examples of these.  Say your query specified the retrieval of some UserStories,
+a Release are good examples of these.  Say your query specified the retrieval of some Stories,
 and you listed the Project as a field to return with these results.  From an end-user perspective,
 seeing the project name as opposed to an URL with an ObjectID value would be far more intuitive.</p>
-<p>The Python toolkit for the Rally REST API offers this sort of intuitive behavior by &#8220;chasing&#8221; the URL
+<p>The Python toolkit for the Rally REST API offers this sort of intuitive behavior by “chasing” the URL
 to obtain the more human friendly and intuitive information for display.  This sort of behavior is
-also present in so-called &#8220;lazy-evaluation&#8221; of entity attributes that may be containers as well
-as references.  The scriptwriter merely has to refer to the attribute with the dot (&#8216;.&#8217;) notation
-and <strong>pyral</strong> takes care of the communication with the Rally server
-to obtain the value.  There are two significant advantages to this, one being lightening
+also present in so-called “lazy-evaluation” of entity attributes that may be containers (collections)</p>
+<blockquote>
+<div><p>as well as references.  The scriptwriter merely has to refer to the attribute with the
+dot (‘.’) notation and <strong>pyral</strong> takes care of the communication with the Rally server</p>
+</div></blockquote>
+<p>to obtain the value.  There are two significant advantages to this, one being lightening
 the load on the server with the reduction of data returned and the other being easy and
 intuitive attribute access syntax.</p>
+<dl class="simple">
+<dt>The query relational operators that pyral supports are:</dt><dd><p>=  !=  &gt;  &lt;  &gt;=  &lt;=  contains  !contains  in  !in  between  !between</p>
+</dd>
+</dl>
+<p>The contains and !contains relational operators a helpful in expressing a condition where
+you are looking for a field that does (or does not) contain a specific substring.
+For example ‘Name contains “Prior Art”’ or ‘ThermalPhase !contains “hot lava”’.
+The in and !in relational operators are commonly used for expressions involving subsets of a
+finite set of values.  For example ‘Severity in High, Burning, Explosive’ or ‘Priority !in Moribund, Meh’.
+The between and !between relation operators are commonly used for expressions involving date ranges.
+For example ‘CreatedDate between 2018 and 2022’ or ‘LastUpdated !between 2021-09-22T00:00:00.000Z and 2021-09-22T07:59:59.999Z’.</p>
 </div>
 <div class="section" id="custom-fields">
 <h1>Custom Fields<a class="headerlink" href="#custom-fields" title="Permalink to this headline">¶</a></h1>
 <p>Most Artifact types in Rally can be augmented with custom fields.  As of Rally WSAPI v2.0, the
-ElementName for a custom field is prefixed with &#8216;<a href="#id1"><span class="problematic" id="id2">c_</span></a>&#8216;.  The <strong>pyral</strong> toolkit allows you to
-reference these fields without having to use the &#8216;<a href="#id3"><span class="problematic" id="id4">c_</span></a>&#8216; prefix.  For example, if your custom field
-has a DisplayName of &#8216;Burnt Offerings Index&#8217; you can use the String of &#8216;BurntOfferingsIndex&#8217; in
+ElementName for a custom field is prefixed with ‘<a href="#id1"><span class="problematic" id="id2">c_</span></a>’.  The <strong>pyral</strong> toolkit allows you to
+reference these fields without having to use the ‘<a href="#id3"><span class="problematic" id="id4">c_</span></a>’ prefix.  For example, if your custom field
+has a DisplayName of ‘Burnt Offerings Index’ you can use the String of ‘BurntOfferingsIndex’ in
 a fetch clause or a query clause or refer to the field directly on an artifact
 as artifact.BurntOfferingsIndex.</p>
 </div>
+<div class="section" id="portfolioitem-tips">
+<h1>PortfolioItem tips<a class="headerlink" href="#portfolioitem-tips" title="Permalink to this headline">¶</a></h1>
+<p>Rally has 4 standard PortfolioItem sub-types (Theme, Strategy, Initiative, and Feature).
+In this toolkit, for the primary methods (get, create, update, delete), you must supply a
+entity name (eg, ‘Story’, ‘Defect’, ‘Task’, etc). For a PortfolioItem sub-type you may
+specify just the name of the sub-type, ie., ‘Feature’ or you may fully qualify it as
+‘PortfolioItem/Feature’.</p>
+</div>
 <div class="section" id="introduction-of-dyna-types">
 <h1>Introduction of Dyna-Types<a class="headerlink" href="#introduction-of-dyna-types" title="Permalink to this headline">¶</a></h1>
-<p>As of Rally WebServices API 1.37, Rally has introduced a modification of their data model, which
-is termed dyna-types.  This modification offers a means of establishing and using a parent type
-and defining sub-types of that parent.  The PortfolioItem type is now an &#8220;abstract&#8221; type from which
+<p>Prior to the release of Rally WebServices API v2.0, Rally introduced a modification of their data model,
+which is termed dyna-types.  This modification offers a means of establishing and using a parent type
+and defining sub-types of that parent.  The PortfolioItem type is now an “abstract” type from which
 there are some pre-defined sub-types (Theme, Strategy, Initiative, Feature).
 By convention, the preferred way to identify a PortfolioItem sub-type is via slashed
-naming, eg. &#8216;PortfolioItem/Feature&#8217;.  While it is possible
+naming, eg. ‘PortfolioItem/Feature’.  While it is possible
 to identify a PortfolioItem sub-type by the sub-type name, eg, (Theme), this is not the preferred
 means.  The reason for the latter statement is that with dyna-types it is possible to define new
-&#8220;abstract&#8221; types and define sub-types therefrom that may have names identical to a sub-type whose
-parent differs from your newly defined &#8220;abstract&#8221; type.</p>
-<p>An example of this is a fictional &#8220;abstract&#8221; parent type named &#8220;Bogutrunk&#8221; (for a type that
-encompasses stories about requests for things you&#8217;ll never implement and aren&#8217;t bugs, but you want
-to track them anyway).  Additionally, let&#8217;s say you define some sub-types whose parent type is
-&#8220;Bogutrunk&#8221; and are named &#8220;Outlandish&#8221;, &#8220;NonScalable&#8221;, &#8220;Theme&#8221; and &#8220;Feature&#8221;.  Now, identifying a specific
-NonScalable Bogutrunk item is unambiguous; you&#8217;d just specify the entity in any pyral get/put/post/delete
-as a &#8220;NonScalable&#8221;.  But, you cannot use that convention for a &#8220;Feature&#8221;.  You&#8217;d need to specify
-one as a &#8220;Bogutrunk/Feature&#8221; to disambiguate from a &#8220;PortfolioItem/Feature&#8221;.  The main take-away
-here is that if you don&#8217;t use PortfolioItem instances with pyral, you don&#8217;t have worry about this.
-If you use PortfolioItem instances with pyral or you&#8217;ve defined your own &#8220;abstract&#8221;
+“abstract” types and define sub-types therefrom that may have names identical to a sub-type whose
+parent differs from your newly defined “abstract” type.</p>
+<p>An example of this is a fictional “abstract” parent type named “Bogutrunk” (for a type that
+encompasses stories about requests for things you’ll never implement and aren’t bugs, but you want
+to track them anyway).  Additionally, let’s say you define some sub-types whose parent type is
+“Bogutrunk” and are named “Outlandish”, “NonScalable”, “Theme” and “Feature”.  Now, identifying a specific
+NonScalable Bogutrunk item is unambiguous; you’d just specify the entity in any pyral get/put/post/delete
+as a “NonScalable”.  But, you cannot use that convention for a “Feature”.  You’d need to specify
+one as a “Bogutrunk/Feature” to disambiguate from a “PortfolioItem/Feature”.  The main take-away
+here is that if you don’t use PortfolioItem instances with pyral, you don’t have worry about this.
+If you use PortfolioItem instances with pyral or you’ve defined your own “abstract”
 parent types and specific sub-types thereof, you are strongly encouraged to use the slashed specification
 to avoid ambiguity in identifying the Rally entity type.</p>
+<p>In the event your organization has created a sub-type with the same name as a standard Rally entity
+(eg, ‘Project’, ‘Release’, ‘Milestone’, etc.) you will be unable to use this toolkit to access those items.
+There will be no consideration given to supporting any custom PortfolioItem sub-type whose name conflicts
+with a Rally standard entity name.</p>
 </div>
 
 
            </div>
+           
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="interface.html" class="btn btn-neutral float-right" title="Primary pyral classes and functions" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="index.html" class="btn btn-neutral" title="Python toolkit for the Rally REST API" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="interface.html" class="btn btn-neutral float-right" title="Primary pyral classes and functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Python toolkit for the Rally REST API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright CA Technologies 2015-2017, Rally Software Development 2010-2015.
+        &#169; Copyright Broadcom 2018-2021, CA Technologies 2015-2017, Rally Software Development 2010-2015.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
@@ -320,36 +368,15 @@ to avoid ambiguity in identifying the Rally entity type.</p>
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.4.2',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
+
+  
+  
+    
    
 
 </body>

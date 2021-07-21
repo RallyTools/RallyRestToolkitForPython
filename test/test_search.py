@@ -11,7 +11,10 @@ InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
 
 ##################################################################################################
 
-from internal_rally_targets import APIKEY, WORKSPACE, PROJECT
+#from internal_rally_targets import APIKEY, WORKSPACE, PROJECT
+from rally_targets import APIKEY, DEFAULT_WORKSPACE, DEFAULT_PROJECT
+WORKSPACE = DEFAULT_WORKSPACE
+PROJECT   = DEFAULT_PROJECT
 
 ##################################################################################################
 
@@ -37,7 +40,7 @@ def test_basic_search():
     print(response.resultCount)
     for entry in response:
         print(entry.ObjectID, entry.FormattedID, entry.Name)
-        print("|" + entry.MatchingText + "|")
+        #print("|" + entry.MatchingText + "|")
 
 
 #def test_simple_named_fields_query():
