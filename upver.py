@@ -25,22 +25,22 @@ in README.rst:
       >> import requests
       >> import pyral
       >> pyral.__version__
-      (1, 5, 1)
+      (1, 5, 2)
 
 in build_dist.py:
-VERSION      = "1.5.1"
+VERSION      = "1.5.2"
 
 
 in setup.py:
-VERSION       = '1.5.1'
+VERSION       = '1.5.2'
 
 modifies version identifier in all pyral/*.py files
 
 in doc/source/conf.py:
 # The short X.Y version.
-version = '1.5.1'
+version = '1.5.2'
 # The full version, including alpha/beta/rc tags.
-release = '1.5.1'
+release = '1.5.2'
 
        assumes invocation is done in the base directory of the pyral dev tree
 """

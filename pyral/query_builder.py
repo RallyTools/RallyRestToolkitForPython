@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 1)
+__version__ = (1, 5, 2)
 
 import re
 import types
@@ -238,7 +238,7 @@ class RallyQueryFormatter(object):
             return expression
 
         parts = RallyQueryFormatter.validatePartsSyntax(parts)
-        binary_expression = parts.pop()
+        binary_expression = quote(parts.pop())
         while parts:
             item = parts.pop()
             if item in RallyQueryFormatter.CONJUNCTIONS:
@@ -290,12 +290,8 @@ class RallyQueryFormatter(object):
                 valid_parts.append(criteria)
                 continue
 
-            mo = criteria_pattern.match(part)
-            if mo:
-                attr_ident, relationship, attr_value = mo.group(1), mo.group(2), mo.group(3)
-                urlencoded_target_condition = f'{attr_ident} {relationship} {quote(attr_value)}'
-                valid_parts.append(urlencoded_target_condition)
-                #valid_parts.append(part)
+            if criteria_pattern.match(part):
+                valid_parts.append(part)
             elif quoted_value_pattern.match(part):
                 valid_parts.append(part)
             elif unquoted_value_pattern.match(part):

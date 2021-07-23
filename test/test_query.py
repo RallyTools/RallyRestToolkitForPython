@@ -6,9 +6,9 @@ import urllib
 import py
 
 try:
-    from urllib import unquote
+    from urllib import quote, unquote
 except:
-    from urllib.parse import unquote
+    from urllib.parse import quote, unquote
 
 import pyral
 from pyral import Rally
@@ -379,11 +379,19 @@ def test_query_target_value_with_and():
     """
     criteria = 'Project.Name = "Operations and Support Group"'
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert result == 'Project.Name = "Operations and Support Group"'.replace(' ', '%20')
+    assert result == quote(criteria)
 
     criteria = ['State != Open', 'Name !contains "Henry Hudson and Company"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert result.replace('%21%3D', '!=') == '(State != Open) AND (Name !contains "Henry Hudson and Company")'.replace(' ', '%20')
+    mult_conds = "%20AND%20".join([f'({quote(cond)})' for cond in criteria])
+    assert result == mult_conds
+
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    response = rally.get('Defect', fetch=True, query=criteria, pagesize=100, limit=30)
+    assert response.status_code == 200
+    assert response.errors   == []
+    assert response.warnings == []
+    assert response.resultCount > 1
 
 def test_query_with_special_chars_in_criteria():
     """

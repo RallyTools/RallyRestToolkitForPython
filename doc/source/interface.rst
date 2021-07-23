@@ -42,7 +42,6 @@ The priority chain consists of these steps:
         - APIKEY
         - RALLY_WORKSPACE
         - RALLY_PROJECT
-        - RALLY_PING
     * if present, use information from a rally-<version>.cfg file in the current directory,
       where <version> matches the Rally WSAPI version defined in the pyral.config module.
       Currently, that version is defined as v2.0.
@@ -65,7 +64,6 @@ The specific syntax available for these levels is detailed below.
             - APIKEY    = <validAPIKey>
             - WORKSPACE = <validWorkspaceName>
             - PROJECT   = <validProjectName>
-            - RALLY_PING = True | False
 
     **Command line options**
 
@@ -88,8 +86,6 @@ The specific syntax available for these levels is detailed below.
         --workspace=<validWorkspaceName>
 
         --project=<validProjectName>
-     
-        --ping=True|False|true|false|yes|no|1|0
 
 This mechanism provides the ability to centrally locate a configuration file that can
 be used by many members of a team where server, workspace, project are common to all members
@@ -131,7 +127,7 @@ Example use::
     print " ".join(['|%|' % opt for opt in [server, user, password, apikey, workspace, project]]
 
 
-    % python basic.py --config=current --rallyProject="Livestock Mgmt" --ping=yes
+    % python basic.py --config=current --rallyProject="Livestock Mgmt" 
 
     |rally1.rallydev.com| |wiley@acme.com| |*****| |*****| |General Products Umbrella| |Livestock Mgmt|
 
@@ -157,7 +153,7 @@ After following the priority chain, values for server, user, password, workspace
 are returned to the caller.
 
 The priority chain consists of these steps:
-    * establish baseline values from values defined in the module containing the rallySettings
+    * establish baseline values from values defined in the module containing the rallyWorkset
     * override with any environment variables present from this list:
         - RALLY_SERVER
         - RALLY_USER
@@ -289,13 +285,6 @@ To instantiate a Rally object, you'll need to provide these arguments:
                     and the default project for the user is not in the workspace specified.  
                     Under those conditions, the project is changed to the first project
                     (alphabetic ordering) in the list of projects for the specified workspace.
-        * server_ping     (True or False, default in v1.3.0 + is False)
-                   Specifies whether a ping attempt will be made to confirm network connectivity
-                   to the Rally server prior to making a Rally WSAPI REST request.
-                   Organizations may have disabled the ability to make ICMP requests so the ping
-                   attempt may fail even though there is network connectivity to the Rally server.
-                   For this reason, the use of the ping=True option is discouraged going forward.
-                   The ping operation itself will be dropped in the next major release (2.0.0).
         * isolated_workspace  (True or False, default in v1.2.0 + is False)
                    Specifies that the Rally instance will only be used for interacting with 
                    a single workspace (either the user's default workspace or the named workspace).
@@ -329,11 +318,11 @@ To instantiate a Rally object, you'll need to provide these arguments:
         You only have to use this syntax to specify a particular Project if you have multiple instances of that Project that have the same name.  There is no provision for supporting the scenario where a Project of the same name exists in the same structural location. 
 
 
-.. py:class:: Rally (server, user=None, password=None, apikey=None, workspace=None, project=None, warn=True, server_ping=False)
+.. py:class:: Rally (server, user=None, password=None, apikey=None, workspace=None, project=None, warn=True)
 
 Examples::
 
-    rally = Rally('rally1.rallydev.com', 'chester@corral.com', 'bAbYF@cerZ', server_ping=True)
+    rally = Rally('rally1.rallydev.com', 'chester@corral.com', 'bAbYF@cerZ')
 
     rally = Rally(server='rally1.rallydev.com', user='mchunko', password='mySEk^et')
 
