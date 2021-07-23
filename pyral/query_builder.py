@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 1)
+__version__ = (1, 5, 2)
 
 import re
 import types
@@ -194,15 +194,33 @@ class RallyQueryFormatter(object):
         # ends up url-encoding the %26 resulting a a value of %2526 which goofs things up on the back-end in Rally
         #criteria = criteria.replace('&', '%26')
         parts = RallyQueryFormatter.CONJUNCTION_PATT.split(criteria.strip())
+        # adjust parts for range condition presence, coalesce parts components that have a sequence of
+        #  'foo between value1', 'and', 'value2' into 'foo between value1 and value2',
+        adjusted_parts = []
+        temp = parts[:]
+        while temp:
+            if len(temp) > 2:
+                if 'between ' in temp[0].lower() and temp[1].lower() == 'and' and temp[2] and ' ' not in temp[2]:
+                    range_part = f'{temp[0]} {temp[1]} {temp[2]}'
+                    adjusted_parts.append(range_part)
+                    conj = temp[1][:]
+                    temp = temp[3:] if len(temp) > 3 else []
+                    # and take out 1 'and' or 'AND' conjunction from conjunctions
+                    continue
+            adjusted_parts.append(temp.pop(0))
+        parts = adjusted_parts
+
 ##
 ##        print("RallyQueryFormatter parts: %s" % repr(parts))
 ##
         # if no CONJUNCTION is in parts, use the condition as is (simple case)
         # OR if the criteria looks like subset query or a range query
         conjunctions = [p for p in parts if p in RallyQueryFormatter.CONJUNCTIONS]
-        if not conjunctions or re.search(r'!?between .+\s+and\s+', criteria, flags=re.I):
+        #if not conjunctions or re.search(r'!?between .+\s+and\s+', criteria, flags=re.I):
+        if not conjunctions and re.search(r'^[\w\.0-9]+\s+!?between .+\s+and\s+.+$', criteria, flags=re.I):
+            attr_ident   = r'[\w\.]+[a-zA-Z0-9]'
             # Is this a subset expression, foo in baz,korn  or foo !in burgers,fries,toast
-            mo = re.search(r'^(\w+)\s+(!?in)\s+(.+)$', criteria, flags=re.I)
+            mo = re.search(r'^(%s)\s+(!?in)\s+(.+)$' % attr_ident, criteria, flags=re.I)
             if mo:
                 attr_name, cond, values = mo.group(1), mo.group(2), mo.group(3)
                 # Rally WSAPI supports attr_name in value1,value2,...  directly but not so with !in
@@ -211,7 +229,7 @@ class RallyQueryFormatter(object):
                     criteria = RallyQueryFormatter.constructSubsetExpression(attr_name, cond, values)
             else:
                 # Is this a range expression,  someDate between today and nextYear
-                mo = re.search(r'^(\w+) (!?between)\s+(.+)\s+and\s+(.+)$', criteria, flags=re.I)
+                mo = re.search(r'^(%s)\s+(!?between)\s+(.+)\s+and\s+(.+)$' % attr_ident, criteria, flags=re.I)
                 if mo:
                     attr_name, cond, lesser, greater = mo.group(1), mo.group(2), mo.group(3), mo.group(4)
                     criteria = RallyQueryFormatter.constructRangefulExpression(attr_name, cond, lesser, greater)
@@ -220,7 +238,7 @@ class RallyQueryFormatter(object):
             return expression
 
         parts = RallyQueryFormatter.validatePartsSyntax(parts)
-        binary_expression = parts.pop()
+        binary_expression = quote(parts.pop())
         while parts:
             item = parts.pop()
             if item in RallyQueryFormatter.CONJUNCTIONS:
@@ -246,13 +264,33 @@ class RallyQueryFormatter(object):
         criteria_pattern       = re.compile(r'^(%s) (%s) (%s)$'         % (attr_ident, relationship, attr_value))
         quoted_value_pattern   = re.compile(r'^(%s) (%s) ("[^"]+")$'    % (attr_ident, relationship))
         unquoted_value_pattern = re.compile(r'^(%s) (%s) ([^"].+[^"])$' % (attr_ident, relationship))
+        subset_pattern         = re.compile(r'^(%s)\s+(!?in)\s+(.+)$'   %  attr_ident, flags=re.I)
+        range_pattern          = re.compile(r'^(%s)\s+(!?between)\s+(.+)\s+and\s+(.+)$' % attr_ident, flags=re.I)
 
         valid_parts = []
         front = ""
         while parts:
             part = "%s%s" % (front, parts.pop(0))
-            mo = criteria_pattern.match(part)
+
+            mo = subset_pattern.match(part)
             if mo:
+                attr_name, cond, values = mo.group(1), mo.group(2), mo.group(3)
+                # Rally WSAPI supports attr_name in value1,value2,...  directly,  but not so with !in
+                if cond.lower() == 'in':
+                    valid_parts.append(part)
+                else: # we must construct an OR'ed express with != for each listed value
+                    criteria = RallyQueryFormatter.constructSubsetExpression(attr_name, cond, values)
+                    valid_parts.append(criteria)
+                continue
+
+            mo = range_pattern.match(part)
+            if mo:
+                attr_name, cond, lesser, greater = mo.group(1), mo.group(2), mo.group(3), mo.group(4)
+                criteria = RallyQueryFormatter.constructRangefulExpression(attr_name, cond, lesser, greater)
+                valid_parts.append(criteria)
+                continue
+
+            if criteria_pattern.match(part):
                 valid_parts.append(part)
             elif quoted_value_pattern.match(part):
                 valid_parts.append(part)

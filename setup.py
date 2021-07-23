@@ -4,7 +4,7 @@
 from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '1.5.1'
+VERSION       = '1.5.2'
 OFFICIAL_NAME = 'Python toolkit for Rally REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (Broadcom, Enterprise Software Division)'
@@ -55,6 +55,7 @@ setup(name=PACKAGE,
       license=LICENSE,
       keywords=KEYWORDS,
       install_requires=REQUIRES,
-      classifiers=CLASSIFIERS
+      classifiers=CLASSIFIERS,
+      python_requires='>=3.6'
      )
 

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Primary pyral classes and functions &mdash; pyral 1.5.1 documentation</title>
+  <title>Primary pyral classes and functions &mdash; pyral 1.5.2 documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.5.1
+                1.5.2
               </div>
             
           
@@ -217,7 +217,6 @@ project are returned to the caller.</p>
 <li><p>APIKEY</p></li>
 <li><p>RALLY_WORKSPACE</p></li>
 <li><p>RALLY_PROJECT</p></li>
-<li><p>RALLY_PING</p></li>
 </ul>
 </dd>
 </dl>
@@ -249,7 +248,6 @@ options via the –&lt;option&gt;=&lt;value&gt;.</p></li>
 <li><p>APIKEY    = &lt;validAPIKey&gt;</p></li>
 <li><p>WORKSPACE = &lt;validWorkspaceName&gt;</p></li>
 <li><p>PROJECT   = &lt;validProjectName&gt;</p></li>
-<li><p>RALLY_PING = True | False</p></li>
 </ul>
 </dd>
 </dl>
@@ -274,7 +272,6 @@ options via the –&lt;option&gt;=&lt;value&gt;.</p></li>
 </div></blockquote>
 <blockquote>
 <div><p>–project=&lt;validProjectName&gt;</p>
-<p class="attribution">—ping=True|False|true|false|yes|no|1|0</p>
 </div></blockquote>
 </div></blockquote>
 <p>This mechanism provides the ability to centrally locate a configuration file that can
@@ -314,7 +311,7 @@ Consult the Rally help documentation for further information.</p>
 <span class="nb">print</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;|%|&#39;</span> <span class="o">%</span> <span class="n">opt</span> <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="p">[</span><span class="n">server</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">apikey</span><span class="p">,</span> <span class="n">workspace</span><span class="p">,</span> <span class="n">project</span><span class="p">]]</span>
 
 
-<span class="o">%</span> <span class="n">python</span> <span class="n">basic</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">config</span><span class="o">=</span><span class="n">current</span> <span class="o">--</span><span class="n">rallyProject</span><span class="o">=</span><span class="s2">&quot;Livestock Mgmt&quot;</span> <span class="o">--</span><span class="n">ping</span><span class="o">=</span><span class="n">yes</span>
+<span class="o">%</span> <span class="n">python</span> <span class="n">basic</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">config</span><span class="o">=</span><span class="n">current</span> <span class="o">--</span><span class="n">rallyProject</span><span class="o">=</span><span class="s2">&quot;Livestock Mgmt&quot;</span>
 
 <span class="o">|</span><span class="n">rally1</span><span class="o">.</span><span class="n">rallydev</span><span class="o">.</span><span class="n">com</span><span class="o">|</span> <span class="o">|</span><span class="n">wiley</span><span class="nd">@acme</span><span class="o">.</span><span class="n">com</span><span class="o">|</span> <span class="o">|*****|</span> <span class="o">|*****|</span> <span class="o">|</span><span class="n">General</span> <span class="n">Products</span> <span class="n">Umbrella</span><span class="o">|</span> <span class="o">|</span><span class="n">Livestock</span> <span class="n">Mgmt</span><span class="o">|</span>
 </pre></div>
@@ -336,7 +333,7 @@ After following the priority chain, values for server, user, password, workspace
 are returned to the caller.</p>
 <dl class="simple">
 <dt>The priority chain consists of these steps:</dt><dd><ul class="simple">
-<li><p>establish baseline values from values defined in the module containing the rallySettings</p></li>
+<li><p>establish baseline values from values defined in the module containing the rallyWorkset</p></li>
 <li><dl class="simple">
 <dt>override with any environment variables present from this list:</dt><dd><ul>
 <li><p>RALLY_SERVER</p></li>
@@ -481,16 +478,6 @@ Under those conditions, the project is changed to the first project
 </dl>
 </li>
 <li><dl class="simple">
-<dt>server_ping     (True or False, default in v1.3.0 + is False)</dt><dd><p>Specifies whether a ping attempt will be made to confirm network connectivity
-to the Rally server prior to making a Rally WSAPI REST request.
-Organizations may have disabled the ability to make ICMP requests so the ping
-attempt may fail even though there is network connectivity to the Rally server.
-For this reason, the use of the ping=True option is discouraged going forward.
-The ping operation itself will be dropped in the next major release (2.0.0).</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
 <dt>isolated_workspace  (True or False, default in v1.2.0 + is False)</dt><dd><p>Specifies that the Rally instance will only be used for interacting with
 a single workspace (either the user’s default workspace or the named workspace).
 Using isolated_workspace=True provides performance benefits for a subscription
@@ -530,11 +517,11 @@ You only have to use this syntax to specify a particular Project if you have mul
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="Rally">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Rally</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apikey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_ping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Rally</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apikey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Examples:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">server_ping</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">)</span>
 
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;mchunko&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;mySEk^et&#39;</span><span class="p">)</span>
 

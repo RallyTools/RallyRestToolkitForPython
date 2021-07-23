@@ -6,9 +6,9 @@ import urllib
 import py
 
 try:
-    from urllib import unquote
+    from urllib import quote, unquote
 except:
-    from urllib.parse import unquote
+    from urllib.parse import quote, unquote
 
 import pyral
 from pyral import Rally
@@ -379,11 +379,19 @@ def test_query_target_value_with_and():
     """
     criteria = 'Project.Name = "Operations and Support Group"'
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert result == 'Project.Name = "Operations and Support Group"'.replace(' ', '%20')
+    assert result == quote(criteria)
 
     criteria = ['State != Open', 'Name !contains "Henry Hudson and Company"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    assert result.replace('%21%3D', '!=') == '(State != Open) AND (Name !contains "Henry Hudson and Company")'.replace(' ', '%20')
+    mult_conds = "%20AND%20".join([f'({quote(cond)})' for cond in criteria])
+    assert result == mult_conds
+
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    response = rally.get('Defect', fetch=True, query=criteria, pagesize=100, limit=30)
+    assert response.status_code == 200
+    assert response.errors   == []
+    assert response.warnings == []
+    assert response.resultCount > 1
 
 def test_query_with_special_chars_in_criteria():
     """
@@ -607,6 +615,32 @@ def test_query_not_in_subset_operator():
     assert len(inprog)    > 0
     assert len(accepted)  > 0
 
+def test_query_having_subset_exclusion_cond_and_other_conds():
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD, project=COLD_PROJECT)
+    base_cond = 'PlanEstimate > 2'
+    subset_exclusion = 'ScheduleState !in Defined,Completed'
+    not_contains = 'Name !contains "oo"'
+    criteria = [base_cond, subset_exclusion, not_contains]
+    response = rally.get('Story', fetch=True, query=criteria, pagesize=100, limit=100, projectScopeDown=True)
+    assert response.status_code   == 200
+    assert len(response.errors)   == 0
+    assert len(response.warnings) == 0
+
+    items = [item for item in response]
+    sched_states = [item.ScheduleState for item in items]
+    ss = list(set(sorted(sched_states)))
+    assert len(ss) == 2
+
+    defined   = [item for item in items if item.ScheduleState == 'Defined']
+    inprog    = [item for item in items if item.ScheduleState == 'In-Progress']
+    completed = [item for item in items if item.ScheduleState == 'Completed']
+    accepted  = [item for item in items if item.ScheduleState == 'Accepted']
+
+    assert len(defined)   == 0
+    assert len(completed) == 0
+    assert len(inprog)    > 0
+    assert len(accepted)  > 0
+
 def test_query_not_in_subset_with_3_exclusion_values():
     """
         Query for Priority not in the subset of {'Defined', 'Completed', 'Accepted'}
@@ -662,7 +696,7 @@ def test_query_between_range_operator():
 
 def test_query_not_between_range_operator():
     """
-        Query for CreatedDate !between 2016-09-30T00:00:00Z and 2016-11-01T00:00:09Z'
+        Query for CreatedDate !between 2016-09-30T00:00:00Z and 2016-11-01T00:00:00Z'
         #assert result of query is has some elements less than date_1, and
         # has some greater than date_2 and none in the range specified
     """
@@ -683,6 +717,36 @@ def test_query_not_between_range_operator():
                            if  story.CreationDate >= range_start_date
                            and story.CreationDate <= range_end_date]
     assert len(tweener_stories) == 0
+
+def test_query_range_with_other_conds():
+    """
+        Query for CreatedDate between 2016-09-29T14:30:00Z and 2016-10-01T08:00:00Z'
+        along with a condition that some field is not null (or null)...
+        assert that there are results only within the date-time range specified
+    """
+    # Uses DEFAULT_WORKSPACE, DEFAULT_PROJECT
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    response = rally.get('Story', fetch=True, pagesize=100, limit=100)
+    all_stories = [item for item in response]
+    assert len(all_stories) > 8
+    #for story in all_stories:
+    #    plan_est = str(int(story.PlanEstimate)) if story.PlanEstimate else " "
+    #    print(f'{story.FormattedID:<5} {story.CreationDate} {story.Project.Name} {story.Iteration}  {plan_est:>4} {story.Name}')
+
+    range_start_date = '2016-09-29T14:30:00Z'
+    range_end_date   = '2016-10-01T08:00:00Z'
+    range_cond = f'CreationDate between {range_start_date} and {range_end_date}'
+    base_cond = 'Iteration = null'
+    proj_cond = 'Project != null'
+    noncon_cond = 'Name contains with'
+    criteria = [base_cond, range_cond, proj_cond, noncon_cond]
+    response = rally.get('Story', fetch=True, query=criteria, pagesize=100, limit=100)
+    target_stories = [story for story in response]
+    assert len(target_stories) >= 1
+    #print('-' * 60)
+    #for story in target_stories:
+    #    plan_est = str(int(story.PlanEstimate)) if story.PlanEstimate else " "
+    #    print(f'{story.FormattedID:<5} {story.CreationDate} {story.Project.Name} {story.Iteration}  {plan_est:>4} {story.Name}')
 
 
 def test_query_target_value_with_ampersand():

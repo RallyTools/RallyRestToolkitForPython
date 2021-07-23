@@ -153,3 +153,8 @@
     Added mention of Python 3.9 as a supported version in PKG-INFO.
     Excised all mentions of AgileCentral in the docs, replaced by 'Rally'.
 
+1.5.2 - Jul 2021
+    Fixed query builder so that multi-condition queries thet include subset or range conditions 
+    are constructed correctly.
+    Dropped all code related to ping functionality.
+

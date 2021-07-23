@@ -89,7 +89,6 @@ to obtain the list of allowed values for Rally type attributes that have a pre-a
 list of values.
 
 
-
 Queries and Results
 ===================
 
@@ -112,22 +111,23 @@ seeing the project name as opposed to an URL with an ObjectID value would be far
 The Python toolkit for the Rally REST API offers this sort of intuitive behavior by "chasing" the URL 
 to obtain the more human friendly and intuitive information for display.  This sort of behavior is 
 also present in so-called "lazy-evaluation" of entity attributes that may be containers (collections)
- as well as references.  The scriptwriter merely has to refer to the attribute with the
- dot ('.') notation and **pyral** takes care of the communication with the Rally server
+as well as references.  The scriptwriter merely has to refer to the attribute with the
+dot ('.') notation and **pyral** takes care of the communication with the Rally server
 to obtain the value.  There are two significant advantages to this, one being lightening 
 the load on the server with the reduction of data returned and the other being easy and 
 intuitive attribute access syntax.
 
-The query relational operators that pyral supports are: 
-   =  !=  >  <  >=  <=  contains  !contains  in  !in  between  !between
-The contains and !contains relational operators a helpful in expressing a condition where 
-you are looking for a field that does (or does not) contain a specific substring.
+The query relational operators that pyral supports are:::
+
+    =  !=  >  <  >=  <=  contains  !contains  in  !in  between  !between
+
+The contains and !contains relational operators are helpful in expressing a condition 
+where you are looking for a field that does (or does not) contain a specific substring.
 For example 'Name contains "Prior Art"' or 'ThermalPhase !contains "hot lava"'.
 The in and !in relational operators are commonly used for expressions involving subsets of a
 finite set of values.  For example 'Severity in High, Burning, Explosive' or 'Priority !in Moribund, Meh'.
 The between and !between relation operators are commonly used for expressions involving date ranges.
-For example 'CreatedDate between 2018 and 2022' or 'LastUpdated !between 2021-09-22T00:00:00.000Z and 2021-09-22T07:59:59.999Z'.
-
+For example 'CreationDate between 2018 and 2022' or 'LastUpdated !between 2021-09-22T00:00:00.000Z and 2021-09-22T07:59:59.999Z'.
 
 
 Custom Fields
