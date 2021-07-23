@@ -14,7 +14,7 @@ import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.5.1"
+VERSION      = "1.5.2"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -121,11 +121,11 @@ def main(args):
 
     # in order to get a wheel file built, the python used has to have available a setup.py
     # that exposes a bdist_wheel method, which is in versions of python beyond 2.7, 
-    # like 3.5., 3.6, 3.7, etc.
+    # like 3.6, 3.7, 3.8, etc.
     # you'll need to have done a 'pip3 install wheel' which sets up the necessary infrastructure.
     os.system('python setup.py bdist_wheel')
-    wheel_file = "%s-%s-py2.py3-none-any.whl" % (PACKAGE_NAME, VERSION)
-    # the wheel_file gets written into the dist  subdir by default, no need for a copy...
+    wheel_file = "%s-%s-py3-none-any.whl" % (PACKAGE_NAME, VERSION)
+    # the wheel_file gets written into the dist subdir by default, no need for a copy...
 
     store_packages('dist',  [tarball])
     store_packages('dists', [tarball, zipped])
