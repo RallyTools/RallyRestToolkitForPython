@@ -757,7 +757,45 @@ def test_query_not_between_range_operator():
                            and story.CreationDate <= range_end_date]
     assert len(tweener_stories) == 0
 
+<<<<<<< HEAD
 def test_query_range_with_other_conds():
+||||||| parent of de84dea (multi-condition query with subset/range clause(s) (#178))
+
+def test_query_target_value_with_ampersand():
+=======
+def test_query_range_with_other_conds():
+    """
+        Query for CreatedDate between 2016-09-29T14:30:00Z and 2016-10-01T08:00:00Z'
+        along with a condition that some field is not null (or null)...
+        assert that there are results only within the date-time range specified
+    """
+    # Uses DEFAULT_WORKSPACE, DEFAULT_PROJECT
+    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
+    response = rally.get('Story', fetch=True, pagesize=100, limit=100)
+    all_stories = [item for item in response]
+    assert len(all_stories) > 8
+    #for story in all_stories:
+    #    plan_est = str(int(story.PlanEstimate)) if story.PlanEstimate else " "
+    #    print(f'{story.FormattedID:<5} {story.CreationDate} {story.Project.Name} {story.Iteration}  {plan_est:>4} {story.Name}')
+
+    range_start_date = '2016-09-29T14:30:00Z'
+    range_end_date   = '2016-10-01T08:00:00Z'
+    range_cond = f'CreationDate between {range_start_date} and {range_end_date}'
+    base_cond = 'Iteration = null'
+    proj_cond = 'Project != null'
+    noncon_cond = 'Name contains with'
+    criteria = [base_cond, range_cond, proj_cond, noncon_cond]
+    response = rally.get('Story', fetch=True, query=criteria, pagesize=100, limit=100)
+    target_stories = [story for story in response]
+    assert len(target_stories) >= 1
+    #print('-' * 60)
+    #for story in target_stories:
+    #    plan_est = str(int(story.PlanEstimate)) if story.PlanEstimate else " "
+    #    print(f'{story.FormattedID:<5} {story.CreationDate} {story.Project.Name} {story.Iteration}  {plan_est:>4} {story.Name}')
+
+
+def test_query_target_value_with_ampersand():
+>>>>>>> de84dea (multi-condition query with subset/range clause(s) (#178))
     """
         Query for CreatedDate between 2016-09-29T14:30:00Z and 2016-10-01T08:00:00Z'
         along with a condition that some field is not null (or null)...
