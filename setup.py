@@ -55,6 +55,7 @@ setup(name=PACKAGE,
       license=LICENSE,
       keywords=KEYWORDS,
       install_requires=REQUIRES,
-      classifiers=CLASSIFIERS
+      classifiers=CLASSIFIERS,
+      python_requires='>=3.6'
      )
 
