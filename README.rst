@@ -70,7 +70,7 @@ relevant packages.
 :: 
 
    $ python
-   Python 3.7.5 [other Python interpreter info elided ...]
+   Python 3.8.5 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
@@ -251,7 +251,7 @@ The item names in config files **are** case sensitive.
 Prerequisites
 -------------
 
- * Python 3.5, 3.6 or 3.7 (this package not tested with earlier versions of Python 3.x)
+ * Python 3.6, 3.7, 3.8 or 3.9 (this package not tested with earlier versions of Python 3.x)
  * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy),
    requests 2.22.0 or more recent is recommended.
  * The six_ package.
@@ -261,6 +261,18 @@ Prerequisites
 
 Versions
 --------
+
+   **1.5.2**
+       Fixed query builder so that multi-condition queries thet include subset or range conditions 
+       are constructed correctly.
+       Dropped all code related to ping functionality.
+
+   **1.5.1**
+       Fixed query builder to accommodate subset criteria (in | !in) and range criteria (between | !between).
+       Dropped mention of Python 3.5 as a supported version in PKG-INFO.
+       Added mention of Python 3.9 as a supported version in PKG-INFO.
+       Excised all mentions of AgileCentral in the docs, replaced by 'Rally'.
+
    **1.5.0**
        Dropped all support for Python 2.7 constructs.
        Validated support for Python 3.7 and 3.8.
