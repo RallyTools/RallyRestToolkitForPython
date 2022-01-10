@@ -201,7 +201,7 @@ class Persistable(object):
         rev_hist_oid = rev_hist_raw['ObjectID']
         revs_ref     = rev_hist_raw['Revisions']['_ref']  # this is the "true" Revisions collection ref
         # create a RevisionHistory instance with oid, Name and _ref field information
-        rev_hist = RevisionHistory(rev_hist_oid, 'RevisonHistory', collection_ref, self._context)
+        rev_hist = RevisionHistory(rev_hist_oid, 'RevisionHistory', collection_ref, self._context)
         # chase the revs_ref set the RevisionHistory.Revisions attribute with that Revisions collection
         revisions = getCollection(self._context, revs_ref, _disableAugments=False)
         rev_hist.Revisions = [revision for revision in revisions]
