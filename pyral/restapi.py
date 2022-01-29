@@ -178,11 +178,12 @@ class Rally(object):
     FORMATTED_ID_PATTERN = re.compile(r'^[A-Z]{1,2}\d+$') #S|US|DE|DS|TA|TC|TS|PI
     MAX_ATTACHMENT_SIZE = 50000000  # approx 50 MB 
 
-    def __init__(self, server=SERVER, user=None, password=None, apikey=None,
+    def __init__(self, server=SERVER, user=None, auth_user=None, password=None, apikey=None,
                        version=WS_API_VERSION, warn=True, server_ping=None, 
                        isolated_workspace=False, **kwargs):
         self.server       = server 
         self.user         = user     or USER_NAME
+        self.auth_user    = auth_user or self.user # use this in cases where the "user name" and "LDAP User Name" differ
         self.password     = password or PASSWORD
         self.apikey       = apikey
         self.version      = WS_API_VERSION  # we only support v2.0 now
@@ -230,7 +231,7 @@ class Rally(object):
             self.user     = None
             self.password = None
         else:
-            self.session.auth = requests.auth.HTTPBasicAuth(self.user, self.password)
+            self.session.auth = requests.auth.HTTPBasicAuth(self.auth_user, self.password)
         self.session.timeout = 10.0
         self.session.proxies = proxy_dict
         self.session.verify  = verify_ssl_cert
