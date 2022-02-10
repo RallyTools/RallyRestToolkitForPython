@@ -218,7 +218,8 @@ class Rally(object):
 ##        print("\n requests lib in %s" % requests.__file__)
 ##
         self.session = requests.Session()
-        self.session.headers = RALLY_REST_HEADERS
+        self.session.headers = RALLY_REST_HEADERS.copy()
+
         if 'headers' in kwargs:
             for header_name, header_value in kwargs['headers'].items():
                 matching_header = [key for key in self.session.headers
