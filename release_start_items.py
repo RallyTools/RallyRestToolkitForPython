@@ -357,10 +357,17 @@ def identifyFeaturesAndStoriesVariances(project_name, inception, current):
                     for ftr_fid in feature_drops_fids]
 
     feature_adds_fids  = current_features - inception_features
-    feature_adds = [(ftr_fid,
-                     inception[project_name][ftr_fid]['Feature'].Name,
-                     inception[project_name][ftr_fid]['Feature'].State.Name)
-                    for ftr_fid in feature_adds_fids]
+    #feature_adds = [(ftr_fid,
+    #                 current[project_name][ftr_fid]['Feature'].Name,
+    #                 current[project_name][ftr_fid]['Feature'].State.Name)
+    #                for ftr_fid in feature_adds_fids]
+    feature_adds = []
+    for ftr_fid in feature_adds_fids:
+        ftr = current[project_name][ftr_fid]['Feature']
+        ftr_name   = ftr.Name
+        ftr_state =  ftr.State.Name if ftr.State else ''
+        ftr_tuple = (ftr_fid, ftr_name, ftr_state)
+        feature_adds.append(ftr_tuple)
 
     common_features = inception_features.intersection(current_features)
 
