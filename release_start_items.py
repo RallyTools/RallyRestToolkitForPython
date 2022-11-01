@@ -76,7 +76,7 @@ def main(args):
     release_items = [item for item in response]
     project_names = [rls.Project.Name for rls in release_items]
     sorted_project_names = sorted(project_names)
-    MAX_PROJECTS = 3
+    MAX_PROJECTS = 43
 
     # Get info from Rally on the Features associated with each project in sorted_project_names
     # we need to build a lookup (dict) keyed by Feature ObjectID with the associated Feature instance
@@ -137,10 +137,13 @@ def main(args):
         print(project_name)
         elements = identifyFeaturesAndStoriesVariances(project_name, plan['inception'], plan['current'])
         plan['variance'][project_name] = elements
-        for key, element in plan['variance'][project_name].items():
-            if element:
+        for key, targets in plan['variance'][project_name].items():
+            if targets:
                 print(key)
-                pprint(element)
+                for target in targets:
+                    fid, name, status = target
+                    print(f'    {fid}  {name:<60.60}  {status}')
+
                 print()
         if ix >= MAX_PROJECTS:
             break
@@ -351,10 +354,29 @@ def identifyFeaturesAndStoriesVariances(project_name, inception, current):
     current_features   = set(list(current[project_name].keys()))
 
     feature_drops_fids = inception_features - current_features
-    feature_drops = [(ftr_fid,
-                      inception[project_name][ftr_fid]['Feature'].Name,
-                      inception[project_name][ftr_fid]['Feature'].State.Name)
-                    for ftr_fid in feature_drops_fids]
+    #feature_drops = [(ftr_fid,
+    #                  inception[project_name][ftr_fid]['Feature'].Name,
+    #                  inception[project_name][ftr_fid]['Feature'].State.Name)
+    #                for ftr_fid in feature_drops_fids]
+    feature_drops = []
+    for ftr_fid in feature_drops_fids:
+        ftr = inception[project_name][ftr_fid]['Feature']
+        if not ftr:  # which will be the case for the Feature of with the placehold FormattedID of 'NONE'
+            continue
+        ftr_name  = ftr.Name
+        try:
+            ftr_state = ftr.State
+            try:
+                deeper = ftr.State.Name
+                ftr_state = deeper
+            except Exception as exc:
+                pass
+        except Exception as exc:
+            ftr_state = 'NO STATE VALUE'
+            print( f'Feature {ftr_fid}: Unable to determine State value')
+
+        ftr_tuple = (ftr_fid, ftr_name, ftr_state)
+        feature_drops.append(ftr_tuple)
 
     feature_adds_fids  = current_features - inception_features
     #feature_adds = [(ftr_fid,
@@ -364,8 +386,14 @@ def identifyFeaturesAndStoriesVariances(project_name, inception, current):
     feature_adds = []
     for ftr_fid in feature_adds_fids:
         ftr = current[project_name][ftr_fid]['Feature']
+        if not ftr:
+            print(f"processing feature_adds for {project_name} Feature FormattedID {ftr_fid} - no actual feature for this")
+            continue
         ftr_name   = ftr.Name
-        ftr_state =  ftr.State.Name if ftr.State else ''
+        try:
+            ftr_state =  ftr.State.Name if ftr.State else ''
+        except AttributeError as exc:
+            ftr_state = ftr.State
         ftr_tuple = (ftr_fid, ftr_name, ftr_state)
         feature_adds.append(ftr_tuple)
 
@@ -376,8 +404,16 @@ def identifyFeaturesAndStoriesVariances(project_name, inception, current):
     for ftr_fid in common_features:
         inc_ftr = inception[project_name][ftr_fid]['Feature']
         cur_ftr =   current[project_name][ftr_fid]['Feature']
-        if cur_ftr.State != 'Released':
-                variance['Feature Status'].append((ftr_fid, cur_ftr.Name, cur_ftr.State.Name))
+        if cur_ftr and cur_ftr.State != 'Released':
+            try:
+                cur_ftr_name = cur_ftr.Name
+            except:
+                cur_ftr_name = 'Undetermined, item has no attribute of Name'
+            try:
+                cur_ftr_state = cur_ftr.State.Name
+            except:
+                cur_ftr_state = cur_ftr.State
+            variance['Feature Status'].append((ftr_fid, cur_ftr_name, cur_ftr_state))
         inc_story_fids = [story_fid for story_fid in inception[project_name][ftr_fid].keys()
                                      if story_fid != 'Feature']
         cur_story_fids = [story_fid for story_fid in current[project_name][ftr_fid].keys()
@@ -403,7 +439,11 @@ def identifyFeaturesAndStoriesVariances(project_name, inception, current):
             cur_ftr_story =   current[project_name][ftr_fid][story_fid]
             cur_story_state = cur_ftr_story.ScheduleState
             if cur_story_state != 'Released':
-                ftr_stories_not_released.append((story_fid, cur_ftr_story.Name, cur_story_state))
+                try:
+                    story_name = cur_ftr_story.Name
+                except AttributeError:
+                    story_name = 'Unavailable'
+                ftr_stories_not_released.append((story_fid, story_name, cur_story_state))
         variance[f"{ftr_fid} Stories Not Released"]  = ftr_stories_not_released[:]
 
     return variance
