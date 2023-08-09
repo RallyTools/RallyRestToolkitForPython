@@ -1015,7 +1015,13 @@ class Rally(object):
 
         item = response.content['CreateResult']['Object']
         ref  = str(item['_ref'])
-        item_oid = int(ref.split('/')[-1])
+        item_oid = ref.split('/')[-1]
+        if entityName not in ["WorkspacePermission", "ProjectPermission"]:
+            try:
+                item_oid = int(item_oid)
+            except Exception as exc:
+                pass
+
         desc = "created %s OID: %s" % (entityName, item_oid)
         if self._log:
             self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))

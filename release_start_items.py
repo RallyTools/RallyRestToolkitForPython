@@ -358,6 +358,7 @@ def identifyFeaturesAndStoriesVariances(project_name, inception, current):
     #                  inception[project_name][ftr_fid]['Feature'].Name,
     #                  inception[project_name][ftr_fid]['Feature'].State.Name)
     #                for ftr_fid in feature_drops_fids]
+    # can't do the list comprension above because sometimes there is no ftr.State.Name
     feature_drops = []
     for ftr_fid in feature_drops_fids:
         ftr = inception[project_name][ftr_fid]['Feature']
@@ -373,7 +374,6 @@ def identifyFeaturesAndStoriesVariances(project_name, inception, current):
                 pass
         except Exception as exc:
             ftr_state = 'NO STATE VALUE'
-            print( f'Feature {ftr_fid}: Unable to determine State value')
 
         ftr_tuple = (ftr_fid, ftr_name, ftr_state)
         feature_drops.append(ftr_tuple)
@@ -383,11 +383,11 @@ def identifyFeaturesAndStoriesVariances(project_name, inception, current):
     #                 current[project_name][ftr_fid]['Feature'].Name,
     #                 current[project_name][ftr_fid]['Feature'].State.Name)
     #                for ftr_fid in feature_adds_fids]
+    # can't do the list comprension above because sometimes there is no ftr.State.Name
     feature_adds = []
     for ftr_fid in feature_adds_fids:
         ftr = current[project_name][ftr_fid]['Feature']
-        if not ftr:
-            print(f"processing feature_adds for {project_name} Feature FormattedID {ftr_fid} - no actual feature for this")
+        if ftr_fid == 'NONE' or not ftr:
             continue
         ftr_name   = ftr.Name
         try:
