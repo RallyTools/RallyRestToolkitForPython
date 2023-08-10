@@ -70,7 +70,8 @@ def test_getAllowedValues_for_UserStory_Milestone():
 
 
 def test_getAllowedValues_for_custom_collections_field_Defect():
-    rally = Rally(server=RALLY, apikey=APIKEY, workspace='Rally', project='Rally')
+    #rally = Rally(server=RALLY, apikey=APIKEY, workspace='Rally', project='Rally')
+    rally = Rally(server=RALLY, apikey=APIKEY, workspace='Rally', project='ValueOps')
     avs = rally.getAllowedValues('Defect', 'MobileOS')
     assert len(avs) > 0
     target_value = 'Android'

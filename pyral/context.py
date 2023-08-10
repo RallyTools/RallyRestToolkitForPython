@@ -745,7 +745,8 @@ class RallyContextHelper(object):
 
             if workspace not in eligible_workspace_names:
                 problem = 'Workspace specified: "%s" not accessible with current credentials'
-                raise RallyRESTAPIError(problem % workspace.Name)
+                wksp_name = workspace if isinstance(workspace, str) else workspace.Name
+                raise RallyRESTAPIError(problem % wksp_name)
             if workspace not in self._workspaces and self._inflated != 'wide':  
                 ec_kwargs = {'workspace' : workspace}
                 self._establishContext(ec_kwargs)
