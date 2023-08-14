@@ -2,11 +2,11 @@
 import sys
 import copy
 from threading import Thread
-import six
-from six.moves import queue
+import queue
+
 Queue = queue.Queue
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 #########################################################################################################
 
@@ -47,8 +47,8 @@ class CargoTruck:
                 result = activity(order, timeout=timeout)
             except:
                 exc_name, exc_desc = sys.exc_info()[:2]
-                notice = "||||||||||||||\nCargoTruck.load.pageGetter exception: %s, %s\n||||||||||||\n"
-                #sys.stderr.write(notice % (exc_name, exc_desc))
+                notice = f"||||||||||||||\nCargoTruck.load.pageGetter exception: {exc_name} {exc_desc}\n||||||||||||\n"
+                sys.stderr.write(notice)
                 result = None
             resq.put((index, result))
 
@@ -64,18 +64,20 @@ class CargoTruck:
             t.join()
 
         if payload_queue.qsize() != len(self.orders):
-            raise Exception("CargoTruck.load payload_queue size too short, only %d of %d expected items present" % \
-                            (payload_queue.qsize(), len(self.orders)))
+            problem =  (f"CargoTruck.load payload_queue size too short, only "
+                        f"{payload_queue.qsize()} of {len(self.orders)} expected items present")
+            raise Exception(problem)
 
         while not payload_queue.empty():
             ix, results = payload_queue.get()
-            #print("item: %d from payload_queue: |%s|" % (ix, results))
+            #print(f"item: {ix} from payload_queue: |{results}|")
             self.tank[ix] = results
         shorted = [ix for ix in self.tank if self.tank[ix] == None]
         if shorted:
             filled = len(self.orders) - len(shorted)
-            notice = "CargoTruck.load detected incomplete payload_queue, only %d of %d expected items present"
-            raise Exception(notice % (filled, len(self.orders)))
+            problem = (f"CargoTruck.load detected incomplete payload_queue, only "
+                       f"{filled} of {len(self.orders)} expected items present")
+            raise Exception(problem)
 
         #payload_queue.task_done()  # apparently not needed or useful
 
@@ -90,7 +92,8 @@ class CargoTruck:
         indices = sorted([k for k in self.tank.keys()])
         for ix in indices:
             if not self.tank[ix]:  # no result for this index?
-                raise Exception("CargoTruck.dump, no result at index %d for request: %s" % (ix, self.orders[ix]))
+                problem = f"CargoTruck.dump, no result at index {ix} for request: {self.orders[ix]}"
+                raise Exception(problem)
             else:
                 payload.extend([self.tank[ix]])
         return payload 

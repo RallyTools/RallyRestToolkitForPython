@@ -1,28 +1,23 @@
-#!/usr/local/bin/python3.7
-
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 17  strip out AgileCentral naming except for synonym to Rally class
-#          notable dependencies:
-#               requests v2.21.0 or better
-#               six
+#          round 19  support Python 3.9, 3.10, 3.11, fix of getAllUsers
+#          notable dependency:
+#               requests v2.28.1 or better
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import sys, os
 import re
-import six
 import json
 import string
 import base64
 from operator import itemgetter
 
-#from   six.moves.urllib.parse import quote, unquote
-quote   = six.moves.urllib.parse.quote
-unquote = six.moves.urllib.parse.unquote
+from urllib.parse import quote
+from urllib.parse import unquote
 
 import requests   
 
@@ -30,7 +25,7 @@ import requests
 from .config  import PROTOCOL, SERVER, WS_API_VERSION, WEB_SERVICE, SCHEMA_SERVICE, AUTH_ENDPOINT
 from .config  import RALLY_REST_HEADERS
 from .config  import USER_NAME, PASSWORD 
-from .config  import START_INDEX, MAX_PAGESIZE, MAX_ITEMS
+from .config  import START_INDEX, KILO_PAGESIZE, MAX_PAGESIZE, MAX_ITEMS
 from .config  import timestamp
 from .search_utils  import projectAncestors, projectDescendants, projeny, flatten, MockRallyRESTResponse
 
@@ -142,7 +137,6 @@ from .query_builder import RallyUrlBuilder
 
 __all__ = ["Rally", "getResourceByOID", "getCollection", "hydrateAnInstance", "RallyUrlBuilder"]
 
-
 def _createShellInstance(context, entity_name, item_name, item_ref):
     oid = item_ref.split('/').pop()
     item = {
@@ -157,7 +151,7 @@ def _createShellInstance(context, entity_name, item_name, item_ref):
 
 ##################################################################################################
 
-class Rally(object):
+class Rally:
     """
         An instance of this class provides the instance holder the ability to 
         interact with Rally via the Rally REST WSAPI.
@@ -214,11 +208,9 @@ class Rally(object):
             vsc = kwargs.get('verify_ssl_cert')
             if vsc in [False, True]:
                 verify_ssl_cert = vsc
-##
-##        print("\n requests lib in %s" % requests.__file__)
-##
+
         self.session = requests.Session()
-        self.session.headers = RALLY_REST_HEADERS
+        self.session.headers = RALLY_REST_HEADERS.copy()
         if 'headers' in kwargs:
             for header_name, header_value in kwargs['headers'].items():
                 matching_header = [key for key in self.session.headers
@@ -601,7 +593,7 @@ class Rally(object):
         # can actually get information about another user's UserProfile so the next statement
         # is limited to a Rally instance whose credentials represent a SubscriptionAdmin capable user.
         # So we do a full bucket query on User and UserProfile separately and "join" them via our
-        # own brute force method so that the the caller can access any UserProfile attribute
+        # own brute force method so that the caller can access any UserProfile attribute
         # for a User.
         user_attrs = ["UserName", "DisplayName",
                       "FirstName", "LastName", "MiddleName",
@@ -616,13 +608,14 @@ class Rally(object):
                      ]
 
         user_inclusion = "((Disabled = true) OR (Disabled = false))"
+        user_attrs_string = ",".join(user_attrs)
         users_resource = 'users?fetch=%s&query=%s&pagesize=%s&start=1&workspace=%s' % \
-                         (",".join(user_attrs), user_inclusion, MAX_PAGESIZE, workspace_ref)
-        full_resource_url = '%s/%s' % (self.service_url, users_resource)
+                         (user_attrs_string, user_inclusion, KILO_PAGESIZE, workspace_ref)
+        full_resource_url = f'{self.service_url}/{users_resource}'
         response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             return []
-        response = RallyRESTResponse(self.session, context, users_resource, response, "full", 0)
+        response = RallyRESTResponse(self.session, context, full_resource_url, response, "full", 0)
         users = [user for user in response]
 
         # find the operator of this instance of Rally and short-circuit now if they *aren't* a SubscriptionAdmin
@@ -631,9 +624,8 @@ class Rally(object):
             self.setWorkspace(saved_workspace_name)
             return users
 
-        user_profile_resource = 'userprofile?fetch=true&query=&pagesize=%s&start=1&workspace=%s' % (MAX_PAGESIZE, workspace_ref)
-        response = self.session.get('%s/%s' % (self.service_url, user_profile_resource), 
-                                    timeout=SERVICE_REQUEST_TIMEOUT)
+        user_profile_resource = f'userprofile?fetch=true&query=&pagesize={KILO_PAGESIZE}&start=1&workspace={workspace_ref}'
+        response = self.session.get(f'{self.service_url}/{user_profile_resource}', timeout=SERVICE_REQUEST_TIMEOUT)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             warning("Unable to retrieve UserProfile information for users")
             profiles = []
@@ -800,7 +792,7 @@ class Rally(object):
 
 
     def _buildRequest(self, entity, fetch, query, order, kwargs):
-        pagesize   = MAX_PAGESIZE
+        pagesize   = KILO_PAGESIZE
         startIndex = START_INDEX
         limit      = MAX_ITEMS
 
@@ -1002,7 +994,7 @@ class Rally(object):
         if self._log:
             self._logDest.write('%s PUT %s\n%27.27s %s\n' % (timestamp(), resource, " ", payload))
             self._logDest.flush()
-        response = self.session.put(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
+        response = self.session.put(full_resource_url, data=payload)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             desc = str(response.errors[0])
@@ -1077,7 +1069,7 @@ class Rally(object):
         if self._log:
             self._logDest.write('%s POST %s\n%27.27s %s\n' % (timestamp(), resource, " ", item))
             self._logDest.flush()
-        response = self.session.post(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
+        response = self.session.post(full_resource_url, data=payload)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             problem = "ERRORS: %s\nWARNINGS: %s\n" % ("\n".join(response.errors), 
@@ -1130,7 +1122,7 @@ class Rally(object):
         full_resource_url = "%s/%s" % (self.service_url, resource)
         if self._log:
             self._logDest.write('%s DELETE %s\n' % (timestamp(), resource))
-        response = self.session.delete(full_resource_url, headers=RALLY_REST_HEADERS)
+        response = self.session.delete(full_resource_url)
         if response and response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             if self._log:
                 self._logDest.write('%s %s %s ...\n' % \
@@ -1173,7 +1165,7 @@ class Rally(object):
         context = self.contextHelper.currentContext()
         # craven ugly hackiness to support calls triggered from within ContextHelper.check ...
         if not '?fetch=' in collection_url:
-            collection_url = "%s?pagesize=%d&start=1" % (collection_url, MAX_PAGESIZE)
+            collection_url = "%s?pagesize=%d&start=1" % (collection_url, KILO_PAGESIZE)
         resource = collection_url
 
         disabled_augments = kwargs.get('_disableAugments', False)
@@ -1212,7 +1204,7 @@ class Rally(object):
         collection_url = '%s/%s?fetch=Name&key=%s' % (self.service_url, resource, auth_token)
         payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
                     for item in items]}
-        response = self.session.post(collection_url, data=json.dumps(payload), headers=RALLY_REST_HEADERS)
+        response = self.session.post(collection_url, data=json.dumps(payload))
         context = self.contextHelper.currentContext()
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         added_items = [str(item[u'Name']) for item in response.data[u'Results']]
@@ -1235,7 +1227,7 @@ class Rally(object):
         collection_url = '%s/%s?key=%s' % (self.service_url, resource, auth_token)
         payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
                     for item in items]}
-        response = self.session.post(collection_url, data=json.dumps(payload), headers=RALLY_REST_HEADERS)
+        response = self.session.post(collection_url, data=json.dumps(payload))
         context = self.contextHelper.currentContext()
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         return response
@@ -1308,13 +1300,17 @@ class Rally(object):
         #resource_url = "%s&pagesize=%s" % (left, right)
 
         url, query_string = resource_url.split('?', 1)
-        resource_url = "%s?keywords=%s&%s" % (url, quote(keywords), query_string)
+        try:
+            resource_url = "%s?keywords=%s&%s" % (url, quote(keywords), query_string)
+        except Exception as exc:
+            raise
+
 ##
 ##        print(resource_url)
 ##
         response = self._getRequestResponse(context, resource_url, limit)
         if response.errors:
-            error_text = response.errors[0]
+            error_text = response.errors[0].decode(encoding='UTF-8')
             raise RallyRESTAPIError(error_text)
 ##
 ##        print(response.data)
@@ -1603,7 +1599,7 @@ class Rally(object):
             # In Python 3.x, contents comes back as bytes, in order for json/encoder to be able
             # to do its job, we have to get the repr of contents (eg, b'VGldfak890b325bh')
             # and strip off the bytes quoting characters leaving value  VGldfak890b325bh
-            if six.PY3: contents = repr(contents)[2:-1]
+            contents = repr(contents)[2:-1]
             
         # create an AttachmentContent item
         ac = self.create('AttachmentContent', {"Content" : contents}, project=None)
@@ -1864,7 +1860,7 @@ class Rally(object):
         auth_token = self.obtainSecurityToken()
         full_resource_url = "%s/%s&workspace=%s&key=%s" % (self.service_url, resource, workspace_ref, auth_token)
         payload = json.dumps(update_item)
-        response = self.session.post(full_resource_url, data=payload, headers=RALLY_REST_HEADERS)
+        response = self.session.post(full_resource_url, data=payload)
         context = self.contextHelper.currentContext()
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:

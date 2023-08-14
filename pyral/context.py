@@ -8,18 +8,14 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import sys, os
-import platform
-import subprocess
 import time
 import socket
-import json
 import re  # we use compile, match
 from pprint import pprint
-import six
-quote = six.moves.urllib.parse.quote
+from urllib.parse import quote
 
 # intra-package imports
 from .rallyresp import RallyRESTResponse
@@ -126,7 +122,7 @@ class RallyContextHelper(object):
             Make an initial attempt to contact the Rally web server and retrieve info
             for the user associated with the credentials supplied upon instantiation.
             Raise a RallyRESTAPIError if any problem is encountered.
-            Otherwise call our internal method to set some relevant default information
+            Otherwise, call our internal method to set some relevant default information
             from the returned response.
             This method serves double-duty of verifying that the server can be contacted
             and speaks Rally WSAPI, and establishes the default workspace and project for
@@ -160,6 +156,7 @@ class RallyContextHelper(object):
 
         user_response = self._getUserInfo()
         subscription = self._loadSubscription()
+
         # caller must either specify a valid workspace/project 
         #  or must have a DefaultWorkspace/DefaultProject in their UserProfile
         self._getDefaults(user_response)

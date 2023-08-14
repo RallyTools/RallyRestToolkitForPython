@@ -7,10 +7,6 @@ and productive Python language.
 The ``pyral`` package provides a smooth and easy to use veneer on top
 of the Rally REST Web Services API using JSON.
 
-This package is once again branded as a 'Rally' toolkit.
-The era of "Agile Central" branding is over, we'll not speak of it again.
-
-
 .. contents::
 
 Getting started
@@ -40,18 +36,13 @@ pip, the Python package installation utility.::
     pip install pyral
 
 Alternatively, if you've got the tar.gz or zip distribution on hand, as long as you've
-satisfied the dependency requirements on the six and requests packages, you can use
-the setup mechanism.
+satisfied the dependency requirement on the requests package, you can use the setup mechanism.
 Obtain the requests_ package and install it according to that package's directions.
-As of requests-2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
-Use of requests-2.x or better is recommended for use with pyral.
+Use of requests-2.28.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.5.2) has been tested using requests 2.22.0.
+The most recent release of pyral (1.6.0) has been tested using requests 2.31.0.
 
-Obtain and install the six_ module (available from PyPI at https://pypi.python.org/pypi/six)
-
-
-Unpack the ``pyral`` distribution file (zip or tar.gz) and then install the pyral_ package. 
+Unpack the ``pyral`` distribution file (zip or tar.gz) and then install the pyral_ package.
 
 :: 
 
@@ -251,16 +242,17 @@ The item names in config files **are** case sensitive.
 Prerequisites
 -------------
 
- * Python 3.6, 3.7, 3.8 or 3.9 (this package not tested with earlier versions of Python 3.x)
- * The requests_ package, 2.0.0 or better (2.0.0 finally includes support for https proxy),
-   requests 2.22.0 or more recent is recommended.
- * The six_ package.
+ * Python 3.9, 3,10 or 3.11 (this package not tested with earlier versions of Python 3.x)
+ * The requests_ package, 2.28.1 or better, requests 2.31.0 or beyond is recommended.
 
 .. _requests: http://github.com/kennethreitz/requests
-.. _six: https://bitbucket.org/gutworth/six
 
 Versions
 --------
+   **1.6.0**
+       Eliminated use of six package.
+       Fixed bug in restapi.getAllUsers that prevented retrieval of Users beyond the first chunk
+
 
    **1.5.2**
        Fixed query builder so that multi-condition queries thet include subset or range conditions 

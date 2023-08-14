@@ -1,11 +1,11 @@
 Metadata-Version: 1.1
 Name: pyral
-Version: 1.5.2
+Version: 1.6.0
 Summary: Python toolkit for Rally REST API
 Home-page: https://github.com/RallyTools/RallyRestToolkitForPython
-Author: Kip Lehman (Broadcom, Enterprise Software Division)
+Author: Kip Lehman (Broadcom, Agile Operations Division)
 License: BSD
-Download-URL: https://github.com/RallyTools/RallyRestToolkitForPython/raw/master/dists/pyral-1.5.2.zip
+Download-URL: https://github.com/RallyTools/RallyRestToolkitForPython/raw/master/dists/pyral-1.6.0.zip
 Description: This is the README file for pyral, a package implementing a 
         Pythonic interface to the Rally REST API
         
@@ -25,11 +25,9 @@ Description: This is the README file for pyral, a package implementing a
         Requirements
         ------------
         
-        The pyral package requires the use of Kenneth Reitz's requests package using version 2.12.0 or better.
-        As of requests version 2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
+        The pyral package requires the use of Kenneth Reitz's requests package using version 2.28.1 or better.
         The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-        The most recent release of pyral (1.5.2) has been tested with requests 2.22.0.
-        The six module is also required.
+        The most recent release of pyral (1.6.0) has been tested with requests 2.28.1.
         
         
         Installation
@@ -42,9 +40,9 @@ Description: This is the README file for pyral, a package implementing a
             pip install pyral
         
         Alternatively if you've got the tar.gz or zip distribution on hand, as long as you've
-        satisfied the dependency requirements on the six and requests packages, you can use
+        satisfied the dependency requirement on the requests package, you can use
         the setup mechanism.
-        Once requests and six has been installed, run the setup.py program supplied with
+        Once requests has been installed, run the setup.py program supplied with
         this distribution as::
         
             python setup.py install
@@ -72,8 +70,7 @@ Description: This is the README file for pyral, a package implementing a
         
         
 Keywords: rally,api
-Requires: six
-Requires: requests>=2.25.1
+Requires: requests>=2.28.1
 Platform: any
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: Web Environment
@@ -81,9 +78,8 @@ Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: BSD License
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python
-Classifier: Programming Language :: Python :: 3.6
-Classifier: Programming Language :: Python :: 3.7
-Classifier: Programming Language :: Python :: 3.8
 Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
 Classifier: Topic :: Internet :: WWW/HTTP
 Classifier: Topic :: Software Development :: Libraries

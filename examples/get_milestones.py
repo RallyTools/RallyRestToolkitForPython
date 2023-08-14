@@ -2,11 +2,11 @@
 
 #################################################################################################
 #
-# getmilestones.py -- Get all of the Milestone items for the specified scope
-#                     and print them in TargetProject.Name, TargetDate order
+# get_milestones.py -- Get all of the Milestone items for the specified scope
+#                      and print them in TargetProject.Name, TargetDate order
 #
 USAGE = """
-Usage: getmilestones.py   
+Usage: get_milestones.py   
 """
 #################################################################################################
 
@@ -28,7 +28,11 @@ def main(args):
 
     entity_name = 'Milestone'
     fields      = 'FormattedID,Name,TargetProject,TargetDate,TotalArtifactCount'
-    response = rally.get(entity_name, fetch=fields, order="TargetDate,FormattedID", 
+    #response = rally.get(entity_name, fetch=fields, order="TargetDate,FormattedID", 
+    #                     project=project, projectScopeDown=True)
+    #criteria = "[Apple Crisp, Lemon Wedge]"
+    criteria = 'Name in "Apple Crisp,Lemon Wedge"'
+    response = rally.get(entity_name, fetch=fields, query=criteria, order="TargetDate,FormattedID", 
                          project=project, projectScopeDown=True)
 
     if response.errors:

@@ -1,0 +1,74 @@
+
+/Users/kl683949/work/pyral has the current dev state as branch labeled 'forward-to-1.5.'  <-- check to see if this is true... .
+     the above has .git/config whose remote "origin" goes to klehman-rally/pyral
+     which is the repo where things get worked on and prepped before merging them into the
+     RallyTools/RallyRestToolkitForPython repo where the official release occurs as long as 
+     I have a klehman-rally Github account.
+     
+have to set these things in your environment
+   to be able to run tests
+
+    working directory /Users/klehman/work/pyral
+
+   use pyenv, get 3.11.x installed and use that as your target Python version for development
+
+   # set up for use of pyenv
+   eval "$(pyenv init -)"
+
+   pyenv shell 3.11.x
+
+   set these env vars:
+      PYTHON=python3.11
+      export PYTHONPATH=".:/Users/klehman/python:/Users/klehman/work/pyral"
+      PYTEST=/Users/klehman/.pyenv/versions/3.11.x/lib/python3.11/site-packages/pytest.py
+
+################################################################################################
+
+potential changes include
+   Adding Objective, KeyResult, Risk entities
+   Considering whether pyral will accommodate adding/retrieving Attachments with duplicated name.
+       (Sagi and I worked on code in a testbed restapi.py (see the base directory...) that did part of this)
+   Also, check on the code for turning any content for the AttachmentContent to a byte string of base64.base64encode'ed data.
+       You can look at the AttachmentLinker class in wic-core/related_objects/rally_attachment_linker.py to see what is done there.
+
+Release Notes for 1.6.0
+
+####################################################################################################
+
+$ - designates the item is defined as a class in entity.py
+c - designates the item is as above AND in classFor structure
+# note many of the abstract base class are in the $ designation
+
+$ BaseRankable                   parent: WorkspaceDomainObject
+$ RankableArtifact               parent: Artifact
+
+$ CapacityPlan  (abstract)       parent: WorkspaceDomainObject
+c WorkingCapacityPlan            parent: CapacityPlan
+c PublishedCapacityPlan          parent: CapacityPlan
+
+c CapacityPlanAssignment         parent: WorkspaceDomainObject
+c CapacityPlanItem               parent: WorkspaceDomainObject
+c CapacityPlanProject            parent: WorkspaceDomainObject
+
+c ExternalContribution           parent: RankableArtifact
+$ Slice                          parent: WorkspaceDomainObject
+c    Investment                  parent: Slice
+
+$ Objective                      parent: BaseRankable
+c Objective/BusinessObjective    parent: Objective
+c Objective/ExecutionObjective   parent: Objective
+c Objective/GroupObjective       parent: Objective
+c Objective/StrategicObjective   parent: Objective
+c Objective/TeamObjective        parent: Objective
+c ObjectiveConversationPost      parent: WorkspaceDomainObject
+c KeyResult                      parent: BaseRankable
+$ KeyResultData                  parent: WorkspaceDomainObject
+c KeyResultActualValue           parent: KeyResultData
+c KeyResultInterimTarget         parent: KeyResultData
+$ PortfolioItemPredecessorRelationship  parent: WorkspaceDomainObject
+c ProfileImage                   parent: DomainObject
+c Risk                           parent: ScheduleableArtifact
+c ScheduleState                  parent: WorkspaceDomainObject
+$ Scope                          parent: DomainObject   - Scope is an abstact type
+
+x  ScopedAttributeDefinition      parent: WorkspaceDomainObject

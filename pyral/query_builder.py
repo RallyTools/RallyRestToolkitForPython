@@ -6,16 +6,14 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import re
-import types
-import six
-from   six.moves.urllib.parse import quote
+from   urllib.parse import quote
 
 ###################################################################################################
 
-class RallyUrlBuilder(object):
+class RallyUrlBuilder:
     """
         An instance of this class is used to collect information needed to construct a
         valid URL that can be issued in a REST Request to Rally.
@@ -110,7 +108,7 @@ class RallyUrlBuilder(object):
 
 ##################################################################################################
 
-class RallyQueryFormatter(object):
+class RallyQueryFormatter:
     CONJUNCTIONS = ['and', 'AND', 'or', 'OR']
     CONJUNCTION_PATT = re.compile(r'\s+(AND|OR)\s+', re.I | re.M)
     ATTR_IDENTIFIER = r'[\w\.]+[a-zA-Z0-9]'  # gotta be word-like possibly separated by '.' chars
@@ -133,8 +131,8 @@ class RallyQueryFormatter(object):
         """
         def _encode(condition):
             """
-                if cond has pattern of 'thing relation value', then urllib.quote it and return it
-                if cond has pattern of '(thing relation value)', then urllib.quote content inside parens
+                if cond has pattern of 'thing relation value', then urllib.parse.quote it and return it
+                if cond has pattern of '(thing relation value)', then urllib.parse.quote content inside parens
                   then pass that result enclosed in parens back to the caller
             """
             first_last = "%s%s" % (condition[0], condition[-1])

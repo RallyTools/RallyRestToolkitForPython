@@ -4,10 +4,10 @@
 from setuptools import setup
 
 PACKAGE       = 'pyral'
-VERSION       = '1.5.2'
+VERSION       = '1.6.0'
 OFFICIAL_NAME = 'Python toolkit for Rally REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
-AUTHOR        = 'Kip Lehman (Broadcom, Enterprise Software Division)'
+AUTHOR        = 'Kip Lehman (Broadcom, Agile Operations Division)'
 AUTHOR_EMAIL  = 'kip.lehman@broadcom.com'
 LICENSE       = 'BSD'
 KEYWORDS      = ['rally', 'api']
@@ -21,10 +21,8 @@ from os import path
 desc_file = path.join(path.abspath(path.dirname(__file__)), FULL_DESCRIPTION)
 with open(desc_file, encoding='utf-8') as df: long_description = df.read()
 
-MINIMUM_REQUESTS_VERSION = '2.25.1'
-REQUIRES      = ['six', 
-                 'requests>=%s' % MINIMUM_REQUESTS_VERSION
-                ]
+MINIMUM_REQUESTS_VERSION = '2.28.1'
+REQUIRES      = [ 'requests>=%s' % MINIMUM_REQUESTS_VERSION ]
 PLATFORM      = 'any'
 
 CLASSIFIERS   =  [ 'Development Status :: 5 - Production/Stable',
@@ -33,10 +31,9 @@ CLASSIFIERS   =  [ 'Development Status :: 5 - Production/Stable',
                    'License :: OSI Approved :: BSD License',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
-                   'Programming Language :: Python :: 3.6',
-                   'Programming Language :: Python :: 3.7',
-                   'Programming Language :: Python :: 3.8',
                    'Programming Language :: Python :: 3.9',
+                   'Programming Language :: Python :: 3.10',
+                   'Programming Language :: Python :: 3.11',
                    'Topic :: Internet :: WWW/HTTP',
                    'Topic :: Software Development :: Libraries',
                  ]
@@ -56,6 +53,5 @@ setup(name=PACKAGE,
       keywords=KEYWORDS,
       install_requires=REQUIRES,
       classifiers=CLASSIFIERS,
-      python_requires='>=3.6'
+      python_requires='>=3.9'
      )
-

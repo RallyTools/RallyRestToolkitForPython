@@ -8,12 +8,10 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import sys
 import re
-import types
-import time
 
 from .restapi   import hydrateAnInstance
 from .restapi   import getResourceByOID
@@ -62,7 +60,7 @@ class UnrecognizedAllowedValuesReference(Exception):
 # However, the instantiation of any Rally related classes takes place through the classFor
 # mechanism which only enables instances of a concrete class to be provided.
 #
-class Persistable(object):  
+class Persistable:  
     def __init__(self, oid, name, resource_url, context):
         """
             All sub-classes have an oid (Object ID), so it makes sense to provide the 
@@ -304,6 +302,8 @@ class UserProfile     (DomainObject):
 class Workspace       (DomainObject): pass
 class Blocker         (DomainObject): pass
 class UserPermission  (DomainObject): pass
+class ProfileImage    (DomainObject): pass
+class Scope           (DomainObject): pass
 class WorkspacePermission   (UserPermission): pass
 class ProjectPermission     (UserPermission): pass
 
@@ -405,6 +405,7 @@ class WorkspaceDomainObject(DomainObject):
 class WorkspaceConfiguration(WorkspaceDomainObject): pass
 class Type                  (WorkspaceDomainObject): pass
 class Program               (WorkspaceDomainObject): pass
+class Artifact              (WorkspaceDomainObject): pass  # abstract base class
 class Project               (WorkspaceDomainObject): pass
 class Release               (WorkspaceDomainObject): pass
 class Iteration             (WorkspaceDomainObject): pass  # query capable only
@@ -420,12 +421,18 @@ class BuildMetricDefinition (WorkspaceDomainObject): pass  # query capable only
 class Change                (WorkspaceDomainObject): pass
 class Changeset             (WorkspaceDomainObject): pass
 class ConversationPost      (WorkspaceDomainObject): pass  # query capable only
+class CapacityPlan          (WorkspaceDomainObject): pass  # abstract base class
+class CapacityPlanAssignment(WorkspaceDomainObject): pass
+class CapacityPlanItem      (WorkspaceDomainObject): pass
+class CapacityPlanProject   (WorkspaceDomainObject): pass
 class FlowState             (WorkspaceDomainObject): pass
 class Milestone             (WorkspaceDomainObject): pass
 class Preference            (WorkspaceDomainObject): pass
 class PreliminaryEstimate   (WorkspaceDomainObject): pass
 class SCMRepository         (WorkspaceDomainObject): pass
 class State                 (WorkspaceDomainObject): pass
+class ScheduleState         (WorkspaceDomainObject): pass
+class Slice                 (WorkspaceDomainObject): pass  # abstract type
 class TestCaseStep          (WorkspaceDomainObject): pass
 class TestCaseResult        (WorkspaceDomainObject): pass
 class TestFolder            (WorkspaceDomainObject): pass
@@ -435,8 +442,8 @@ class TimeEntryItem         (WorkspaceDomainObject): pass
 class TimeEntryValue        (WorkspaceDomainObject): pass
 class UserIterationCapacity (WorkspaceDomainObject): pass
 class RecycleBinEntry       (WorkspaceDomainObject): pass
+class BaseRankable          (WorkspaceDomainObject): pass  # abstract type
 class RevisionHistory       (WorkspaceDomainObject): pass
-class ProfileImage          (WorkspaceDomainObject): pass
 class Revision              (WorkspaceDomainObject):
     INFO_ATTRS = ['RevisionNumber', 'Description', 'CreationDate', 'User']
     def info(self):
@@ -447,26 +454,19 @@ class Revision              (WorkspaceDomainObject):
         rev_blurb = "   %3d on %s by %s\n             %s" % (rev_num, activity_timestamp, whodunit, desc)
         return rev_blurb
 
+class Investment(Slice): pass
+
 class WebLinkDefinition(AttributeDefinition): pass
 
-class CumulativeFlowData(WorkspaceDomainObject):
-    """ This is an Abstract Base class """
-    pass
-
+class CumulativeFlowData(WorkspaceDomainObject): pass # abstract base class
 class ReleaseCumulativeFlowData  (CumulativeFlowData): pass
 class IterationCumulativeFlowData(CumulativeFlowData): pass
 
-class Artifact(WorkspaceDomainObject): 
-    """ This is an Abstract Base class """
-    pass
+class SchedulableArtifact   (Artifact): pass   # abstract base class
+class RankableArtifact      (Artifact): pass   # abstract base class
+class ExternalContribution  (RankableArtifact): pass
 
-class SchedulableArtifact(Artifact):
-    """ This is an Abstract Base class """ 
-    pass
-
-class Requirement  (SchedulableArtifact):
-    """ This is an Abstract Base class """
-    pass
+class Requirement  (SchedulableArtifact): pass  # abstract base class
 class HierarchicalRequirement(Requirement): pass
 
 UserStory = HierarchicalRequirement   # synonomous but more intutive
@@ -477,12 +477,31 @@ class Defect       (Artifact): pass
 class TestCase     (Artifact): pass
 class DefectSuite  (SchedulableArtifact): pass
 class TestSet      (SchedulableArtifact): pass
+class Risk      (SchedulableArtifact): pass
 
 class PortfolioItem(Artifact): pass
 class PortfolioItem_Strategy  (PortfolioItem): pass
 class PortfolioItem_Initiative(PortfolioItem): pass
 class PortfolioItem_Theme     (PortfolioItem): pass
 class PortfolioItem_Feature   (PortfolioItem): pass
+class PortfolioItemPredecessorRelationship(WorkspaceDomainObject): pass
+
+class WorkingCapacityAssignment(CapacityPlan): pass
+class WorkingCapacityPlan      (CapacityPlan): pass
+class PublishedCapacityPlan    (CapacityPlan): pass
+
+class Objective                (BaseRankable): pass
+class KeyResult                (BaseRankable): pass
+class KeyResultData            (WorkspaceDomainObject): pass
+class ObjectiveConversationPost(WorkspaceDomainObject): pass
+class Objective_StrategicObjective  (Objective): pass
+class Objective_BusinessObjective   (Objective): pass
+class Objective_ExecutionObjective  (Objective): pass
+class Objective_GroupObjective      (Objective): pass
+class Objective_TeamObjective       (Objective): pass
+class KeyResultActualValue          (KeyResultData): pass
+class KeyResultInterimTarget        (KeyResultData): pass
+
 
 class Connection(WorkspaceDomainObject):
 
@@ -517,7 +536,7 @@ class Connection(WorkspaceDomainObject):
 
 class PullRequest(Connection): pass
 
-class CustomField(object):  
+class CustomField:  
     """
         For non-Rally originated entities
 
@@ -542,7 +561,7 @@ def so_bolded_text(mo):
     #else: return ""
     return "<bold>%s</bold>" % mo.group('word') if mo else ""
 
-class SearchObject(object): 
+class SearchObject: 
     """
         An instance of SearchObject is created for each artifact that
         matches a search criteria.  A SearchObject is not a full-fledged
@@ -581,7 +600,6 @@ class SearchObject(object):
 # ultimately, the classFor dict is what is intended to be exposed as a means to limit
 # instantiation to concrete classes, although because of dyna-types that is no longer
 # very strictly enforced
-# 
 
 classFor = { 'Persistable'             : Persistable,
              'DomainObject'            : DomainObject,
@@ -589,6 +607,7 @@ classFor = { 'Persistable'             : Persistable,
              'Subscription'            : Subscription,
              'User'                    : User,
              'UserProfile'             : UserProfile,
+             'ProfileImage'            : ProfileImage,
              'UserPermission'          : UserPermission,
              'Workspace'               : Workspace,
              'WorkspaceConfiguration'  : WorkspaceConfiguration,
@@ -608,11 +627,11 @@ classFor = { 'Persistable'             : Persistable,
              'UserStory'               : UserStory,
              'Story'                   : Story,
              'Task'                    : Task,
+             'Risk'                    : Risk,
              'Tag'                     : Tag,
              'Preference'              : Preference,
              'SCMRepository'           : SCMRepository,
              'RevisionHistory'         : RevisionHistory,
-             'ProfileImage'            : ProfileImage,
              'Revision'                : Revision,
              'Attachment'              : Attachment,
              'AttachmentContent'       : AttachmentContent,
@@ -639,10 +658,21 @@ classFor = { 'Persistable'             : Persistable,
              'PortfolioItem_Theme'     : PortfolioItem_Theme,
              'PortfolioItem_Feature'   : PortfolioItem_Feature,
              'State'                   : State,
+             'ScheduleState'           : ScheduleState,
+             'Objective_StrategicObjective' : Objective_StrategicObjective,
+             'Objective_BusinessObjective'  : Objective_BusinessObjective,
+             'Objective_ExecutionObjective' : Objective_ExecutionObjective,
+             'Objective_GroupObjective'     : Objective_GroupObjective,
+             'Objective_TeamObjective'      : Objective_TeamObjective,
+             'KeyResult'               : KeyResult,
+             'KeyResultInterimTarget'  : KeyResultInterimTarget,
+             'KeyResultActualValue'    : KeyResultActualValue,
              'PreliminaryEstimate'     : PreliminaryEstimate,
              'WebLinkDefinition'       : WebLinkDefinition,
              'Milestone'               : Milestone,
+             'Investment'              : Investment,
              'ConversationPost'        : ConversationPost,
+             'OjbectiveConversationPost' : ObjectiveConversationPost,
              'Blocker'                 : Blocker,
              'AllowedAttributeValue'   : AllowedAttributeValue,
              'AllowedQueryOperator'    : AllowedQueryOperator,
@@ -654,7 +684,12 @@ classFor = { 'Persistable'             : Persistable,
              'RecycleBinEntry'         : RecycleBinEntry,
              'SearchObject'            : SearchObject,
              'Connection'              : Connection,
+             'ExternalContribution'    : ExternalContribution,
              'PullRequest'             : PullRequest,
+             'CapacityPlanItem'        : CapacityPlanItem,
+             'CapacityPlanProject'     : CapacityPlanProject,
+             'WorkingCapacityPlan'     : WorkingCapacityPlan,
+             'PublishedCapacityPlan'   : PublishedCapacityPlan,
            }
 
 for entity_name, entity_class in list(classFor.items()):
@@ -676,7 +711,7 @@ for cls_name, cls in classes:
 
 ##################################################################################################
 
-class SchemaItem(object):
+class SchemaItem:
     def __init__(self, raw_info):
         self._type = 'TypeDefinition'
         # ElementName, DisplayName, Name
@@ -796,7 +831,7 @@ class SchemaItem(object):
 
         return general + "\n" + "\n".join(attrs) 
 
-class SchemaItemAttribute(object):
+class SchemaItemAttribute:
     def __init__(self, attr_info):
         self._type    = "AttributeDefinition"
         self.ref      = "/".join(attr_info['_ref'][-2:])

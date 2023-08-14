@@ -33,7 +33,7 @@ def main(args):
         sys.exit(1)
     test_case_id, tcr_info_filename = args
     if not os.path.exists(tcr_info_filename):
-        errout("ERROR:  file argument '%s' does not exist.  Respecify using corrent name or path\n" % tcr_info_filename)
+        errout("ERROR:  file argument '%s' does not exist.  Respecify using correct name or path\n" % tcr_info_filename)
         errout(USAGE)
         sys.exit(2)
     try:

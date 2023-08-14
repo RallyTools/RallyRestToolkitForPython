@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import datetime
 import os
@@ -27,7 +27,8 @@ USER_NAME = "wiley@acme.com"
 PASSWORD  = "G3ronim0!"
 
 START_INDEX  =   1
-MAX_PAGESIZE = 500
+KILO_PAGESIZE= 1000
+MAX_PAGESIZE = 2000
 MAX_ITEMS    = 1000000  # a million seems an eminently reasonable limit ...
 
 RALLY_REST_HEADERS = \

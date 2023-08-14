@@ -1,0 +1,136 @@
+#!/bin/bash
+###############################################################################################################
+#
+# Why are these tests done in "blocks" rather than just iterating over a single list?
+#    The "blocks" are logical groupings and they are ordered in a simple to more complex sequence as well as
+#    having a simple to complex ordering within the block.
+#
+# Is there any other reason for the blocks and ordering?
+#    For unknown reasons, pytest seems to hork the use of multiple jirpa.JiraProxy instance items within a "run".
+#    So, running pytest -options file1, file2, file3, ..., file_n seems to poke this flaw producing random failures
+#    As a "real" connector only produces a new Jira connection for each config that it is provided,
+#    and a config has to be processed fully before another config is processed, the test scenario is artificial
+#    and we don't spend a lot of time worrying that this will happen in production.
+#
+###############################################################################################################
+
+colorize() { CODE=$1; shift; echo -e '\033[0;'$CODE'm'$*'\033[0m'; }
+bold()     { echo -e $(colorize 1 "$@");  }
+red()      { echo -e $(colorize 31 "$@"); }
+green()    { echo -e $(colorize 32 "$@"); }
+yellow()   { echo -e $(colorize 33 "$@"); }
+blue()     { echo -e $(colorize 34 "$@"); }
+purple()   { echo -e $(colorize 35 "$@"); }
+cyan()     { echo -e $(colorize 36 "$@"); }
+reset()    { tput sgr0; }
+
+# for local development on a pairing station or personal laptop you'll need to uncomment something like the following: 
+#PYTHON=python3.9
+#echo `which python`
+# uncomment a suitable PYTEST assignment line for local dev/test, 
+
+#PYTEST=$PYENV_ROOT/versions/3.11.4/bin/pytest
+#PYTEST=$PYENV_ROOT/shims/pytest
+# leave PYTEST blank for CICD env, PYTEST will be preset in the invoking environment
+
+# As of June 2022 the Jenkins ci utility-node which is used has Python 3.8 by default
+# but it also has (the "non-system version" for Ubuntu 20.04) of Python3.9 installed in /usr/bin as python3.9
+# uncomment below for running in integrations-ci.tools.f4tech.com
+#export PYTHON=/usr/bin/python3.11
+export PYTHON=/Users/kl683949/.pyenv/shims/python
+echo `which python`
+python --version
+
+
+if [[ "$CICD" == "True" ]]; then
+    PYTEST=/home/jenkins/.local/bin/pytest
+else
+    PYTEST=$(which pytest)
+fi
+
+export TARGET_MODULE="pyral"
+export TEST_ENV
+
+rm -rf test/cov_html
+#cd test   # only for CI/CD environment
+if [[ ! -d "log" ]]; then
+    mkdir log
+fi
+
+export PYTHONPATH="."
+# this next assignment would only be done in a CI/CD environment
+#export PYTHONPATH=".:..:../pyral" #  . should be the test dir,
+#                                  # .. should be in pyral base with a pyral subdir underneath
+
+#command="$PYTHON $PYTEST --tb=short --cov=jira_spoke --cov-report=html:cov_html --cov-append test"
+#(cd test; $PYTHON $PYTEST --tb=short --cov=jira_spoke --cov-report=html:cov_html --cov-append .)
+
+PYRAL_BASICS="conn conn_headers context convenience field_access inflation"
+PYRAL_ORGACCESS="workspaces wksprj_setting project_pathing"
+PYRAL_DEEPER="allowed_values folder_misc update attachments"
+PYRAL_QUERYING="query big_query"
+PYRAL_MORE_ENTITIES="portfolio_items"
+PYRAL_MISC="pull_request_copied ranking recyclebin"
+PYRAL_MOOT="search"
+
+COVERAGE_OPTIONS="--cov=pyral --cov-report=html:cov_html --cov-append ${target_test}"
+PYTEST_OPTIONS="--tb=short --no-header --disable-warnings "
+#RUN_TEST="$PYTEST $COVERAGE_OPTIONS --tb=short --no-header --no-summary --disable-warnings "
+RUN_TEST="$PYTEST $PYTEST_OPTIONS"
+echo "RUN_TEST value follows:"
+yellow $RUN_TEST
+echo "======================================================================="
+
+##hidden=<<HIDE
+##junk   you can temporarily comment out lines by shifting around the next line
+##HIDE
+
+TEST_SUB_DIR="test"
+
+function run_test_bank {
+  #  call this function with the string containing the name of the variable containing a list of test names
+  #   assign the value of the argument to a variable --> test_names
+  #   a for loop is run over the test_names by virtue of dereffing test_names with ! in front
+  #     ie., ${!test_names} which results in the string with space separated test names
+  test_names=$1
+  for test_name in ${!test_names}; do
+      #echo $test_name
+      target_test="${TEST_SUB_DIR}/test_${test_name}.py"
+      echo ""
+      yellow "Running ${target_test}"
+      command="${RUN_TEST} ${target_test}"
+      echo "${command}"
+      #echo "  "
+      #echo $PWD
+      command ${command}
+      result=$?
+      bold "result: $result"
+      if [ $result -eq 0 ]
+      then
+          green "PASSED"
+      else
+          red "FAILED"
+      fi
+      blue "_________"
+      TOTAL=$(($TOTAL + $result))
+  done
+}
+
+TOTAL=0
+
+run_test_bank "PYRAL_BASICS"
+run_test_bank "PYRAL_ORGACCESS"
+run_test_bank "PYRAL_DEEPER"
+run_test_bank "PYRAL_QUERYING"
+run_test_bank "PYRAL_MORE_ENTITIES"
+run_test_bank "PYRAL_MISC"
+##run_test_bank "PYRAL_MOOT"
+
+if [ $TOTAL -eq 0 ]
+then
+    green "ALL test suites PASSED"
+    exit 0
+else
+    red "$TOTAL suite FAILURES"
+    exit 1
+fi

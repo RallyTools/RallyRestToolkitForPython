@@ -130,7 +130,8 @@ def showAttributes(rally, target, attributes):
                 tank.append("     ...  %d more values not shown" % (len(allowed_values) - av_limit))
 
     for item in required + optional:
-        print(item.encode('utf-8'))
+        print(item)
+        #print(item.encode('utf-8'))
 
 #################################################################################################
 #################################################################################################
