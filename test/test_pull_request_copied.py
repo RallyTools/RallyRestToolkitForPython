@@ -77,7 +77,9 @@ def test_post_pull_request():
 def test_query_pull_requests():
     rally = Rally(server=RALLY, apikey=RALLY_SUB_100_API_KEY)
     attrs = "ExternalId,ExternalFormattedId,Artifact,Name,Url,Description"
-    response = rally.get('PullRequest', fetch=attrs, project=None)
+    criteria = "CreationDate >= 2022-07-01T08:00:00Z"
+    target_project = "Atom Smashers"
+    response = rally.get('PullRequest', fetch=attrs, query=criteria, project=target_project, limit=100)
     assert response.status_code == 200
     assert len(response.errors) == 0
     assert len(response.warnings) == 0
