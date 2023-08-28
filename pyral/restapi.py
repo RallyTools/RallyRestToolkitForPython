@@ -104,7 +104,7 @@ def getResourceByOID(context, entity, oid, **kwargs):
     resp = rally._getResourceByOID(context, entity, oid, **kwargs)
     if 'unwrap' not in kwargs or not kwargs.get('unwrap', False):
         return resp
-    response = RallyRESTResponse(rally.session, context, "%s.x" % entity, resp, "full", 1)
+    response = RallyRESTResponse(rally.session, context, f"{entity}.x", resp, "full", 1)
     return response
 
 def getCollection(context, collection_url, **kwargs):
@@ -122,7 +122,7 @@ def getCollection(context, collection_url, **kwargs):
             rallyContext = _rallyCache[rck]
         else:
             # raising an Exception is the only thing we can do, don't see any prospect of recovery...
-            raise RallyRESTAPIError('Unable to find Rally instance for context: %s' % context)
+            raise RallyRESTAPIError(f'Unable to find Rally instance for context: {context}')
     rally = rallyContext.get('rally')
     response = rally.getCollection(collection_url, **kwargs)
     return response
@@ -143,8 +143,8 @@ def _createShellInstance(context, entity_name, item_name, item_ref):
             'ObjectID' : oid, 
             'Name'     : item_name, 
             '_type'    : entity_name,
-            '_ref'     : item_ref, 
-            'ref'      : '%s/%s' % (entity_name.lower(), oid)
+            '_ref'     : item_ref,
+            'ref'      : f'{entity_name.lower()}/{oid}'
            }
     hydrator = EntityHydrator(context, hydration="shell")
     return hydrator.hydrateInstance(item)
@@ -181,8 +181,10 @@ class Rally:
         self.apikey       = apikey
         self.version      = WS_API_VERSION  # we only support v2.0 now
         self._inflated    = False
-        self.service_url  = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE    % self.version)
-        self.schema_url   = "%s://%s/%s" % (PROTOCOL, self.server, SCHEMA_SERVICE % self.version)
+        self.service_url  = f"{PROTOCOL}://{self.server}/{WEB_SERVICE}/{self.version}"
+        self.schema_url   = f"{PROTOCOL}://{self.server}/{SCHEMA_SERVICE}/{self.version}"
+        #self.service_url  = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE    % self.version)
+        #self.schema_url   = "%s://%s/%s" % (PROTOCOL, self.server, SCHEMA_SERVICE % self.version)
         self.hydration    = "full"
         self._sec_token   = None
         self._log         = False
@@ -198,7 +200,7 @@ class Rally:
         https_proxy = os.environ.get('HTTPS_PROXY', None) or os.environ.get('https_proxy', None)
         if https_proxy and https_proxy not in ["", None]:
             if not https_proxy.startswith('http'):
-                https_proxy = "http://%s" % https_proxy # prepend the standard http scheme on the front-end
+                https_proxy = f"http://{https_proxy}"  # prepend the standard http scheme on the front-end
                 os.environ['https_proxy'] = https_proxy
                 os.environ['HTTPS_PROXY'] = https_proxy
             proxy_dict['https'] = https_proxy
@@ -324,7 +326,7 @@ class Rally:
             return None
 
         if not self._sec_token:
-            security_service_url = "%s/%s" % (self.service_url, AUTH_ENDPOINT)
+            security_service_url = f"{self.service_url}/{AUTH_ENDPOINT}"
             response = self.session.get(security_service_url)
             doc = response.json()
             self._sec_token = str(doc['OperationResult']['SecurityToken'])
@@ -355,10 +357,10 @@ class Rally:
             self._log = False
             # emit a warning that logging is disabled due to a faulty dest arg
             warning('Logging dest arg cannot be written to, proceeding with logging disabled.')
-        if self._log:     
-            scopeNote = '%s Following entries record Rally REST API interaction via %s for user: %s' % \
-                        (timestamp(), self.service_url, self.user)
-            self._logDest.write('%s\n' % scopeNote)
+        if self._log:
+            log_entry = (f"{timestamp()} Following entries record Rally REST API "
+                         f"interaction via {self.service_url} for user {self.user}\n")
+            self._logDest.write(log_entry)
             self._logDest.flush()
             if attrget:
                 self._logAttrGet = True
@@ -477,9 +479,6 @@ class Rally:
         context = self.contextHelper.currentContext()
         if not name:
             proj_name, proj_ref = self.contextHelper.getProject()
-##
-##            print("Rally.getProject called contextHelper.getProject, it returned %s and %s" % (proj_name, proj_ref))
-##
             return _createShellInstance(context, 'Project', proj_name, proj_ref)
 
         if name and PROJECT_PATH_ELEMENT_SEPARATOR in name:
@@ -556,9 +555,9 @@ class Rally:
         if oid:
             item = self._itemQuery('User', oid)
         elif username:
-            response = self.get('User', fetch=True, query='UserName = "%s"' % username)
+            response = self.get('User', fetch=True, query=f'UserName = "{username}"')
         elif name:
-            response = self.get('User', fetch=True, query='DisplayName = "%s"' % name)
+            response = self.get('User', fetch=True, query=f'DisplayName = "{name}"')
         else:
             raise RallyRESTAPIError("No specification provided to obtain User information")
 
@@ -609,10 +608,10 @@ class Rally:
 
         user_inclusion = "((Disabled = true) OR (Disabled = false))"
         user_attrs_string = ",".join(user_attrs)
-        users_resource = 'users?fetch=%s&query=%s&pagesize=%s&start=1&workspace=%s' % \
-                         (user_attrs_string, user_inclusion, KILO_PAGESIZE, workspace_ref)
+        users_resource = (f'users?fetch={user_attrs_string}&query={user_inclusion}'
+                          f'&pagesize={KILO_PAGESIZE}&start=1&workspace={workspace_ref}')
         full_resource_url = f'{self.service_url}/{users_resource}'
-        response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT)
+        response = self.session.get(full_resource_url, timeout=SERVICE_REQUEST_TIMEOUT*5)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             return []
         response = RallyRESTResponse(self.session, context, full_resource_url, response, "full", 0)
@@ -625,7 +624,7 @@ class Rally:
             return users
 
         user_profile_resource = f'userprofile?fetch=true&query=&pagesize={KILO_PAGESIZE}&start=1&workspace={workspace_ref}'
-        response = self.session.get(f'{self.service_url}/{user_profile_resource}', timeout=SERVICE_REQUEST_TIMEOUT)
+        response = self.session.get(f'{self.service_url}/{user_profile_resource}', timeout=SERVICE_REQUEST_TIMEOUT*5)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             warning("Unable to retrieve UserProfile information for users")
             profiles = []
@@ -640,13 +639,13 @@ class Rally:
                           if hasattr(user, 'UserProfile') and prof._ref == user.UserProfile._ref] 
             if not mups:
                 up = user.UserProfile if hasattr(user, 'UserProfile') else "Unknown"
-                problem = "unable to find a matching UserProfile record for User: %s  UserProfile: %s"
-               #warning("%s" % (problem % (user.UserName, up)))
+                problem = (f"unable to find a matching UserProfile record for "
+                           f"User: {user.UserName}  UserProfile: {up}")
                 continue
             else:
                 if len(mups) > 1:
-                    anomaly = "Found %d UserProfile items associated with username: %s"
-                    warning("%s" % (anomaly % (len(mups), user.UserName)))
+                    anomaly = f"Found {len(mups)} UserProfile items associated with username: {user.UserName}"
+                    warning(anomaly)
                 # now attach the first matching UserProfile to the User
                 user.UserProfile = mups[0]
 
@@ -681,7 +680,7 @@ class Rally:
 ##        print("in _getResourceByOID, OID specific resource ...", entity, oid)
 ##        sys.stdout.flush()
 ##
-        resource = '%s/%s' % (entity, oid)
+        resource = f"{entity}/{oid}"
         if '_disableAugments' not in kwargs:
             contextDict = context.asDict()
 ##
@@ -695,9 +694,10 @@ class Rally:
 ##            print("_getResourceByOID, modified contextDict: %s" % repr(context.asDict()))
 ##            sys.stdout.flush()
 ##
-        full_resource_url = "%s/%s" % (self.service_url, resource)
+        full_resource_url = f"{self.service_url}/{resource}"
         if self._logAttrGet:
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
+            log_entry = f"{timestamp()} GET {resource}\n"
+            self._logDest.write(log_entry)
             self._logDest.flush()
 ##
 ##        print("issuing GET for resource: %s" % full_resource_url)
@@ -707,10 +707,10 @@ class Rally:
             raw_response = self.session.get(full_resource_url)
         except Exception as ex:
             exctype, value, tb = sys.exc_info()
-            warning("%s: %s" % (exctype, value)) 
+            warning(f"{exctype}: {value}")
             return None
 ##
-##        print("_getResourceByOID(%s, %s) raw_response: %s" % (entity, oid, raw_response))
+##        print(f"_getResourceByOID({entity}, {oid}) raw_response: {raw_response}")
 ##        sys.stdout.flush()
 ##
         return raw_response
@@ -723,22 +723,22 @@ class Rally:
 ##
 ##        print("Rally._itemQuery('%s', %s, workspace=%s, project=%s)" % (entityName, oid, workspace, project))
 ##
-        resource = '%s/%s' % (entityName, oid)
+        resource = f"{entityName}/{oid}"
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
             resource += ("?" + "&".join(augments))
         if self._log:
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
+            self._logDest.write(f"{timestamp()} GET {resource}\n")
             self._logDest.flush()
         response = self._getResourceByOID(context, entityName, oid)
         if self._log:
             self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, resource))
             self._logDest.flush()
         if not response or response.status_code != HTTP_REQUEST_SUCCESS_CODE:
-            problem = "Unreferenceable %s OID: %s" % (entityName, oid)
-            raise RallyRESTAPIError('%s %s' % (response.status_code, problem))
+            problem = f"Unreferenceable {entityName} OID: {oid}"
+            raise RallyRESTAPIError(f'{response.status_code} {problem}')
 
-        response = RallyRESTResponse(self.session, context, '%s.x' % entityName, response, "full", 1)
+        response = RallyRESTResponse(self.session, context, f'{entityName}.x', response, "full", 1)
         item = response.next()
         return item    # return back an instance representing the item
 
@@ -816,7 +816,7 @@ class Rally:
         if fetch in ['true', 'True', True]:
             fetch = 'true'
             self.hydration = "full"
-        elif fetch in ['false', 'False', False]:
+        elif fetch in ['false', 'False', False, None]:
             fetch = 'false'
             self.hydration = "shell"
         elif (type(fetch) == bytes or type(fetch) == str) and fetch.lower() != 'false':
@@ -847,7 +847,7 @@ class Rally:
                             resource.augmentProject(augments, project_ref)
                             resource.augmentScoping(augments)
         resource = resource.build()  # can also use resource = resource.build(pretty=True)
-        full_resource_url = "%s/%s" % (self.service_url, resource)
+        full_resource_url = f"{self.service_url}/{resource}"
 
         return context, resource, full_resource_url, limit
 
@@ -869,7 +869,7 @@ class Rally:
             else:
                 ret_code, content = PAGE_NOT_FOUND_CODE, str(ex.args[0])
             if self._log:
-                self._logDest.write('%s %s\n' % (timestamp(), ret_code))
+                self._logDest.write(f"{timestamp()} {ret_code}\n")
                 self._logDest.flush()
 
             errorResponse = ErrorResponse(ret_code, content)
@@ -882,7 +882,8 @@ class Rally:
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             if self._log:
                 code, verbiage = response.status_code, response.content[:56]
-                self._logDest.write('%s %s %s ...\n' % (timestamp(), code, verbiage))
+                log_entry = f"{timestamp()} {code} {verbiage} ...\n"
+                self._logDest.write(log_entry)
                 self._logDest.flush()
 ##
 ##            print(response)
@@ -901,12 +902,14 @@ class Rally:
         if self._log:
             if response.status_code == HTTP_REQUEST_SUCCESS_CODE:
                 #req_target = "/".join(request_url.split('/'))
-                slm_ws_ver = '/%s/' % (WEB_SERVICE % WS_API_VERSION)
+                #slm_ws_ver = '/%s/' % (WEB_SERVICE % WS_API_VERSION)
+                slm_ws_ver = f'/{WEB_SERVICE}/{WS_API_VERSION}/'
                 req_target, oid = request_url.split(slm_ws_ver)[-1].rsplit('/', 1)
-                desc = '%s TotalResultCount %s' % (req_target, response.resultCount)
+                desc = f'{req_target} TotalResultCount {response.resultCount}'
             else:
                 desc = response.errors[0]
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
+            log_entry = f"{timestamp()} {response.status_code} {desc}\n"
+            self._logDest.write(log_entry)
             self._logDest.flush()
 
         return response
@@ -915,7 +918,7 @@ class Rally:
     def get(self, entity, fetch=False, query=None, order=None, **kwargs) -> object:
         """
             A REST approach has the world seen as resources with the big 4 ops available on them
-            (GET, PUT, POST, DELETE). There are other ops but we don't care about them here.
+            (GET, PUT, POST, DELETE). There are other ops, but we don't care about them here.
             Each resource _should_ have a unique URI that is used to identify the resource.
             The GET operation is used to specify that we want a representation of that resource.
             For Rally, in order to construct a URI, we need the name of the entity, the attributes
@@ -944,7 +947,7 @@ class Rally:
         context, resource, full_resource_url, limit = self._buildRequest(entity, fetch, query, order, kwargs)
         if self._log:
             # unquote the resource for enhanced readability
-            self._logDest.write('%s GET %s\n' % (timestamp(), unquote(resource)))
+            self._logDest.write(f"{timestamp()} GET {unquote(resource)}\n")
             self._logDest.flush()
 
         threads = 0
@@ -979,11 +982,11 @@ class Rally:
         if entityName.lower() == 'recyclebinentry':
             raise RallyRESTAPIError("create operation unsupported for RecycleBinEntry")
 
-        resource = "%s/create?key=%s" % (entityName.lower(), auth_token)
+        resource = f"{entityName.lower()}/create?key={auth_token}"
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
             resource += ("&" + "&".join(augments))
-        full_resource_url = "%s/%s" % (self.service_url, resource)
+        full_resource_url = f"{self.service_url}/{resource}"
 
         itemData = self.validateAttributeNames(entityName, itemData) 
         item = {entityName: self._greased(itemData)} # where _greased is a convenience
@@ -992,16 +995,16 @@ class Rally:
                                                      # into a list of one-key dicts {'_ref' : ref}
         payload = json.dumps(item)
         if self._log:
-            self._logDest.write('%s PUT %s\n%27.27s %s\n' % (timestamp(), resource, " ", payload))
+            log_entry = f"{timestamp()} PUT {resource}\n{' ':>27} {payload}\n"
+            self._logDest.write(log_entry)
             self._logDest.flush()
         response = self.session.put(full_resource_url, data=payload)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             desc = str(response.errors[0])
-            problem = "%s %s" % (response.status_code, desc)
-            #print(problem)
+            problem = f"{response.status_code} {desc}"
             if self._log:
-                self._logDest.write('%s %s\n' % (timestamp(), problem))
+                self._logDest.write(f"{timestamp()} {problem}\n")
                 self._logDest.flush()
             raise RallyRESTAPIError(problem)
 
@@ -1014,13 +1017,13 @@ class Rally:
             except Exception as exc:
                 pass
 
-        desc = "created %s OID: %s" % (entityName, item_oid)
+        desc = f"created {entityName} OID: {item_oid}"
         if self._log:
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
+            log_entry = f"{timestamp()} {response.status_code} {desc}\n"
+            self._logDest.write(log_entry)
             self._logDest.flush()
 
-        # now issue a request to get the entity item (mostly so we can get the FormattedID)
-        # and return it
+        # now issue a request to get the entity item (so we can get the FormattedID) and return it
         item = self._itemQuery(entityName, item_oid, workspace=workspace, project=project)
         return item
         
@@ -1048,36 +1051,38 @@ class Rally:
             formattedID = itemData.get('FormattedID', None)
             if not formattedID:
                 raise RallyRESTAPIError('An identifying field (ObjectID or FormattedID) must be specified')
-            fmtIdQuery = 'FormattedID = "%s"' % formattedID
+            fmtIdQuery = f'FormattedID = "{formattedID}"'
             response = self.get(entityName, fetch="ObjectID", query=fmtIdQuery, 
                                 workspace=workspace, project=project)
             if response.status_code != HTTP_REQUEST_SUCCESS_CODE or response.resultCount == 0:
-                raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, formattedID))
+                problem = f"Target {entityName} {formattedID} could not be located"
+                raise RallyRESTAPIError(problem)
                 
             target = response.next()
             oid = target.ObjectID
             itemData['ObjectID'] = oid
 
-        resource = '%s/%s?key=%s' % (entityName.lower(), oid, auth_token) 
+        resource = f"{entityName.lower()}/{oid}?key={auth_token}"
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
             resource += ("&" + "&".join(augments))
-        full_resource_url = "%s/%s" % (self.service_url, resource)
-        itemData = self.validateAttributeNames(entityName, itemData) 
+        full_resource_url = f"{self.service_url}/{resource}"
+        itemData = self.validateAttributeNames(entityName, itemData)
         item = {entityName: self._greased(itemData)}
         payload = json.dumps(item)
         if self._log:
-            self._logDest.write('%s POST %s\n%27.27s %s\n' % (timestamp(), resource, " ", item))
+            log_entry = f"{timestamp()} POST {resource}\n{' ':>27} {item}\n"
+            self._logDest.write(log_entry)
             self._logDest.flush()
         response = self.session.post(full_resource_url, data=payload)
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
-            problem = "ERRORS: %s\nWARNINGS: %s\n" % ("\n".join(response.errors), 
-                                                      "\n".join(response.warnings))
-            raise RallyRESTAPIError("Unable to update the %s\n%s" % (entityName, problem))
+            error_lines = "\n".join(response.errors)
+            warn_lines  = "\n".join(response.warnings)
+            problem  = f"ERRORS: {error_lines}\nWARNINGS: {warn_lines}\n"
+            raise RallyRESTAPIError(f"Unable to update the {entityName}\n{problem}")
 
-        # now issue a request to get the entity item (mostly so we can get the FormattedID)
-        # and return it
+        # now issue a request to get the entity item (so we can get the FormattedID) and return it
         item = self._itemQuery(entityName, oid, workspace=workspace, project=project)
         return item
 
@@ -1103,53 +1108,48 @@ class Rally:
         # regex matching (all digits or 1-2 upcase chars + digits)
         objectID = itemIdent  # at first assume itemIdent is the ObjectID
         if re.match(r'^[A-Z]{1,2}\d+$', str(itemIdent)):
-            fmtIdQuery = 'FormattedID = "%s"' % itemIdent
+            fmtIdQuery = f'FormattedID = "{itemIdent}"'
             response = self.get(entityName, fetch="ObjectID", query=fmtIdQuery, 
                                 workspace=workspace, project=project)
             if response.status_code != HTTP_REQUEST_SUCCESS_CODE:
-                raise RallyRESTAPIError('Target %s %s could not be located' % (entityName, itemIdent))
+                exc_msg = f"Target {entityName} {itemIdent} could not be located"
+                raise RallyRESTAPIError(exc_msg)
                 
             target = response.next()
             objectID = target.ObjectID
-##
-##            if kwargs.get('debug', False):
-##               print("DEBUG: target OID -> %s" % objectID)
-##
-        resource = "%s/%s?key=%s" % (entityName.lower(), objectID, auth_token)
+
+        resource = f"{entityName.lower()}/{objectID}?key={auth_token}"
         context, augments = self.contextHelper.identifyContext(workspace=workspace, project=project)
         if augments:
             resource += ("&" + "&".join(augments))
-        full_resource_url = "%s/%s" % (self.service_url, resource)
+        full_resource_url = f"{self.service_url}/{resource}"
         if self._log:
-            self._logDest.write('%s DELETE %s\n' % (timestamp(), resource))
+            log_entry = f"{timestamp()} DELETE {resource}\n"
+            self._logDest.write(log_entry)
         response = self.session.delete(full_resource_url)
         if response and response.status_code != HTTP_REQUEST_SUCCESS_CODE:
             if self._log:
-                self._logDest.write('%s %s %s ...\n' % \
-                       (timestamp(), response.status_code, response.content[:56]))
+                log_entry = f"{timestamp()} {response.status_code} {response.content[:56]} ...\n"
+                self._logDest.write(log_entry)
                 self._logDest.flush()
-##
-##            if kwargs.get('debug', False):
-##                print(response.status_code, response.headers, response.content)
-##
+
             errorResponse = ErrorResponse(response.status_code, response.content)
             response = RallyRESTResponse(self.session, context, resource, errorResponse, self.hydration, 0)
-            problem = "ERRORS: %s\nWARNINGS: %s\n" % ("\n".join(response.errors), 
-                                                      "\n".join(response.warnings))
+            error_lines = "\n".join(response.errors)
+            warn_lines  = "\n".join(response.warnings)
+            problem  = f"ERRORS: {error_lines}\nWARNINGS: {warn_lines}\n"
             raise RallyRESTAPIError(problem)
 
-##
-##        print(response.content)
-##
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         if response.errors:
             status = False
             desc = response.errors[0]
         else:
             status = True
-            desc = '%s deleted' % entityName
+            desc = f"{entityName} deleted"
         if self._log:
-            self._logDest.write('%s %s %s\n' % (timestamp(), response.status_code, desc))
+            log_entry = f"{timestamp()} {response.status_code} {desc}\n"
+            self._logDest.write(log_entry)
             self._logDest.flush()
 
         return status
@@ -1165,19 +1165,19 @@ class Rally:
         context = self.contextHelper.currentContext()
         # craven ugly hackiness to support calls triggered from within ContextHelper.check ...
         if not '?fetch=' in collection_url:
-            collection_url = "%s?pagesize=%d&start=1" % (collection_url, KILO_PAGESIZE)
+            collection_url = f"{collection_url}?pagesize={KILO_PAGESIZE}&start=1"
         resource = collection_url
 
         disabled_augments = kwargs.get('_disableAugments', False)
         if not disabled_augments:
             workspace_ref = self.contextHelper.currentWorkspaceRef()
             project_ref   = self.contextHelper.currentProjectRef()
-            resource = "%s&workspace=%s&project=%s" % (resource, workspace_ref, project_ref)
+            resource = f"{resource}&workspace={workspace_ref}&project={project_ref}"
 ##
 ##        print("Collection resource URL: %s" % resource)
 ##
         if self._log: 
-            self._logDest.write('%s GET %s\n' % (timestamp(), resource))
+            self._logDest.write(f"{timestamp()} GET {resource}\n")
             self._logDest.flush()
         rally_rest_response = self._getRequestResponse(context, resource, 0)
         return rally_rest_response
@@ -1186,8 +1186,8 @@ class Rally:
     def addCollectionItems(self, target, items):
         """
             Given a target which is a hydrated RallyEntity instance having a valid _type
-            and a a list of hydrated Rally Entity instances (items)
-            all of the same _type, construct a valid AC WSAPI collection url and 
+            and a list of hydrated Rally Entity instances (items) that are
+            all of the same _type, construct a valid Rally WSAPI collection url and
             issue a POST request to that URL supplying the item refs in an appropriate
             JSON structure as the payload.
         """
@@ -1200,9 +1200,9 @@ class Rally:
         if outliers:
             raise RallyRESTAPIError("addCollectionItems: all items must be of the same type")
 
-        resource = "%s/%s/%ss/add" % (target_type, target.oid, first_item_type)
-        collection_url = '%s/%s?fetch=Name&key=%s' % (self.service_url, resource, auth_token)
-        payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
+        resource = f"{target_type}/{target.oid}/{first_item_type}s/add"
+        collection_url = f"{self.service_url}/{resource}?fetch=Name&key={auth_token}"
+        payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))}
                     for item in items]}
         response = self.session.post(collection_url, data=json.dumps(payload))
         context = self.contextHelper.currentContext()
@@ -1214,8 +1214,8 @@ class Rally:
     def dropCollectionItems(self, target, items):
         """
             Given a target which is a hydrated RallyEntity instance having a valid _type
-            and a items which is a list of hydrated Rally Entity instances
-            all of the same _type, construct a valid AC WSAPI collection url and 
+            and items which is a list of hydrated Rally Entity instances that are
+            all of the same _type, construct a valid Rally WSAPI collection url and
             issue a POST request to that URL supplying the item refs in an appropriate
             JSON structure as the payload.
         """
@@ -1223,8 +1223,8 @@ class Rally:
         auth_token = self.obtainSecurityToken()
         target_type = target._type
         item_type = items[0]._type
-        resource = "%s/%s/%ss/remove" % (target_type, target.oid, item_type)
-        collection_url = '%s/%s?key=%s' % (self.service_url, resource, auth_token)
+        resource = f"{target_type}/{target.oid}/{item_type}s/remove"
+        collection_url = f"{self.service_url}/{resource}?key={auth_token}"
         payload = {"CollectionItems":[{'_ref' : "%s/%s" % (str(item._type), str(item.oid))} 
                     for item in items]}
         response = self.session.post(collection_url, data=json.dumps(payload))
@@ -1301,20 +1301,14 @@ class Rally:
 
         url, query_string = resource_url.split('?', 1)
         try:
-            resource_url = "%s?keywords=%s&%s" % (url, quote(keywords), query_string)
+            resource_url = f"{url}?keywords={quote(keywords)}&{query_string}"
         except Exception as exc:
             raise
 
-##
-##        print(resource_url)
-##
         response = self._getRequestResponse(context, resource_url, limit)
         if response.errors:
             error_text = response.errors[0].decode(encoding='UTF-8')
             raise RallyRESTAPIError(error_text)
-##
-##        print(response.data)
-##
 
         # since the WSAPI apparently doesn't pay attention to scoping (projectScopeUp, projectScopeDown, searchScopeUp, searchScopeDown)
         # let's take care of the intended scoping here and provide back to the caller the
@@ -1373,7 +1367,8 @@ class Rally:
         # punt for now on the workspace, project parms
         # grab the OID for the currentContext workspace instead
         wksp_ref = self.contextHelper.currentWorkspaceRef()
-        schema_endpoint = "%s/workspace/%s" % (self.schema_url, wksp_ref.split('/').pop())
+        wksp_oid = wksp_ref.split('/').pop()
+        schema_endpoint = f"{self.schema_url}/workspace/{wksp_oid}"
         response = self.session.get(schema_endpoint, timeout=30)
         poorly_explained_schema_url_hash = response.request.url.split('/').pop()
         # above 'poorly_explained_schema_url_hash' is a key that can be used to retrieve this schema info again
@@ -1409,16 +1404,10 @@ class Rally:
             to be altered to have the "c_" prefix.
         """
         entity_def = self.typedef(entity_name)
-        entity_attributes = entity_def.Attributes 
-##
-##        print("%s attributes:")
-##        for attr in entity_attributes:
-##            print("  |%s|" % attr.ElementName)
-##        print("")
-##
-        attr_forms = [(attr.ElementName, attr.ElementName.lower(), attr.Name.lower().replace(' ', '')) 
+        entity_attributes = entity_def.Attributes
+        #             (ElementName, lower case ElementName, lower case Name)
+        attr_forms = [(attr.ElementName, attr.ElementName.lower(), attr.Name.lower().replace(' ', ''))
                       for attr in entity_attributes]
-        #             ElementName, lower case ElementName, lower case Name
         txfmed_item_data = {}
         invalid_attrs = []
         for item_attr_name, item_attr_value in list(itemData.items()):
@@ -1470,8 +1459,8 @@ class Rally:
             WARNING:  This only works with PortfolioItem subclasses:
                        Theme, Initiative, Feature
         """
-        criteria = [ 'TypeDef.Name = "%s"' % entity,
-                     'Name = "%s"'         % state_name
+        criteria = [ f'TypeDef.Name = "{entity}"',
+                     f'Name = "{state_name}"'
                    ]
 
         state = self.get('State', fetch=True, query=criteria, project=None, instance=True)
@@ -1485,7 +1474,7 @@ class Rally:
             but with differing ObjectID and CreationDate values.  We arbitrarily take the last State
             for each OrderIndex, Name pair and return the resulting list.
         """
-        criteria        = 'TypeDef.Name = "%s"' % entity
+        criteria        = f'TypeDef.Name = "{entity}"'
         ordering_fields = 'OrderIndex,ObjectID'
         response = self.get('State', fetch=True, query=criteria, order=ordering_fields, project=None)
         state_ix = {}
@@ -1610,7 +1599,7 @@ class Rally:
                             "Content"     :  ac.ref,       # ref to AttachmentContent
                             "ContentType" :  mime_type,    
                             "Size"        :  attachment_file_size, # must be size before encoding!!
-                            "User"        :  'user/%s' % self.contextHelper.user_oid,
+                            "User"        :  f'user/{self.contextHelper.user_oid}',
                            #"Artifact"    :  artifact.ref  # (Artifact is an 'optional' field)
                           }
         # While it's actually possible to have an Attachment not linked to an Artifact,
@@ -1627,7 +1616,7 @@ class Rally:
         # and finally, create the Attachment
         attachment = self.create('Attachment', attachment_info, project=None)
         if not attachment:
-            raise RallyRESTAPIError('Unable to create Attachment for %s' % attachment_file_name)
+            raise RallyRESTAPIError(f'Unable to create Attachment for {attachment_file_name}')
 
         return attachment
 
@@ -1646,7 +1635,7 @@ class Rally:
             ct_item =     attachment.get('mime_type',    None) or attachment.get('MimeType',    None) \
                       or  attachment.get('content_type', None) or attachment.get('ContentType', None)
             if not ct_item:
-                print("Bypassing attachment for %s, no mime_type/ContentType setting..." % att_name)
+                print(f"Bypassing attachment for {att_name}, no mime_type/ContentType setting...")
                 continue
             candidates.append(att_name)
             upd_artifact = self.addAttachment(artifact, att_name, mime_type=ct_item)
@@ -1848,7 +1837,7 @@ class Rally:
 
     def _postRankRequest(self, target_artifact, resource, update_item):
         """
-            Given an Rally target Artifact and a resource URI (sans the self.service_url prefix)
+            Given a Rally target Artifact and a resource URI (sans the self.service_url prefix)
             and a dict that serves as a "container" for the target item's _ref value,
             obtain the security token we need to post to Rally, construct the
             full url along with the query string containing the workspace ref and the security token.
@@ -1887,7 +1876,5 @@ class Rally:
                 raise RallyRESTAPIError(problem % (target_artifact.__class__.__name__))
 
         return target_artifact.__class__.__name__.lower()
-
-AgileCentral = Rally  # for backwards compatibility sake
 
 ####################################################################################################

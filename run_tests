@@ -124,6 +124,7 @@ run_test_bank "PYRAL_DEEPER"
 run_test_bank "PYRAL_QUERYING"
 run_test_bank "PYRAL_MORE_ENTITIES"
 run_test_bank "PYRAL_MISC"
+
 ##run_test_bank "PYRAL_MOOT"
 
 if [ $TOTAL -eq 0 ]

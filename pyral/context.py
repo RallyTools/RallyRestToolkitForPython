@@ -12,7 +12,6 @@ __version__ = (1, 6, 0)
 
 import sys, os
 import time
-import socket
 import re  # we use compile, match
 from pprint import pprint
 from urllib.parse import quote
@@ -43,7 +42,7 @@ class RallyRESTAPIError(Exception): pass
 
 ##################################################################################################
 
-class RallyContext(object):
+class RallyContext:
 
     def __init__(self, server, user, password, service_url, 
                        subscription=None, workspace=None, project=None):
@@ -132,7 +131,6 @@ class RallyContextHelper(object):
 ##        print(" RallyContextHelper.check starting ...")
 ##        sys.stdout.flush()
 ##
-        socket.setdefaulttimeout(INITIAL_REQUEST_TIME_LIMIT)
         target_host = server
         self.isolated_workspace = isolated_workspace
 
@@ -201,9 +199,14 @@ class RallyContextHelper(object):
         try:
             timer_start = time.time()
             if self.user:
-                response = self.agent.get('User', fetch=basic_user_fields, query=user_name_query, _disableAugments=True)
+                response = self.agent.get('User', fetch=basic_user_fields,
+                                          query=user_name_query,
+                                          _disableAugments=True,
+                                          timeout=INITIAL_REQUEST_TIME_LIMIT)
             else:
-                response = self.agent.get('User', fetch=basic_user_fields, _disableAugments=True)
+                response = self.agent.get('User', fetch=basic_user_fields,
+                                          _disableAugments=True,
+                                          timeout=INITIAL_REQUEST_TIME_LIMIT)
             timer_stop = time.time()
         except Exception as ex:
 ##
@@ -233,7 +236,7 @@ class RallyContextHelper(object):
 ##                print("response.errors: {0}".format(response.errors[0]))
 ##
                 if elapsed >= float(INITIAL_REQUEST_TIME_LIMIT):
-                    problem = "Request timed out on attempt to reach %s" % self.server
+                    problem = f"Request timed out on attempt to reach {self.server} ({elapsed:5.2f} secs)"
                 elif response.errors and 'certificate verify failed' in str(response.errors[0]):
                     problem = "SSL certificate verification failed"
                 elif response.errors and 'ProxyError' in str(response.errors[0]):
@@ -241,9 +244,9 @@ class RallyContextHelper(object):
                     problem = mo.groups()[0][:-1]
                     problem = re.sub(r'NewConnectionError.+>:', '', problem)[:-3]
                 elif response.errors and 'Max retries exceeded with url' in str(response.errors[0]):
-                    problem = "Target Rally host: '%s' non-existent or unreachable" % self.server
+                    problem = f"Target Rally host: '{self.server}' non-existent or unreachable"
                 elif response.errors and 'NoneType' in str(response.errors[0]):
-                    problem = "Target Rally host: '%s' non-existent or unreachable" % self.server
+                    problem = f"Target Rally host: '{self.server}' non-existent or unreachable"
                 else:
                     sys.stderr.write("404 Response for request\n")
 ##
@@ -263,7 +266,7 @@ class RallyContextHelper(object):
                     problem = "Invalid credentials"
                 else:
                     error_blurb = response.errors[0][:80] if response.errors else ""
-                    problem = "%s %s" % (response.status_code, error_blurb)
+                    problem = f"{response.status_code} {error_blurb}"
             raise RallyRESTAPIError(problem)
 ##
 ##        print(" RallyContextHelper.check -> _getUserInfo got the User info request response...")
@@ -279,7 +282,8 @@ class RallyContextHelper(object):
 
 
     def _loadSubscription(self):
-        sub = self.agent.get('Subscription', fetch=True, _disableAugments=True)
+        sub = self.agent.get('Subscription', fetch=True, _disableAugments=True,
+                             timeout=INITIAL_REQUEST_TIME_LIMIT)
         if sub.errors:
             raise Exception(sub.errors[0])
         subscription = sub.next()
@@ -297,17 +301,19 @@ class RallyContextHelper(object):
             exists in the returned set.  If the project_name parameter is non-None and there is NOT
             a match in the returned set raise an Exception stating that fact.
         """
-        result = self.agent.get('Project', fetch="Name", workspace=self._currentWorkspace, project=None)
+        result = self.agent.get('Project', fetch="Name",
+                                workspace=self._currentWorkspace, project=None,
+                                timeout=INITIAL_REQUEST_TIME_LIMIT)
 
         if not result or result.resultCount == 0:
-            problem = "No accessible Projects found in the Workspace '%s'" % self._defaultWorkspace
+            problem = f"No accessible Projects found in the Workspace '{self._defaultWorkspace}'"
             raise RallyRESTAPIError(problem)
 
         try:
             projects = [proj for proj in result]
         except:
-            problem = "Unable to obtain Project Name values for projects in the '%s' Workspace"
-            raise RallyRESTAPIError(problem % self._defaultWorkspace)
+            problem = f"Unable to obtain Project Name values for projects in the '{self._defaultWorkspace}' Workspace"
+            raise RallyRESTAPIError(problem)
 
         # does the project_name contain a ' // ' path element separator token?
         # if so, then we have to sidebar process this
@@ -864,8 +870,6 @@ class RallyContextHelper(object):
             base_proj_coll_url = response['Workspace']['Projects']['_ref']
             projects_collection_url = '%s?fetch="ObjectID,Name,State"&pagesize=200&start=1' % base_proj_coll_url
             response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
-#not-as-bad?#            response = self.agent.get('Project', fetch="ObjectID,Name,State", workspace=workspace.Name)
-
 ##
 ##            print("  Number of Projects: %d" % response.data[u'TotalResultCount'])
 ##            for item in response.data[u'Results']:

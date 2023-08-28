@@ -18,8 +18,8 @@ import glob
 
 PROTOCOL       = "https"
 SERVER         = "rally1.rallydev.com"
-WEB_SERVICE    = "slm/webservice/%s"
-SCHEMA_SERVICE = "slm/schema/%s"
+WEB_SERVICE    = "slm/webservice"
+SCHEMA_SERVICE = "slm/schema"
 AUTH_ENDPOINT  = "security/authorize"
 WS_API_VERSION = "v2.0"
 

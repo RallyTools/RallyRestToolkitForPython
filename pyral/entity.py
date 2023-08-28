@@ -24,7 +24,7 @@ from .config    import WEB_SERVICE, WS_API_VERSION
 VERSION_ATTRIBUTES = ['_rallyAPIMajor', '_rallyAPIMinor', '_objectVersion']
 MINIMAL_ATTRIBUTES = ['_type', '_ref', '_refObjectName']
 PORTFOLIO_ITEM_SUB_TYPES = ['Strategy', 'Theme', 'Initiative', 'Feature']
-SLM_WS_VER = '/%s/' % (WEB_SERVICE % WS_API_VERSION)
+SLM_WS_VER = f'/{WEB_SERVICE}/{WS_API_VERSION}'
 
 _rally_schema       = {}  # keyed by workspace at the first level, then by EntityName
 _rally_entity_cache = {}
