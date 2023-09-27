@@ -24,7 +24,7 @@ from .config    import WEB_SERVICE, WS_API_VERSION
 VERSION_ATTRIBUTES = ['_rallyAPIMajor', '_rallyAPIMinor', '_objectVersion']
 MINIMAL_ATTRIBUTES = ['_type', '_ref', '_refObjectName']
 PORTFOLIO_ITEM_SUB_TYPES = ['Strategy', 'Theme', 'Initiative', 'Feature']
-SLM_WS_VER = f'/{WEB_SERVICE}/{WS_API_VERSION}'
+SLM_WS_VER = f'/{WEB_SERVICE}/{WS_API_VERSION}/'
 
 _rally_schema       = {}  # keyed by workspace at the first level, then by EntityName
 _rally_entity_cache = {}
@@ -339,7 +339,7 @@ class WorkspaceDomainObject(DomainObject):
 
                 alphabetical from here on out
         """
-        tank = ['%s' % self._type]
+        tank = [str(self._type)]
         for attribute_name in self.COMMON_ATTRIBUTES[1:]:
             try:
                 value = getattr(self, attribute_name)
@@ -348,15 +348,15 @@ class WorkspaceDomainObject(DomainObject):
             if value is None:
                 continue
             if 'pyral.entity.' not in str(type(value)):
-                anv = '    %-24s  : %s' % (attribute_name, value)
+                anv = f'    {attribute_name:<24}  : {value}'
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if mo:
                     cln = mo.group(1)
-                    anv = "    %-24s  : %-20.20s   (OID  %s  Name: %s)" % \
-                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                    anv = (f"    {attribute_name:<24}  : {cln + '.ref':<20.20}   "
+                           f"(OID  {value.oid}  Name: {value.Name})")
                 else:
-                    anv = "    %-24s  : %s" % (attribute_name, value)
+                    anv = f"    {attribute_name:<24}  : {value}"
             tank.append(anv)
         tank.append("")
         other_attributes = set(self.attributes()) - set(self.COMMON_ATTRIBUTES)
@@ -379,25 +379,33 @@ class WorkspaceDomainObject(DomainObject):
             if attribute_name.startswith('c_'):
                 attr_name = attribute_name[2:]
             if not isinstance(value, Persistable):
-                anv = "    %-24s  : %s" % (attr_name, value)
+                anv = f"    {attr_name:<24}  : {value}"
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if not mo:
-                    anv = "    %-24s : %s" % (attr_name, value)
+                    anv = f"    {attr_name:<24}  : {value}"
                     continue
 
                 cln = mo.group(1)
-                anv = "    %-24s  : %-27.27s" % (attr_name, cln + '.ref')
+                anv = f"    {attr_name:<24}  : {cln + '.ref':<27.27}"
                 if   isinstance(value, Artifact):
                     # also want the OID, FormattedID
-                    anv = "%s (OID  %s  FomattedID  %s)" % (anv, value.oid, value.FormattedID)
+                    anv = "{anv} (OID  {value.oid}  FormattedID  {value.FormattedID})"
                 elif isinstance(value, User):
                     # also want the className, OID, UserName, DisplayName
-                    anv = "    %-24s  : %s.ref  (OID  %s  UserName %s  DisplayName %s)" % \
-                          (attr_name, cln, value.oid, value.UserName, value.DisplayName)
+                    user_oid = value.oid
+                    try:
+                        user_name    = value.UserName
+                        display_name = value.DisplayName
+                    except UnreferenceableOIDError as exc:
+                        user_name = 'UnreferenceableOIDError'
+                        display_name = 'NOT AVAILABLE'
+
+                    anv = (f"    {attr_name:<24}  : {cln}.ref  (OID  {user_oid}  "
+                           f"UserName {user_name}  DisplayName {display_name}")
                 else:
                     # also want the className, OID, Name)
-                    anv = "%s (OID  %s  Name %s)" % (anv, value.oid, value.Name)
+                    anv = f"{anv} (OID  {value.oid}  Name {value.Name})"
             tank.append(anv)
         return "\n".join(tank)
 
