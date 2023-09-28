@@ -61,11 +61,11 @@ relevant packages.
 :: 
 
    $ python
-   Python 3.8.5 [other Python interpreter info elided ...]
+   Python 3.11.5 [other Python interpreter info elided ...]
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 5, 2)
+   (1, 6, 0)
 
 
 
@@ -252,7 +252,8 @@ Versions
    **1.6.0**
        Eliminated use of six package.
        Fixed bug in restapi.getAllUsers that prevented retrieval of Users beyond the first chunk
-
+       Explicitly state support for Python 3.9, 3.10 and 3.11
+       Drop any mention of support for versions 3.8 and earlier
 
    **1.5.2**
        Fixed query builder so that multi-condition queries thet include subset or range conditions 
@@ -357,7 +358,7 @@ TODO
 License
 -------
 
-BSD3-style license. Copyright (c) 2018-2021 Broadcom, Inc., 2015-2018 CA Technologies, 2010-2015 Rally Software Development.
+BSD3-style license. Copyright (c) 2018-2024 Broadcom, Inc., 2015-2018 CA Technologies, 2010-2015 Rally Software Development.
 
 See the LICENSE file provided with the source distribution for full details.
 

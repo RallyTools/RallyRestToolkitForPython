@@ -183,8 +183,6 @@ class Rally:
         self._inflated    = False
         self.service_url  = f"{PROTOCOL}://{self.server}/{WEB_SERVICE}/{self.version}"
         self.schema_url   = f"{PROTOCOL}://{self.server}/{SCHEMA_SERVICE}/{self.version}"
-        #self.service_url  = "%s://%s/%s" % (PROTOCOL, self.server, WEB_SERVICE    % self.version)
-        #self.schema_url   = "%s://%s/%s" % (PROTOCOL, self.server, SCHEMA_SERVICE % self.version)
         self.hydration    = "full"
         self._sec_token   = None
         self._log         = False
@@ -901,8 +899,6 @@ class Rally:
 
         if self._log:
             if response.status_code == HTTP_REQUEST_SUCCESS_CODE:
-                #req_target = "/".join(request_url.split('/'))
-                #slm_ws_ver = '/%s/' % (WEB_SERVICE % WS_API_VERSION)
                 slm_ws_ver = f'/{WEB_SERVICE}/{WS_API_VERSION}/'
                 req_target, oid = request_url.split(slm_ws_ver)[-1].rsplit('/', 1)
                 desc = f'{req_target} TotalResultCount {response.resultCount}'
