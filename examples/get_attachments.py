@@ -34,7 +34,11 @@ def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
     server, username, password, apikey, workspace, project = rallyWorkset(options)
-    print " | ".join([server, username, password, workspace, project])
+    #####
+    workspace = 'Alligators WRK Unigrations Core'
+    project   = 'Dynamic'
+    #####
+    print(" | ".join([server, username, password, workspace, project]))
     if apikey:
         rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
     else:
@@ -74,6 +78,7 @@ def main(args):
         errout('WARNING: more than 1 item returned matching your criteria\n')
 
     artifact = response.next()
+
     attachments = rally.getAttachments(artifact)
     for attachment in attachments:
         print("-" * 32)
