@@ -68,7 +68,6 @@ relevant packages.
    (1, 6, 0)
 
 
-
 30 second highlight
 ```````````````````
 
@@ -253,8 +252,9 @@ Versions
        Eliminated use of six package.
        Added support for Risk, Objective, KeyResult and CapacityPlan* entities.
        Fixed bug in restapi.getAllUsers that prevented retrieval of Users beyond the first chunk
+       Adjusted restapi.py treatment of headers to allow multiple pyral.Rally instances (could be various users...).
        Explicitly state support for Python 3.9, 3.10, 3.11 and 3.12
-       Drop any mention of support for versions 3.8 and earlier
+       Drop any mention of support for versions 3.8 and earlier.
 
    **1.5.2**
        Fixed query builder so that multi-condition queries thet include subset or range conditions 
