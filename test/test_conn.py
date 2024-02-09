@@ -15,6 +15,8 @@ RallyResponseError = pyral.rallyresp.RallyResponseError
 
 ##################################################################################################
 
+import rally_targets
+
 from rally_targets import RALLY, RALLY_USER, RALLY_PSWD, HTTPS_PROXY
 from rally_targets import PROD, APIKEY
 from rally_targets import PROD_USER, PROD_PSWD

@@ -1,8 +1,6 @@
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 from operator import attrgetter
-
-import six
 
 def projectAncestors(target_project, project_pool, ancestors):
     if target_project.Parent:
@@ -43,7 +41,7 @@ def projectDescendants(target_project, project_pool):
     projeny(target_project, project_pool, descendents, 1)
     return flatten(descendents, 'Name', [])
 
-class MockRallyRESTResponse(object):
+class MockRallyRESTResponse:
     """
         An instance of this class is used by the Rally search method to 
         wrap any filtered results into an object that superficially behaves
@@ -61,5 +59,5 @@ class MockRallyRESTResponse(object):
         return self.items
 
     def __next__(self):
-        return six.next(self.items)
+        return next(self.items)
 

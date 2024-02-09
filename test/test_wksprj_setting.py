@@ -14,6 +14,7 @@ from rally_targets import RALLY, RALLY_USER, RALLY_PSWD, APIKEY
 from rally_targets import   DEFAULT_WORKSPACE,   DEFAULT_PROJECT
 from rally_targets import ALTERNATE_WORKSPACE, ALTERNATE_PROJECT
 from rally_targets import ACCOUNT_WITH_NO_DEFAULTS_CREDENTIALS
+from rally_targets import NICKY_APIKEY, NICKY_WKSP
 
 ##################################################################################################
 
@@ -89,7 +90,7 @@ def test_disallow_project_value_invalid_for_workspace():
     problem_text = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'" % (DEFAULT_WORKSPACE, ALTERNATE_PROJECT)
     with py.test.raises(Exception) as excinfo:
         rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
-                      workspace=DEFAULT_WORKSPACE, project=ALTERNATE_PROJECT, server_ping=False)
+                      workspace=DEFAULT_WORKSPACE, project=ALTERNATE_PROJECT)
     actualErrVerbiage = excinfo.value.args[0]
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert actualErrVerbiage == problem_text
@@ -126,32 +127,36 @@ def test_get_named_project():
 
 def test_no_defaults_good_workspace_none_project():
     no_defaults_user, no_defaults_password = ACCOUNT_WITH_NO_DEFAULTS_CREDENTIALS
-    nd_workspace = "NMTest"
+    no_defaults_apikey = NICKY_APIKEY
+    nd_workspace = NICKY_WKSP
     none_project = None
 
-    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
-    problem_text = problem % (nd_workspace, none_project)
+    problem = (f"The current Workspace '{nd_workspace}' does not contain a "
+               f"Project with the name of '{none_project}'")
 
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(RALLY, no_defaults_user, no_defaults_password,
-                      workspace=nd_workspace, project=none_project, server_ping=False)
+        rally = Rally(RALLY, no_defaults_user, apikey=no_defaults_apikey,
+                      workspace=nd_workspace, project=none_project)
     actualErrVerbiage = excinfo.value.args[0]
     #print(f'actualErrVerbiage: {actualErrVerbiage}')
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    assert actualErrVerbiage == problem_text
+    assert actualErrVerbiage == problem
 
 def test_no_defaults_good_workspace_bad_project():
     no_defaults_user, no_defaults_password = ACCOUNT_WITH_NO_DEFAULTS_CREDENTIALS
-    nd_workspace, bad_project = ('NMTest', 'Cuzzin Blutto')
-    problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
-    problem_text = problem % (nd_workspace, bad_project)
+    no_defaults_apikey = NICKY_APIKEY
+    nd_workspace, bad_project = (NICKY_WKSP, 'Cuzzin Blutto')
+    problem = (f"The current Workspace '{nd_workspace}' does not contain an "
+               f"accessible Project with the name of '{bad_project}'")
+    print(f'Expected problem verbiage: [{problem}]')
 
     with py.test.raises(Exception) as excinfo:
-        rally = Rally(RALLY, no_defaults_user, no_defaults_password,
-                      workspace=nd_workspace, project=bad_project, server_ping=False)
+        rally = Rally(RALLY, no_defaults_user, apikey=no_defaults_apikey,
+                      workspace=nd_workspace, project=bad_project)
     actualErrVerbiage = excinfo.value.args[0]
+    print(f'actual problem verbiage: [{actualErrVerbiage}]')
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    assert actualErrVerbiage == problem_text
+    assert actualErrVerbiage == problem
 
 def test_ignore_defaults_use_good_workspace_none_project():
     from internal_rally_targets import APIKEY # klehman@rallydev.com key
@@ -161,7 +166,7 @@ def test_ignore_defaults_use_good_workspace_none_project():
 
     rally = Rally(server=RALLY, apikey=APIKEY,
                   workspace=good_workspace, 
-                  project=good_project, server_ping=False)
+                  project=good_project)
     workspace = rally.getWorkspace()
     project   = rally.getProject()
     assert(workspace.Name) == good_workspace
@@ -172,7 +177,7 @@ def test_ignore_defaults_use_good_workspace_none_project():
     with py.test.raises(Exception) as excinfo:
        rally = Rally(server=RALLY, apikey=APIKEY,
                      workspace=good_workspace,
-                     project=none_project, server_ping=False)
+                     project=none_project)
     actualErrVerbiage = excinfo.value.args[0]
     #print(actualErrVerbiage)
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -189,7 +194,7 @@ def test_ignore_defaults_use_good_workspace_bad_project():
     with py.test.raises(Exception) as excinfo:
        rally = Rally(server=RALLY, apikey=APIKEY,
                      workspace=good_workspace,
-                     project=bad_project, server_ping=False)
+                     project=bad_project)
     actualErrVerbiage = excinfo.value.args[0]
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
     assert actualErrVerbiage == problem_text

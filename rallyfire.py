@@ -21,30 +21,48 @@ def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
     server, user, password, apikey, workspace, project = rallyWorkset(options)
-    #print(" ".join(["|%s|" % item for item in [server, user, password, apikey[:8], workspace, project]]))
+    #print(f" |{server}| |{user}| |{password}| |{apikey[:8]}| |{workspace}| |{project}|")
 
     # If you want to use BasicAuth, use the following form
-    #rally = Rally(server, user, password, workspace=workspace, project=project) 
+    rally = Rally(server, user, password, workspace=workspace, project=project) 
 
     # If you want to use API Key, you can use the following form
+    #rally = Rally(server, apikey=apikey, workspace=workspace, project=project,
+    #              isolated_workspace=True)
     #rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
 
     # the following form of obtaining a Rally instance will use the apikey if it is present (non None)
     # otherwise it will use the user and password for BasicAuth
     # add in the debug=True keyword arg pair if you want more verbiage ...
-    rally = Rally(server, user, password, apikey=apikey, 
-                  workspace=workspace, project=project,
-                  debug=True, isolated_workspace=True)
-    specified_workspace = workspace
+    #apikey = '_lsMzURZTRyBoD3bwnpn5kUZvDQkRIoEeGkq7QNkg'
+    #apikey = '_DFyvCutVTKAxibNJ7mHvABywT3UIwtspVjJNWf40'
+    #rally = Rally(server, apikey=apikey)
+
+    #rally = Rally(server, user, password, apikey=apikey,
+    #              workspace=workspace, project=project,
+    #              debug=True, isolated_workspace=True)
+    #specified_workspace = workspace
 
     workspace = rally.getWorkspace()
-    print("Workspace: %s " % workspace.Name)
-    if specified_workspace != workspace.Name:
-        print("    ** The workspace you specified: %s is not a valid workspace name for your account, using your default workspace instead" % specified_workspace)
-    #print "Workspace: %12.12s   %-18.18s    (%s)" % (workspace.oid, workspace.Name, workspace.ref)
+    print(f"Workspace: {workspace.Name}   id: {workspace.oid} ")
+    #if specified_workspace != workspace.Name:
+    #    print(f"    ** The workspace you specified: {specified_workspace} is not a valid workspace name for your account, using your default workspace instead")
+    #print "Workspace: {workspace.oid:<12}   %{workspace.Name:<18.18}    ({workspace.ref})")
 
     project = rally.getProject()
-    print("Project  : %s " % project.Name)
+    print(f"Project: {project.Name}   id: {project.oid} ")
+
+    #
+    # issue a call to rally.getProjects() to see where you might be able to
+    # monkey with the current context's workspace (Name and oid) to be able
+    # to alter it to identify this workspace 'Kip's Alt Sandbox'
+    #  https://rally1.rallydev.com/#/9015093773d/detail/workspace/9096107919
+    #
+    # alt_workspace = "Kip's Alt Sandbox"
+    #print(f"Obtaining Projects for alternate Workspace: {alt_workspace}")
+    #projects = rally.getProjects(workspace=al_workspace)
+    #for proj in projects:
+    #    print(f'Project Name: {proj.Name}   ObjectID: {proj.oid}')
 
     # uncomment this to see all of your accessible workspaces and projects
 #    workspaces = rally.getWorkspaces()

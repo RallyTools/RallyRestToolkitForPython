@@ -8,18 +8,13 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import sys, os
-import platform
-import subprocess
 import time
-import socket
-import json
 import re  # we use compile, match
 from pprint import pprint
-import six
-quote = six.moves.urllib.parse.quote
+from urllib.parse import quote
 
 # intra-package imports
 from .rallyresp import RallyRESTResponse
@@ -47,7 +42,7 @@ class RallyRESTAPIError(Exception): pass
 
 ##################################################################################################
 
-class RallyContext(object):
+class RallyContext:
 
     def __init__(self, server, user, password, service_url, 
                        subscription=None, workspace=None, project=None):
@@ -126,7 +121,7 @@ class RallyContextHelper(object):
             Make an initial attempt to contact the Rally web server and retrieve info
             for the user associated with the credentials supplied upon instantiation.
             Raise a RallyRESTAPIError if any problem is encountered.
-            Otherwise call our internal method to set some relevant default information
+            Otherwise, call our internal method to set some relevant default information
             from the returned response.
             This method serves double-duty of verifying that the server can be contacted
             and speaks Rally WSAPI, and establishes the default workspace and project for
@@ -136,7 +131,6 @@ class RallyContextHelper(object):
 ##        print(" RallyContextHelper.check starting ...")
 ##        sys.stdout.flush()
 ##
-        socket.setdefaulttimeout(INITIAL_REQUEST_TIME_LIMIT)
         target_host = server
         self.isolated_workspace = isolated_workspace
 
@@ -160,6 +154,7 @@ class RallyContextHelper(object):
 
         user_response = self._getUserInfo()
         subscription = self._loadSubscription()
+
         # caller must either specify a valid workspace/project 
         #  or must have a DefaultWorkspace/DefaultProject in their UserProfile
         self._getDefaults(user_response)
@@ -167,12 +162,13 @@ class RallyContextHelper(object):
         if workspace:
             workspaces = self._getSubscriptionWorkspaces(subscription, workspace=workspace, limit=10)
             if not workspaces:
-                problem = "Specified workspace of '%s' either does not exist or the user does not have permission to access that workspace" 
-                raise RallyRESTAPIError(problem % workspace)
+                problem = (f"Specified workspace of '{workspace}' either does not exist or the user "
+                           f"does not have permission to access that workspace")
+                raise RallyRESTAPIError(problem)
             if len(workspaces) > 1:
-                problem = "Multiple workspaces (%d) found with the same name of '%s'.  "  +\
-                          "You must specify a workspace with a unique name."
-                raise RallyRESTAPIError(problem % (len(workspaces), workspace))
+                problem = (f"Multiple workspaces ({len(workspaces)}) found with the same name of '{workspace}'.\n"
+                           f"You must specify a workspace with a unique name.")
+                raise RallyRESTAPIError(problem)
             self._currentWorkspace = workspaces[0].Name
 
         if not workspace and not self._defaultWorkspace:
@@ -204,9 +200,14 @@ class RallyContextHelper(object):
         try:
             timer_start = time.time()
             if self.user:
-                response = self.agent.get('User', fetch=basic_user_fields, query=user_name_query, _disableAugments=True)
+                response = self.agent.get('User', fetch=basic_user_fields,
+                                          query=user_name_query,
+                                          _disableAugments=True,
+                                          timeout=INITIAL_REQUEST_TIME_LIMIT)
             else:
-                response = self.agent.get('User', fetch=basic_user_fields, _disableAugments=True)
+                response = self.agent.get('User', fetch=basic_user_fields,
+                                          _disableAugments=True,
+                                          timeout=INITIAL_REQUEST_TIME_LIMIT)
             timer_stop = time.time()
         except Exception as ex:
 ##
@@ -236,7 +237,7 @@ class RallyContextHelper(object):
 ##                print("response.errors: {0}".format(response.errors[0]))
 ##
                 if elapsed >= float(INITIAL_REQUEST_TIME_LIMIT):
-                    problem = "Request timed out on attempt to reach %s" % self.server
+                    problem = f"Request timed out on attempt to reach {self.server} ({elapsed:5.2f} secs)"
                 elif response.errors and 'certificate verify failed' in str(response.errors[0]):
                     problem = "SSL certificate verification failed"
                 elif response.errors and 'ProxyError' in str(response.errors[0]):
@@ -244,9 +245,9 @@ class RallyContextHelper(object):
                     problem = mo.groups()[0][:-1]
                     problem = re.sub(r'NewConnectionError.+>:', '', problem)[:-3]
                 elif response.errors and 'Max retries exceeded with url' in str(response.errors[0]):
-                    problem = "Target Rally host: '%s' non-existent or unreachable" % self.server
+                    problem = f"Target Rally host: '{self.server}' non-existent or unreachable"
                 elif response.errors and 'NoneType' in str(response.errors[0]):
-                    problem = "Target Rally host: '%s' non-existent or unreachable" % self.server
+                    problem = f"Target Rally host: '{self.server}' non-existent or unreachable"
                 else:
                     sys.stderr.write("404 Response for request\n")
 ##
@@ -255,7 +256,7 @@ class RallyContextHelper(object):
                     if response.warnings:
                         sys.stderr.write("\n".join(str(response.warnings)) + "\n")
                     sys.stderr.flush()
-                    problem = "404 Target host: '%s' is either not reachable or doesn't support the Rally WSAPI" % self.server
+                    problem = f"404 Target host: '{self.server}' is either not reachable or doesn't support the Rally WSAPI"
             else:  # might be a 401 No Authentication or 401 The username or password you entered is incorrect.
 ##
 ##                print(response.status_code)
@@ -266,7 +267,7 @@ class RallyContextHelper(object):
                     problem = "Invalid credentials"
                 else:
                     error_blurb = response.errors[0][:80] if response.errors else ""
-                    problem = "%s %s" % (response.status_code, error_blurb)
+                    problem = f"{response.status_code} {error_blurb}"
             raise RallyRESTAPIError(problem)
 ##
 ##        print(" RallyContextHelper.check -> _getUserInfo got the User info request response...")
@@ -282,7 +283,8 @@ class RallyContextHelper(object):
 
 
     def _loadSubscription(self):
-        sub = self.agent.get('Subscription', fetch=True, _disableAugments=True)
+        sub = self.agent.get('Subscription', fetch=True, _disableAugments=True,
+                             timeout=INITIAL_REQUEST_TIME_LIMIT)
         if sub.errors:
             raise Exception(sub.errors[0])
         subscription = sub.next()
@@ -300,25 +302,28 @@ class RallyContextHelper(object):
             exists in the returned set.  If the project_name parameter is non-None and there is NOT
             a match in the returned set raise an Exception stating that fact.
         """
-        result = self.agent.get('Project', fetch="Name", workspace=self._currentWorkspace, project=None)
+        result = self.agent.get('Project', fetch="Name",
+                                workspace=self._currentWorkspace, project=None,
+                                timeout=INITIAL_REQUEST_TIME_LIMIT)
 
         if not result or result.resultCount == 0:
-            problem = "No accessible Projects found in the Workspace '%s'" % self._defaultWorkspace
+            problem = f"No accessible Projects found in the Workspace '{self._defaultWorkspace}'"
             raise RallyRESTAPIError(problem)
 
         try:
             projects = [proj for proj in result]
         except:
-            problem = "Unable to obtain Project Name values for projects in the '%s' Workspace"
-            raise RallyRESTAPIError(problem % self._defaultWorkspace)
+            problem = f"Unable to obtain Project Name values for projects in the '{self._defaultWorkspace}' Workspace"
+            raise RallyRESTAPIError(problem)
 
         # does the project_name contain a ' // ' path element separator token?
         # if so, then we have to sidebar process this
         if project_name and PROJECT_PATH_ELEMENT_SEPARATOR in project_name:
             target_project = self._findMultiElementPathToProject(project_name)
             if not target_project:
-                problem = "No such accessible multi-element-path Project: %s  found in the Workspace '%s'"
-                raise RallyRESTAPIError(problem % (project_name, self._currentWorkspace))
+                problem = (f"No such accessible multi-element-path Project: {problem_name}  "
+                           f"found in the Workspace '{self._currentWorkspace}'")
+                raise RallyRESTAPIError(problem)
             #  have to set:
             #     self._defaultProject, self._currentProject
             #     self._workspace_ref, self._project_ref
@@ -330,8 +335,9 @@ class RallyContextHelper(object):
 
             if project_name:
                 if not match_for_named_project:
-                    problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
-                    raise RallyRESTAPIError(problem % (self._currentWorkspace, project_name))
+                    problem = (f"The current Workspace '{self._currentWorkspace}' does not contain "
+                               f"an accessible Project with the name of '{project_name}'")
+                    raise RallyRESTAPIError(problem)
                 else:
                     project = match_for_named_project[0]
                     proj_ref = project._ref
@@ -339,8 +345,9 @@ class RallyContextHelper(object):
                     self._currentProject = project.Name
             else:
                 if not match_for_default_project:
-                    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
-                    raise RallyRESTAPIError(problem % (self._currentWorkspace, project_name))
+                    problem = (f"The current Workspace '{self._currentWorkspace}' does not contain "
+                               f"a Project with the name of '{project_name}'")
+                    raise RallyRESTAPIError(problem)
                 else:
                     project = match_for_default_project[0]
                     proj_ref = project._ref
@@ -388,7 +395,7 @@ class RallyContextHelper(object):
                                 workspace=self._currentWorkspace, project=base_path_element,
                                 projectScopeDown=False)
         if not result or (result.errors or result.resultCount != 1):
-            problem = "No such accessible base Project found in the Workspace '%s'" % project_name
+            problem = f"No such accessible base Project found in the Workspace '{project_name}'"
             raise RallyRESTAPIError(problem)
         base_project = result.next()
         parent = base_project
@@ -399,7 +406,7 @@ class RallyContextHelper(object):
             criteria = ['Name = "%s"' % proj_path_element , 'Parent = %s' % parent._ref]
             result = self.agent.get('Project', fetch="Name,ObjectID,Parent", query=criteria, workspace=self._currentWorkspace, project=parent.ref)
             if not result or result.errors or result.resultCount != 1:
-                problem = "No such accessible Project found: '%s'" % PROJECT_PATH_ELEMENT_SEPARATOR.join(project_path)
+                problem = f"No such accessible Project found: '{PROJECT_PATH_ELEMENT_SEPARATOR.join(project_path)}'"
                 raise RallyRESTAPIError(problem)
             path_el = result.next()
             parent = path_el
@@ -744,15 +751,16 @@ class RallyContextHelper(object):
             eligible_workspace_names = [wksp.Name for wksp in self._subs_workspaces]
 
             if workspace not in eligible_workspace_names:
-                problem = 'Workspace specified: "%s" not accessible with current credentials'
-                raise RallyRESTAPIError(problem % workspace.Name)
+                wksp_name = workspace if isinstance(workspace, str) else workspace.Name
+                problem = f'Workspace specified: "{wksp_name}" not accessible with current credentials'
+                raise RallyRESTAPIError(problem)
             if workspace not in self._workspaces and self._inflated != 'wide':  
                 ec_kwargs = {'workspace' : workspace}
                 self._establishContext(ec_kwargs)
                 self._inflated = 'narrow'
 
             wks_ref = self._workspace_ref[workspace]
-            augments.append("workspace=%s" % wks_ref)
+            augments.append(f"workspace={wks_ref}")
             self.context.workspace = workspace
 
         project = None        
@@ -772,8 +780,7 @@ class RallyContextHelper(object):
             elif re.search(r'project/\d+$', project):
                 prj_ref = project
             else:
-                problem = 'Project specified: "%s" (in workspace: "%s") not accessible with current credentials' % \
-                           (project, workspace)
+                problem = f'Project specified: "{project}" (in workspace: "{workspace}") not accessible with current credentials'
                 raise RallyRESTAPIError(problem)
 
             augments.append("project=%s" % prj_ref)
@@ -815,14 +822,10 @@ class RallyContextHelper(object):
         if self._currentProject in self._projects[self._currentWorkspace] or self._currentProject in self._project_path.keys():
             return self.context, augments
 
-        problem = "the current Workspace |%s| does not contain a Project that matches the current setting of the Project: %s" % (self._currentWorkspace, self._currentProject)
+        problem = (f"the current Workspace |self._currentWorkspace| does not contain a Project "
+                   f"that matches the current setting of the Project: {self._currentProject}")
         raise RallyRESTAPIError(problem)
 
-        #if self._currentProject not in self._projects[self._currentWorkspace]:
-        #    problem = "the current Workspace |%s| does not contain a Project that matches the current setting of the Project: %s" % (self._currentWorkspace, self._currentProject)
-        #    raise RallyRESTAPIError(problem)
-##
-        #return self.context, augments
 
 
     def _getWorkspacesAndProjects(self, **kwargs):
@@ -866,8 +869,6 @@ class RallyContextHelper(object):
             base_proj_coll_url = response['Workspace']['Projects']['_ref']
             projects_collection_url = '%s?fetch="ObjectID,Name,State"&pagesize=200&start=1' % base_proj_coll_url
             response = self.agent.getCollection(projects_collection_url, _disableAugments=True)
-#not-as-bad?#            response = self.agent.get('Project', fetch="ObjectID,Name,State", workspace=workspace.Name)
-
 ##
 ##            print("  Number of Projects: %d" % response.data[u'TotalResultCount'])
 ##            for item in response.data[u'Results']:

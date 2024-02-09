@@ -4,7 +4,7 @@ import sys, os
 import types
 import py
 
-from pyral import Rally
+from pyral import Rally, RallyRESTAPIError
 import pyral
 
 InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
@@ -13,6 +13,7 @@ InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
 
 #from internal_rally_targets import APIKEY, WORKSPACE, PROJECT
 from rally_targets import APIKEY, DEFAULT_WORKSPACE, DEFAULT_PROJECT
+from rally_targets import PROD_USER, PROD_PSWD
 WORKSPACE = DEFAULT_WORKSPACE
 PROJECT   = DEFAULT_PROJECT
 
@@ -23,15 +24,15 @@ def test_basic_search():
         Using a known valid Rally server and known valid access credentials,
         issue a simple search query (basic qualifying criteria).
     """
-    rally = Rally(apikey=APIKEY, workspace=WORKSPACE, project=PROJECT)
-    #
-    #expectedErrMsg = u'The new search functionality is not turned on for your subscription'
-    #
-    #with py.test.raises(RallyRESTAPIError) as excinfo:
-    #    response = rally.search('wombat', limit=10)
-    #    actualErrVerbiage = excinfo.value.args[0]
-    #    assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
-    #    assert expectedErrMsg in actualErrVerbiage
+    #rally = Rally(apikey=APIKEY, workspace=WORKSPACE, project=PROJECT)
+    rally = Rally(user=PROD_USER, password=PROD_PSWD, workspace=WORKSPACE, project=PROJECT)
+    expectedErrMsg = 'path or entity not found'
+    with py.test.raises(RallyRESTAPIError) as excinfo:
+        response = rally.search('wombat', limit=10)
+        actualErrVerbiage = excinfo.value.args[0]
+        assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
+        assert expectedErrMsg in actualErrVerbiage
+
     response = rally.search('bogus', limit=10)
     assert response.status_code == 200
     assert response.errors   == []

@@ -6,16 +6,14 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import re
-import types
-import six
-from   six.moves.urllib.parse import quote
+from   urllib.parse import quote
 
 ###################################################################################################
 
-class RallyUrlBuilder(object):
+class RallyUrlBuilder:
     """
         An instance of this class is used to collect information needed to construct a
         valid URL that can be issued in a REST Request to Rally.
@@ -110,7 +108,7 @@ class RallyUrlBuilder(object):
 
 ##################################################################################################
 
-class RallyQueryFormatter(object):
+class RallyQueryFormatter:
     CONJUNCTIONS = ['and', 'AND', 'or', 'OR']
     CONJUNCTION_PATT = re.compile(r'\s+(AND|OR)\s+', re.I | re.M)
     ATTR_IDENTIFIER = r'[\w\.]+[a-zA-Z0-9]'  # gotta be word-like possibly separated by '.' chars
@@ -133,15 +131,15 @@ class RallyQueryFormatter(object):
         """
         def _encode(condition):
             """
-                if cond has pattern of 'thing relation value', then urllib.quote it and return it
-                if cond has pattern of '(thing relation value)', then urllib.quote content inside parens
+                if cond has pattern of 'thing relation value', then urllib.parse.quote it and return it
+                if cond has pattern of '(thing relation value)', then urllib.parse.quote content inside parens
                   then pass that result enclosed in parens back to the caller
             """
-            first_last = "%s%s" % (condition[0], condition[-1])
+            first_last = f"{condition[0]}{condition[-1]}"
             if first_last == "()":
                 url_encoded = quote(condition)
             else:
-                url_encoded = '(%s)' % quote(condition)
+                url_encoded = f'({quote(condition)})' 
 
             # replace the %xx encodings for '=', '(', ')', '!', and double quote characters
             readable_encoded =      url_encoded.replace("%3D", '=')
@@ -168,7 +166,7 @@ class RallyQueryFormatter(object):
             for field, value in list(criteria.items()):
                 # have to enclose string value in double quotes, otherwise turn whatever the value is into a string
                 tval = '"%s"' % value if type(value) == bytes else '%s' % value
-                expression = ('%s = %s' % (field, tval))
+                expression = f'{field} = {tval}'
                 if len(criteria) == 1:
                     return expression.replace(' ', '%20')
                 expressions.append(expression)
@@ -190,8 +188,8 @@ class RallyQueryFormatter(object):
             stripped_and_plugged  = criteria.strip()[1:-1].replace(' ', '%20')
             return stripped_and_plugged
 
-        # commented out following substitution for 1.5.0, as later a call to quote(criteria ...)
-        # ends up url-encoding the %26 resulting a a value of %2526 which goofs things up on the back-end in Rally
+        # commented out following substitution for 1.5.0 (and beyond), as later a call to quote(criteria ...)
+        # ends up url-encoding the %26 resulting in a value of %2526 which goofs things up on the back-end in Rally
         #criteria = criteria.replace('&', '%26')
         parts = RallyQueryFormatter.CONJUNCTION_PATT.split(criteria.strip())
         # adjust parts for range condition presence, coalesce parts components that have a sequence of
