@@ -242,7 +242,7 @@ The item names in config files **are** case sensitive.
 Prerequisites
 -------------
 
- * Python 3.9, 3,10 or 3.11 (this package not tested with earlier versions of Python 3.x)
+ * Python 3.9, 3,10, 3.11 or 3.12 (this package not tested with earlier versions of Python 3.x)
  * The requests_ package, 2.28.1 or better, requests 2.31.0 or beyond is recommended.
 
 .. _requests: http://github.com/kennethreitz/requests
