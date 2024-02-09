@@ -159,6 +159,6 @@
     Dropped all code related to ping functionality.
 
 1.6.0 - Feb 2024
-    Updated supported Python versions to 3.9, 3.10 and 3.11. No longer requires six package.
+    Updated supported Python versions to 3.9, 3.10, 3.11 and 3.12. No longer requires six package.
     Fixed defect in the getAllUsers method that prevented Users beyond the first page from being retrieved.
 

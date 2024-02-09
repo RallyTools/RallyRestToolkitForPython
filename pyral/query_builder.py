@@ -188,8 +188,8 @@ class RallyQueryFormatter:
             stripped_and_plugged  = criteria.strip()[1:-1].replace(' ', '%20')
             return stripped_and_plugged
 
-        # commented out following substitution for 1.5.0, as later a call to quote(criteria ...)
-        # ends up url-encoding the %26 resulting a a value of %2526 which goofs things up on the back-end in Rally
+        # commented out following substitution for 1.5.0 (and beyond), as later a call to quote(criteria ...)
+        # ends up url-encoding the %26 resulting in a value of %2526 which goofs things up on the back-end in Rally
         #criteria = criteria.replace('&', '%26')
         parts = RallyQueryFormatter.CONJUNCTION_PATT.split(criteria.strip())
         # adjust parts for range condition presence, coalesce parts components that have a sequence of

@@ -14,7 +14,7 @@ import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.5.2"
+VERSION      = "1.6.0"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -65,9 +65,9 @@ DOC_FILES  = ['doc/Makefile',
               'doc/build/html/_static',
               'doc/build/html/_static/css',
               'doc/build/html/_static/css/fonts',
-              'doc/build/html/_static/fonts',
-              'doc/build/html/_static/fonts/Lato',
-              'doc/build/html/_static/fonts/RobotoSlab',
+              #'doc/build/html/_static/fonts',
+              #'doc/build/html/_static/fonts/Lato',
+              #'doc/build/html/_static/fonts/RobotoSlab',
               'doc/build/html/_static/js',
              ]
 

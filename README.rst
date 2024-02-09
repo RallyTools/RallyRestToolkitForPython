@@ -251,8 +251,9 @@ Versions
 --------
    **1.6.0**
        Eliminated use of six package.
+       Added support for Risk, Objective, KeyResult and CapacityPlan* entities.
        Fixed bug in restapi.getAllUsers that prevented retrieval of Users beyond the first chunk
-       Explicitly state support for Python 3.9, 3.10 and 3.11
+       Explicitly state support for Python 3.9, 3.10, 3.11 and 3.12
        Drop any mention of support for versions 3.8 and earlier
 
    **1.5.2**
