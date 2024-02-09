@@ -60,6 +60,26 @@ def main(args):
 
 <p>&nbsp;</p>
 """
+
+        value = """
+<p><span style="color:#4c9aff;">Huubina treandle korz</span></p>
+<p>&nbsp;</p> <p><i>Links</i><br>Link to giphy <a href="https://giphy.com|smart-link">https://giphy.com</a></p>
+<p>&nbsp;</p> <p>on to <a href="http://www.windy.com|smart-link">http://www.windy.com</a></p>
+<p>&nbsp;</p> <p><i>Images</i><br>Uploaded</p>
+<hr> 
+<figure class="image image_resized" style="width:80%"><img src="/slm/attachment/730942835535/moab-winter-dusting.jpg"></figure>
+<hr>
+<p>&nbsp;</p> <p><img src="bff5de03-823d-41ab-a448-3be70f94ec23#media-blob-url=true&amp;id=cb54963b-2da1-4cf6-8642-1a2d7c815ab4&amp;collection=upload-user-collection-92668751&amp;contextId=12489&amp;width=226&amp;height=144&amp;alt=|width=777,height=496" alt="bff5de03-823d-41ab-a448-3be70f94ec23"></p>
+<p>&nbsp;</p> <h3>Just some verbal spillage for testing</h3><p>&nbsp;</p> <p>Merlin <s>commanded</s> advised me to tell you to give-me-a-break whenever i tell you to <s>stfu</s> put a brick in your <s>piehole</s> mouth, go-to-he-double-hockey-sticks doofus and <s>donty never sully my palace again</s>!</p>
+<p>&nbsp;</p> <p>Linked<br><a href="https://ckeditor.com/docs/ckeditor5/latest/assets/img/food_2.jpg">https://ckeditor.com/docs/ckeditor5/latest/assets/img/food_2.jpg</a></p>
+<p>&nbsp;</p> <p><img src="alta-harbor.jpg|width=57600,height=43200" alt="alta-harbor.jpg"></p>
+<p>&nbsp;</p> <p>Isn’t Alta harbor cold and beautiful?</p>
+<p>&nbsp;</p> <p>Can’t anybody figure out how to get a table to be obtuse to the max?</p>
+<p>&nbsp;</p> <figure class="table"><table><thead><tr><th><strong>manufacturer</strong></th><th><strong>year</strong></th><th><strong>country</strong></th></tr></thead><tbody><tr><td>mercedes</td><td>1965</td><td>germany</td></tr><tr><td>toyota</td><td>2003</td><td>japan</td></tr><tr><td>fored</td><td>2010</td><td>usa</td></tr></tbody></table></figure><p>&nbsp;</p> <p>|_.*Too Tall to think*|<br>F</p>
+<p>&nbsp;</p> <p>&lt;figure class="image"&gt;&lt;img src="/slm/attachment/730939833657/inxs-devil-inside.jpg"&gt;&lt;/figure&gt;</p>
+<p>&nbsp;</p> <p>never let me down…</p>
+<p>&nbsp;</p> <p>&nbsp;</p> <figure class="image"><img src="/slm/attachment/730939835245/alta-harbor.jpg"></figure>
+    """
     target_oid = None
     response = rally.get('Story', fetch="ObjectID,Name,FormattedID,Project,Description,Tags",
                                    query=f"FormattedID = {story_id}", isolated_workspace=True)

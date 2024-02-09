@@ -162,12 +162,13 @@ class RallyContextHelper(object):
         if workspace:
             workspaces = self._getSubscriptionWorkspaces(subscription, workspace=workspace, limit=10)
             if not workspaces:
-                problem = "Specified workspace of '%s' either does not exist or the user does not have permission to access that workspace" 
-                raise RallyRESTAPIError(problem % workspace)
+                problem = (f"Specified workspace of '{workspace}' either does not exist or the user "
+                           f"does not have permission to access that workspace")
+                raise RallyRESTAPIError(problem)
             if len(workspaces) > 1:
-                problem = "Multiple workspaces (%d) found with the same name of '%s'.  "  +\
-                          "You must specify a workspace with a unique name."
-                raise RallyRESTAPIError(problem % (len(workspaces), workspace))
+                problem = (f"Multiple workspaces ({len(workspaces)}) found with the same name of '{workspace}'.\n"
+                           f"You must specify a workspace with a unique name.")
+                raise RallyRESTAPIError(problem)
             self._currentWorkspace = workspaces[0].Name
 
         if not workspace and not self._defaultWorkspace:
@@ -255,7 +256,7 @@ class RallyContextHelper(object):
                     if response.warnings:
                         sys.stderr.write("\n".join(str(response.warnings)) + "\n")
                     sys.stderr.flush()
-                    problem = "404 Target host: '%s' is either not reachable or doesn't support the Rally WSAPI" % self.server
+                    problem = f"404 Target host: '{self.server}' is either not reachable or doesn't support the Rally WSAPI"
             else:  # might be a 401 No Authentication or 401 The username or password you entered is incorrect.
 ##
 ##                print(response.status_code)
@@ -320,8 +321,9 @@ class RallyContextHelper(object):
         if project_name and PROJECT_PATH_ELEMENT_SEPARATOR in project_name:
             target_project = self._findMultiElementPathToProject(project_name)
             if not target_project:
-                problem = "No such accessible multi-element-path Project: %s  found in the Workspace '%s'"
-                raise RallyRESTAPIError(problem % (project_name, self._currentWorkspace))
+                problem = (f"No such accessible multi-element-path Project: {problem_name}  "
+                           f"found in the Workspace '{self._currentWorkspace}'")
+                raise RallyRESTAPIError(problem)
             #  have to set:
             #     self._defaultProject, self._currentProject
             #     self._workspace_ref, self._project_ref
@@ -333,8 +335,9 @@ class RallyContextHelper(object):
 
             if project_name:
                 if not match_for_named_project:
-                    problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
-                    raise RallyRESTAPIError(problem % (self._currentWorkspace, project_name))
+                    problem = (f"The current Workspace '{self._currentWorkspace}' does not contain "
+                               f"an accessible Project with the name of '{project_name}'")
+                    raise RallyRESTAPIError(problem)
                 else:
                     project = match_for_named_project[0]
                     proj_ref = project._ref
@@ -342,8 +345,9 @@ class RallyContextHelper(object):
                     self._currentProject = project.Name
             else:
                 if not match_for_default_project:
-                    problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
-                    raise RallyRESTAPIError(problem % (self._currentWorkspace, project_name))
+                    problem = (f"The current Workspace '{self._currentWorkspace}' does not contain "
+                               f"a Project with the name of '{project_name}'")
+                    raise RallyRESTAPIError(problem)
                 else:
                     project = match_for_default_project[0]
                     proj_ref = project._ref
@@ -391,7 +395,7 @@ class RallyContextHelper(object):
                                 workspace=self._currentWorkspace, project=base_path_element,
                                 projectScopeDown=False)
         if not result or (result.errors or result.resultCount != 1):
-            problem = "No such accessible base Project found in the Workspace '%s'" % project_name
+            problem = f"No such accessible base Project found in the Workspace '{project_name}'"
             raise RallyRESTAPIError(problem)
         base_project = result.next()
         parent = base_project
@@ -402,7 +406,7 @@ class RallyContextHelper(object):
             criteria = ['Name = "%s"' % proj_path_element , 'Parent = %s' % parent._ref]
             result = self.agent.get('Project', fetch="Name,ObjectID,Parent", query=criteria, workspace=self._currentWorkspace, project=parent.ref)
             if not result or result.errors or result.resultCount != 1:
-                problem = "No such accessible Project found: '%s'" % PROJECT_PATH_ELEMENT_SEPARATOR.join(project_path)
+                problem = f"No such accessible Project found: '{PROJECT_PATH_ELEMENT_SEPARATOR.join(project_path)}'"
                 raise RallyRESTAPIError(problem)
             path_el = result.next()
             parent = path_el
@@ -747,16 +751,16 @@ class RallyContextHelper(object):
             eligible_workspace_names = [wksp.Name for wksp in self._subs_workspaces]
 
             if workspace not in eligible_workspace_names:
-                problem = 'Workspace specified: "%s" not accessible with current credentials'
                 wksp_name = workspace if isinstance(workspace, str) else workspace.Name
-                raise RallyRESTAPIError(problem % wksp_name)
+                problem = f'Workspace specified: "{wksp_name}" not accessible with current credentials'
+                raise RallyRESTAPIError(problem)
             if workspace not in self._workspaces and self._inflated != 'wide':  
                 ec_kwargs = {'workspace' : workspace}
                 self._establishContext(ec_kwargs)
                 self._inflated = 'narrow'
 
             wks_ref = self._workspace_ref[workspace]
-            augments.append("workspace=%s" % wks_ref)
+            augments.append(f"workspace={wks_ref}")
             self.context.workspace = workspace
 
         project = None        
@@ -776,8 +780,7 @@ class RallyContextHelper(object):
             elif re.search(r'project/\d+$', project):
                 prj_ref = project
             else:
-                problem = 'Project specified: "%s" (in workspace: "%s") not accessible with current credentials' % \
-                           (project, workspace)
+                problem = f'Project specified: "{project}" (in workspace: "{workspace}") not accessible with current credentials'
                 raise RallyRESTAPIError(problem)
 
             augments.append("project=%s" % prj_ref)
@@ -819,14 +822,10 @@ class RallyContextHelper(object):
         if self._currentProject in self._projects[self._currentWorkspace] or self._currentProject in self._project_path.keys():
             return self.context, augments
 
-        problem = "the current Workspace |%s| does not contain a Project that matches the current setting of the Project: %s" % (self._currentWorkspace, self._currentProject)
+        problem = (f"the current Workspace |self._currentWorkspace| does not contain a Project "
+                   f"that matches the current setting of the Project: {self._currentProject}")
         raise RallyRESTAPIError(problem)
 
-        #if self._currentProject not in self._projects[self._currentWorkspace]:
-        #    problem = "the current Workspace |%s| does not contain a Project that matches the current setting of the Project: %s" % (self._currentWorkspace, self._currentProject)
-        #    raise RallyRESTAPIError(problem)
-##
-        #return self.context, augments
 
 
     def _getWorkspacesAndProjects(self, **kwargs):

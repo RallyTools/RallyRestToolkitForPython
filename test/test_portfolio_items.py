@@ -9,14 +9,9 @@ from pyral import Rally
 
 ##################################################################################################
 
-from rally_targets import RALLY, RALLY_USER, RALLY_PSWD #, APIKEY
+from rally_targets import RALLY, RALLY_USER, RALLY_PSWD 
 from rally_targets import RALLY_NICKNAME, DEFAULT_WORKSPACE
-
-#APIKEY = "_leL4WkuWRNGNAgfhN3qFkTzgSpKlIkKsi21JDkg82k"  # for nick@denver.com
-
-APIKEY = "_dgu5WvHTwSrsvhNIchf98oxfHRgkkG7oxfZRwqdOqU"   # for nick@denver.com
-NICK_WKSP = 'NMTest'
-WACKY_PROJ = '*MFA Benefit Durt'
+from rally_targets import NICKY_APIKEY, NICKY_WKSP, NICKY_WACKY_PROJ
 
 ##################################################################################################
 
@@ -26,7 +21,7 @@ def test_getSchemaInfo():
         obtain a Rally instance and call the getSchemaInfo method for the
         default workspace.
     """
-    rally = Rally(server=RALLY, apikey=APIKEY, workspace=NICK_WKSP, project=WACKY_PROJ)
+    rally = Rally(server=RALLY, apikey=NICKY_APIKEY, workspace=NICKY_WKSP, project=NICKY_WACKY_PROJ)
     schema_info = rally.getSchemaInfo(rally.getWorkspace())
     assert type(schema_info) == list
     assert len(schema_info) > 50
@@ -47,7 +42,7 @@ def test_typedef():
         exercise the Rally.typedef convenience method using 'Portfolio/Epic'
         as a target.
     """
-    rally = Rally(server=RALLY, apikey=APIKEY, workspace=NICK_WKSP, project=WACKY_PROJ)
+    rally = Rally(server=RALLY, apikey=NICKY_APIKEY, workspace=NICKY_WKSP, project=NICKY_WACKY_PROJ)
     target_type = 'PortfolioItem/Epic'
     td = rally.typedef(target_type)
     assert td != None
@@ -61,7 +56,7 @@ def test_epic_creation():
         exercise the Rally.create method to create an Epic instance and be handed
         back a usable pyral.entity representing the newly created Epic PortfoloItem instance.
     """
-    rally = Rally(server=RALLY, apikey=APIKEY, workspace=NICK_WKSP, project=WACKY_PROJ)
+    rally = Rally(server=RALLY, apikey=NICKY_APIKEY, workspace=NICKY_WKSP, project=NICKY_WACKY_PROJ)
     target_workspace = rally.getWorkspace()
 
     wksp_projs = rally.getProjects(workspace='NMTest')
@@ -114,7 +109,7 @@ def test_epic_query_by_formatted_id():
         exercise the Rally.get  method to retrieve and Epic instance that has been created offline
         and be handed back a usable pyral.entity representing the PortfoloItem/Epic instance.
     """
-    rally = Rally(server=RALLY, apikey=APIKEY, workspace=NICK_WKSP, project=WACKY_PROJ)
+    rally = Rally(server=RALLY, apikey=NICKY_APIKEY, workspace=NICKY_WKSP, project=NICKY_WACKY_PROJ)
     target_workspace = rally.getWorkspace()
     rally.setProject('*MFA Benefit Durt')
     target_project = rally.getProject()
@@ -143,7 +138,7 @@ def test_epic_update():
         of the attributes of the Epic (Name, Ready) and receive back an instance of the updated Epic
         that is non-None and can be interrogated for all atribute information.
     """
-    rally = Rally(server=RALLY, apikey=APIKEY, workspace=NICK_WKSP, project=WACKY_PROJ)
+    rally = Rally(server=RALLY, apikey=NICKY_APIKEY, workspace=NICKY_WKSP, project=NICKY_WACKY_PROJ)
     target_workspace = rally.getWorkspace()
     target_project = rally.getProject()
 

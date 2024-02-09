@@ -250,15 +250,15 @@ class User (DomainObject):
             if value is None:
                 continue
             if 'pyral.entity.' not in str(type(value)):
-                anv = '    %-20s  : %s' % (attribute_name, value)
+                anv = f'    {attribute_name:<24}  : {value}'
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if mo:
                     cln = mo.group(1)  # cln -- class name
-                    anv = "    %-20s  : %-20.20s   (OID  %s  Name: %s)" % \
-                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                    anv = (f"    {attribute_name:<24}  : {cln + '.ref':<20.20}   "
+                           f"(OID  {value.oid}  Name: {value.Name})")
                 else:
-                    anv = "    %-20s  : %s" % value
+                    anv = f'    {attribute_name:<24}  : {value}'
             tank.append(anv)
         return "\n".join(tank)
 
@@ -286,15 +286,15 @@ class UserProfile     (DomainObject):
             except AttributeError:
                 continue
             if 'pyral.entity.' not in str(type(value)):
-                anv = '    %-24s  : %s' % (attribute_name, value)
+                anv = f'    {attribute_name:<24}  : {value}'
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if mo:
                     cln = mo.group(1)
-                    anv = "    %-24s  : %-14.14s   (OID  %s  Name: %s)" % \
-                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                    anv = (f"    {attribute_name:<24}  : {cln + '.ref':<20.20}   "
+                           f"(OID  {value.oid}  Name: {value.Name})")
                 else:
-                    anv = "    %-24s  : %s" % value
+                    anv = f'    {attribute_name:<24}  : {value}'
             tank.append(anv)
             
         return "\n".join(tank)
@@ -390,7 +390,7 @@ class WorkspaceDomainObject(DomainObject):
                 anv = f"    {attr_name:<24}  : {cln + '.ref':<27.27}"
                 if   isinstance(value, Artifact):
                     # also want the OID, FormattedID
-                    anv = "{anv} (OID  {value.oid}  FormattedID  {value.FormattedID})"
+                    anv = f"{anv} (OID  {value.oid}  FormattedID  {value.FormattedID})"
                 elif isinstance(value, User):
                     # also want the className, OID, UserName, DisplayName
                     user_oid = value.oid
@@ -485,7 +485,7 @@ class Defect       (Artifact): pass
 class TestCase     (Artifact): pass
 class DefectSuite  (SchedulableArtifact): pass
 class TestSet      (SchedulableArtifact): pass
-class Risk      (SchedulableArtifact): pass
+class Risk         (SchedulableArtifact): pass
 
 class PortfolioItem(Artifact): pass
 class PortfolioItem_Strategy  (PortfolioItem): pass
@@ -519,7 +519,7 @@ class Connection(WorkspaceDomainObject):
     CONNECTION_INFO_ATTRIBUTES = ['ExternalId', 'ExternalFormattedId', 'Name', 'Description', 'Url', 'Artifact']
 
     def details(self):
-        tank = ['%s' % self._type]
+        tank = [str(self._type)]
         for attribute_name in (Connection.MINIMAL_WDO_ATTRIBUTES + Connection.CONNECTION_INFO_ATTRIBUTES):
             try:
                 value = getattr(self, attribute_name)
@@ -528,15 +528,15 @@ class Connection(WorkspaceDomainObject):
             if value is None:
                 continue
             if 'pyral.entity.' not in str(type(value)):
-                anv = '    %-24s  : %s' % (attribute_name, value)
+                anv = f'    {attribute_name:<24}  : {value}'
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if mo:
                     cln = mo.group(1)
-                    anv = "    %-24s  : %-20.20s   (OID  %s  Name: %s)" % \
-                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                    anv = (f"    {attribute_name:<24}  : {cln + '.ref':<20.20}   "
+                           f"(OID  {value.oid}  Name: {value.Name})")
                 else:
-                    anv = "    %-24s  : %s" % (attribute_name, value)
+                    anv = f'    {attribute_name:<24}  : {value}'
             tank.append(anv)
         tank.append("")
         return tank

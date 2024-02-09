@@ -30,6 +30,7 @@ START_INDEX  = 1
 KILO_PAGESIZE= 1000
 MAX_PAGESIZE = 2000
 MAX_ITEMS    = 1000000  # a million seems an eminently reasonable limit ...
+DEFAULT_SESSION_TIMEOUT = 10   # in seconds
 
 RALLY_REST_HEADERS = \
     {

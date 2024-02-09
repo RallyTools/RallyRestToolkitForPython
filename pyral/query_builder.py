@@ -135,11 +135,11 @@ class RallyQueryFormatter:
                 if cond has pattern of '(thing relation value)', then urllib.parse.quote content inside parens
                   then pass that result enclosed in parens back to the caller
             """
-            first_last = "%s%s" % (condition[0], condition[-1])
+            first_last = f"{condition[0]}{condition[-1]}"
             if first_last == "()":
                 url_encoded = quote(condition)
             else:
-                url_encoded = '(%s)' % quote(condition)
+                url_encoded = f'({quote(condition)})' 
 
             # replace the %xx encodings for '=', '(', ')', '!', and double quote characters
             readable_encoded =      url_encoded.replace("%3D", '=')
@@ -166,7 +166,7 @@ class RallyQueryFormatter:
             for field, value in list(criteria.items()):
                 # have to enclose string value in double quotes, otherwise turn whatever the value is into a string
                 tval = '"%s"' % value if type(value) == bytes else '%s' % value
-                expression = ('%s = %s' % (field, tval))
+                expression = f'{field} = {tval}'
                 if len(criteria) == 1:
                     return expression.replace(' ', '%20')
                 expressions.append(expression)

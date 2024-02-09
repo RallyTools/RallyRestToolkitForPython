@@ -21,7 +21,7 @@ def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
     server, user, password, apikey, workspace, project = rallyWorkset(options)
-    #print(" ".join(["|%s|" % item for item in [server, user, password, apikey[:8], workspace, project]]))
+    #print(f" |{server}| |{user}| |{password}| |{apikey[:8]}| |{workspace}| |{project}|")
 
     # If you want to use BasicAuth, use the following form
     rally = Rally(server, user, password, workspace=workspace, project=project) 
@@ -46,8 +46,8 @@ def main(args):
     workspace = rally.getWorkspace()
     print(f"Workspace: {workspace.Name}   id: {workspace.oid} ")
     #if specified_workspace != workspace.Name:
-    #    print("    ** The workspace you specified: %s is not a valid workspace name for your account, using your default workspace instead" % specified_workspace)
-    #print "Workspace: %12.12s   %-18.18s    (%s)" % (workspace.oid, workspace.Name, workspace.ref)
+    #    print(f"    ** The workspace you specified: {specified_workspace} is not a valid workspace name for your account, using your default workspace instead")
+    #print "Workspace: {workspace.oid:<12}   %{workspace.Name:<18.18}    ({workspace.ref})")
 
     project = rally.getProject()
     print(f"Project: {project.Name}   id: {project.oid} ")
