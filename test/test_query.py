@@ -562,44 +562,6 @@ def test_query_using_project_scoping_options():
                          projectScopeUp=True, projectScopeDown=True)
     assert response.resultCount > len(bfee_sp_stories)
 
-def test_query_target_value_with_ampersand():
-    """
-        Query for a Project.Name = 'R&D'
-
-        Note: This test must be last as there is some weird interplay going on when this is higher up
-              in the file.  3 Tests fail having nothing to do with ampersands in the query criteria
-              when this test appears before them.
-    """
-    criteria = ['Project.Name = R&D']
-    result = RallyQueryFormatter.parenGroups(criteria)
-    #assert unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
-    assert unquote(result) == 'Project.Name = R&D'
-
-    criteria = ['Project.Name = "R&D"']
-    result = RallyQueryFormatter.parenGroups(criteria)
-    #assert unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
-    assert unquote(result) == 'Project.Name = "R&D"'
-
-    criteria = ['Project.Name contains "R&D"']
-    result = RallyQueryFormatter.parenGroups(criteria)
-    #assert unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
-    assert unquote(result) == 'Project.Name contains "R&D"'
-
-    criteria = 'Railhead.Company.Name != "Atchison Topeka & Santa Fe & Cunard Lines"'
-    result = RallyQueryFormatter.parenGroups(criteria)
-    #assert unquote(result) == criteria.replace('&', '%26')
-    assert unquote(result) == criteria
-
-    APIKEY = "_useYourRallyKey"
-    RALLY_100_APIKEY = "_lsMzURZTRyBoD3bwnpn5kUZvDQkRIoEeGkq7QNkg"
-    target_workspace = 'Rally'
-    target_project   = 'R&D'
-    rally = Rally(server='rally1.rallydev.com', apikey=RALLY_100_APIKEY, workspace=target_workspace, project=target_project)
-    pifs = rally.get('Feature', fetch='Name,FormattedID')
-    assert pifs.resultCount == 26  # as of 02/05/2021 this was correct, total of 26 Features for R&D
-    # The following does not work...
-    pifs = rally.get('Feature', fetch='Name,FormattedID', query=['Project.Name = "R&D"', 'Name contains "On-Prem"'])
-    assert pifs.resultCount == 7   # as of 02/05/2021 this was correct, 7 Features had "On-Prem" in the Name
 
 def test_query_in_subset_operator():
     """
@@ -757,45 +719,7 @@ def test_query_not_between_range_operator():
                            and story.CreationDate <= range_end_date]
     assert len(tweener_stories) == 0
 
-<<<<<<< HEAD
 def test_query_range_with_other_conds():
-||||||| parent of de84dea (multi-condition query with subset/range clause(s) (#178))
-
-def test_query_target_value_with_ampersand():
-=======
-def test_query_range_with_other_conds():
-    """
-        Query for CreatedDate between 2016-09-29T14:30:00Z and 2016-10-01T08:00:00Z'
-        along with a condition that some field is not null (or null)...
-        assert that there are results only within the date-time range specified
-    """
-    # Uses DEFAULT_WORKSPACE, DEFAULT_PROJECT
-    rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
-    response = rally.get('Story', fetch=True, pagesize=100, limit=100)
-    all_stories = [item for item in response]
-    assert len(all_stories) > 8
-    #for story in all_stories:
-    #    plan_est = str(int(story.PlanEstimate)) if story.PlanEstimate else " "
-    #    print(f'{story.FormattedID:<5} {story.CreationDate} {story.Project.Name} {story.Iteration}  {plan_est:>4} {story.Name}')
-
-    range_start_date = '2016-09-29T14:30:00Z'
-    range_end_date   = '2016-10-01T08:00:00Z'
-    range_cond = f'CreationDate between {range_start_date} and {range_end_date}'
-    base_cond = 'Iteration = null'
-    proj_cond = 'Project != null'
-    noncon_cond = 'Name contains with'
-    criteria = [base_cond, range_cond, proj_cond, noncon_cond]
-    response = rally.get('Story', fetch=True, query=criteria, pagesize=100, limit=100)
-    target_stories = [story for story in response]
-    assert len(target_stories) >= 1
-    #print('-' * 60)
-    #for story in target_stories:
-    #    plan_est = str(int(story.PlanEstimate)) if story.PlanEstimate else " "
-    #    print(f'{story.FormattedID:<5} {story.CreationDate} {story.Project.Name} {story.Iteration}  {plan_est:>4} {story.Name}')
-
-
-def test_query_target_value_with_ampersand():
->>>>>>> de84dea (multi-condition query with subset/range clause(s) (#178))
     """
         Query for CreatedDate between 2016-09-29T14:30:00Z and 2016-10-01T08:00:00Z'
         along with a condition that some field is not null (or null)...
@@ -858,7 +782,7 @@ def disabled_test_query_target_value_with_ampersand():
     assert unquote(result) == criteria
 
     APIKEY = "_useYourRallyKey"
-    RALLY_100_APIKEY = "_lsMzURZTRyBoD3bwnpn5kUZvDQkRIoEeGkq7QNkg"
+    RALLY_100_APIKEY = "_MsMzURZTRy32dsg0etyBoD3bwnpn5kUZvDQkRIoEeGkq7QNk1"
     target_workspace = 'Rally'
     #target_project   = 'R&D'
     target_project   = 'Code & Sprinkles'
