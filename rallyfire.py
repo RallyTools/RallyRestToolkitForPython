@@ -34,8 +34,7 @@ def main(args):
     # the following form of obtaining a Rally instance will use the apikey if it is present (non None)
     # otherwise it will use the user and password for BasicAuth
     # add in the debug=True keyword arg pair if you want more verbiage ...
-    #apikey = '_lsMzURZTRyBoD3bwnpn5kUZvDQkRIoEeGkq7QNkg'
-    #apikey = '_DFyvCutVTKAxibNJ7mHvABywT3UIwtspVjJNWf40'
+    #apikey = "some valid apikey value"
     #rally = Rally(server, apikey=apikey)
 
     #rally = Rally(server, user, password, apikey=apikey,
