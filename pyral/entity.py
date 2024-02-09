@@ -8,12 +8,10 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import sys
 import re
-import types
-import time
 
 from .restapi   import hydrateAnInstance
 from .restapi   import getResourceByOID
@@ -26,7 +24,7 @@ from .config    import WEB_SERVICE, WS_API_VERSION
 VERSION_ATTRIBUTES = ['_rallyAPIMajor', '_rallyAPIMinor', '_objectVersion']
 MINIMAL_ATTRIBUTES = ['_type', '_ref', '_refObjectName']
 PORTFOLIO_ITEM_SUB_TYPES = ['Strategy', 'Theme', 'Initiative', 'Feature']
-SLM_WS_VER = '/%s/' % (WEB_SERVICE % WS_API_VERSION)
+SLM_WS_VER = f'/{WEB_SERVICE}/{WS_API_VERSION}/'
 
 _rally_schema       = {}  # keyed by workspace at the first level, then by EntityName
 _rally_entity_cache = {}
@@ -62,7 +60,7 @@ class UnrecognizedAllowedValuesReference(Exception):
 # However, the instantiation of any Rally related classes takes place through the classFor
 # mechanism which only enables instances of a concrete class to be provided.
 #
-class Persistable(object):  
+class Persistable:  
     def __init__(self, oid, name, resource_url, context):
         """
             All sub-classes have an oid (Object ID), so it makes sense to provide the 
@@ -252,15 +250,15 @@ class User (DomainObject):
             if value is None:
                 continue
             if 'pyral.entity.' not in str(type(value)):
-                anv = '    %-20s  : %s' % (attribute_name, value)
+                anv = f'    {attribute_name:<24}  : {value}'
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if mo:
                     cln = mo.group(1)  # cln -- class name
-                    anv = "    %-20s  : %-20.20s   (OID  %s  Name: %s)" % \
-                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                    anv = (f"    {attribute_name:<24}  : {cln + '.ref':<20.20}   "
+                           f"(OID  {value.oid}  Name: {value.Name})")
                 else:
-                    anv = "    %-20s  : %s" % value
+                    anv = f'    {attribute_name:<24}  : {value}'
             tank.append(anv)
         return "\n".join(tank)
 
@@ -288,15 +286,15 @@ class UserProfile     (DomainObject):
             except AttributeError:
                 continue
             if 'pyral.entity.' not in str(type(value)):
-                anv = '    %-24s  : %s' % (attribute_name, value)
+                anv = f'    {attribute_name:<24}  : {value}'
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if mo:
                     cln = mo.group(1)
-                    anv = "    %-24s  : %-14.14s   (OID  %s  Name: %s)" % \
-                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                    anv = (f"    {attribute_name:<24}  : {cln + '.ref':<20.20}   "
+                           f"(OID  {value.oid}  Name: {value.Name})")
                 else:
-                    anv = "    %-24s  : %s" % value
+                    anv = f'    {attribute_name:<24}  : {value}'
             tank.append(anv)
             
         return "\n".join(tank)
@@ -304,6 +302,8 @@ class UserProfile     (DomainObject):
 class Workspace       (DomainObject): pass
 class Blocker         (DomainObject): pass
 class UserPermission  (DomainObject): pass
+class ProfileImage    (DomainObject): pass
+class Scope           (DomainObject): pass
 class WorkspacePermission   (UserPermission): pass
 class ProjectPermission     (UserPermission): pass
 
@@ -339,7 +339,7 @@ class WorkspaceDomainObject(DomainObject):
 
                 alphabetical from here on out
         """
-        tank = ['%s' % self._type]
+        tank = [str(self._type)]
         for attribute_name in self.COMMON_ATTRIBUTES[1:]:
             try:
                 value = getattr(self, attribute_name)
@@ -348,15 +348,15 @@ class WorkspaceDomainObject(DomainObject):
             if value is None:
                 continue
             if 'pyral.entity.' not in str(type(value)):
-                anv = '    %-24s  : %s' % (attribute_name, value)
+                anv = f'    {attribute_name:<24}  : {value}'
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if mo:
                     cln = mo.group(1)
-                    anv = "    %-24s  : %-20.20s   (OID  %s  Name: %s)" % \
-                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                    anv = (f"    {attribute_name:<24}  : {cln + '.ref':<20.20}   "
+                           f"(OID  {value.oid}  Name: {value.Name})")
                 else:
-                    anv = "    %-24s  : %s" % (attribute_name, value)
+                    anv = f"    {attribute_name:<24}  : {value}"
             tank.append(anv)
         tank.append("")
         other_attributes = set(self.attributes()) - set(self.COMMON_ATTRIBUTES)
@@ -379,25 +379,33 @@ class WorkspaceDomainObject(DomainObject):
             if attribute_name.startswith('c_'):
                 attr_name = attribute_name[2:]
             if not isinstance(value, Persistable):
-                anv = "    %-24s  : %s" % (attr_name, value)
+                anv = f"    {attr_name:<24}  : {value}"
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if not mo:
-                    anv = "    %-24s : %s" % (attr_name, value)
+                    anv = f"    {attr_name:<24}  : {value}"
                     continue
 
                 cln = mo.group(1)
-                anv = "    %-24s  : %-27.27s" % (attr_name, cln + '.ref')
+                anv = f"    {attr_name:<24}  : {cln + '.ref':<27.27}"
                 if   isinstance(value, Artifact):
                     # also want the OID, FormattedID
-                    anv = "%s (OID  %s  FomattedID  %s)" % (anv, value.oid, value.FormattedID)
+                    anv = f"{anv} (OID  {value.oid}  FormattedID  {value.FormattedID})"
                 elif isinstance(value, User):
                     # also want the className, OID, UserName, DisplayName
-                    anv = "    %-24s  : %s.ref  (OID  %s  UserName %s  DisplayName %s)" % \
-                          (attr_name, cln, value.oid, value.UserName, value.DisplayName)
+                    user_oid = value.oid
+                    try:
+                        user_name    = value.UserName
+                        display_name = value.DisplayName
+                    except UnreferenceableOIDError as exc:
+                        user_name = 'UnreferenceableOIDError'
+                        display_name = 'NOT AVAILABLE'
+
+                    anv = (f"    {attr_name:<24}  : {cln}.ref  (OID  {user_oid}  "
+                           f"UserName {user_name}  DisplayName {display_name}")
                 else:
                     # also want the className, OID, Name)
-                    anv = "%s (OID  %s  Name %s)" % (anv, value.oid, value.Name)
+                    anv = f"{anv} (OID  {value.oid}  Name {value.Name})"
             tank.append(anv)
         return "\n".join(tank)
 
@@ -405,6 +413,7 @@ class WorkspaceDomainObject(DomainObject):
 class WorkspaceConfiguration(WorkspaceDomainObject): pass
 class Type                  (WorkspaceDomainObject): pass
 class Program               (WorkspaceDomainObject): pass
+class Artifact              (WorkspaceDomainObject): pass  # abstract base class
 class Project               (WorkspaceDomainObject): pass
 class Release               (WorkspaceDomainObject): pass
 class Iteration             (WorkspaceDomainObject): pass  # query capable only
@@ -420,12 +429,18 @@ class BuildMetricDefinition (WorkspaceDomainObject): pass  # query capable only
 class Change                (WorkspaceDomainObject): pass
 class Changeset             (WorkspaceDomainObject): pass
 class ConversationPost      (WorkspaceDomainObject): pass  # query capable only
+class CapacityPlan          (WorkspaceDomainObject): pass  # abstract base class
+class CapacityPlanAssignment(WorkspaceDomainObject): pass
+class CapacityPlanItem      (WorkspaceDomainObject): pass
+class CapacityPlanProject   (WorkspaceDomainObject): pass
 class FlowState             (WorkspaceDomainObject): pass
 class Milestone             (WorkspaceDomainObject): pass
 class Preference            (WorkspaceDomainObject): pass
 class PreliminaryEstimate   (WorkspaceDomainObject): pass
 class SCMRepository         (WorkspaceDomainObject): pass
 class State                 (WorkspaceDomainObject): pass
+class ScheduleState         (WorkspaceDomainObject): pass
+class Slice                 (WorkspaceDomainObject): pass  # abstract type
 class TestCaseStep          (WorkspaceDomainObject): pass
 class TestCaseResult        (WorkspaceDomainObject): pass
 class TestFolder            (WorkspaceDomainObject): pass
@@ -435,8 +450,8 @@ class TimeEntryItem         (WorkspaceDomainObject): pass
 class TimeEntryValue        (WorkspaceDomainObject): pass
 class UserIterationCapacity (WorkspaceDomainObject): pass
 class RecycleBinEntry       (WorkspaceDomainObject): pass
+class BaseRankable          (WorkspaceDomainObject): pass  # abstract type
 class RevisionHistory       (WorkspaceDomainObject): pass
-class ProfileImage          (WorkspaceDomainObject): pass
 class Revision              (WorkspaceDomainObject):
     INFO_ATTRS = ['RevisionNumber', 'Description', 'CreationDate', 'User']
     def info(self):
@@ -447,26 +462,19 @@ class Revision              (WorkspaceDomainObject):
         rev_blurb = "   %3d on %s by %s\n             %s" % (rev_num, activity_timestamp, whodunit, desc)
         return rev_blurb
 
+class Investment(Slice): pass
+
 class WebLinkDefinition(AttributeDefinition): pass
 
-class CumulativeFlowData(WorkspaceDomainObject):
-    """ This is an Abstract Base class """
-    pass
-
+class CumulativeFlowData(WorkspaceDomainObject): pass # abstract base class
 class ReleaseCumulativeFlowData  (CumulativeFlowData): pass
 class IterationCumulativeFlowData(CumulativeFlowData): pass
 
-class Artifact(WorkspaceDomainObject): 
-    """ This is an Abstract Base class """
-    pass
+class SchedulableArtifact   (Artifact): pass   # abstract base class
+class RankableArtifact      (Artifact): pass   # abstract base class
+class ExternalContribution  (RankableArtifact): pass
 
-class SchedulableArtifact(Artifact):
-    """ This is an Abstract Base class """ 
-    pass
-
-class Requirement  (SchedulableArtifact):
-    """ This is an Abstract Base class """
-    pass
+class Requirement  (SchedulableArtifact): pass  # abstract base class
 class HierarchicalRequirement(Requirement): pass
 
 UserStory = HierarchicalRequirement   # synonomous but more intutive
@@ -477,12 +485,31 @@ class Defect       (Artifact): pass
 class TestCase     (Artifact): pass
 class DefectSuite  (SchedulableArtifact): pass
 class TestSet      (SchedulableArtifact): pass
+class Risk         (SchedulableArtifact): pass
 
 class PortfolioItem(Artifact): pass
 class PortfolioItem_Strategy  (PortfolioItem): pass
 class PortfolioItem_Initiative(PortfolioItem): pass
 class PortfolioItem_Theme     (PortfolioItem): pass
 class PortfolioItem_Feature   (PortfolioItem): pass
+class PortfolioItemPredecessorRelationship(WorkspaceDomainObject): pass
+
+class WorkingCapacityAssignment(CapacityPlan): pass
+class WorkingCapacityPlan      (CapacityPlan): pass
+class PublishedCapacityPlan    (CapacityPlan): pass
+
+class Objective                (BaseRankable): pass
+class KeyResult                (BaseRankable): pass
+class KeyResultData            (WorkspaceDomainObject): pass
+class ObjectiveConversationPost(WorkspaceDomainObject): pass
+class Objective_StrategicObjective  (Objective): pass
+class Objective_BusinessObjective   (Objective): pass
+class Objective_ExecutionObjective  (Objective): pass
+class Objective_GroupObjective      (Objective): pass
+class Objective_TeamObjective       (Objective): pass
+class KeyResultActualValue          (KeyResultData): pass
+class KeyResultInterimTarget        (KeyResultData): pass
+
 
 class Connection(WorkspaceDomainObject):
 
@@ -492,7 +519,7 @@ class Connection(WorkspaceDomainObject):
     CONNECTION_INFO_ATTRIBUTES = ['ExternalId', 'ExternalFormattedId', 'Name', 'Description', 'Url', 'Artifact']
 
     def details(self):
-        tank = ['%s' % self._type]
+        tank = [str(self._type)]
         for attribute_name in (Connection.MINIMAL_WDO_ATTRIBUTES + Connection.CONNECTION_INFO_ATTRIBUTES):
             try:
                 value = getattr(self, attribute_name)
@@ -501,15 +528,15 @@ class Connection(WorkspaceDomainObject):
             if value is None:
                 continue
             if 'pyral.entity.' not in str(type(value)):
-                anv = '    %-24s  : %s' % (attribute_name, value)
+                anv = f'    {attribute_name:<24}  : {value}'
             else:
                 mo = re.search(r' \'pyral.entity.(\w+)\'>', str(type(value)))
                 if mo:
                     cln = mo.group(1)
-                    anv = "    %-24s  : %-20.20s   (OID  %s  Name: %s)" % \
-                          (attribute_name, cln + '.ref', value.oid, value.Name)
+                    anv = (f"    {attribute_name:<24}  : {cln + '.ref':<20.20}   "
+                           f"(OID  {value.oid}  Name: {value.Name})")
                 else:
-                    anv = "    %-24s  : %s" % (attribute_name, value)
+                    anv = f'    {attribute_name:<24}  : {value}'
             tank.append(anv)
         tank.append("")
         return tank
@@ -517,7 +544,7 @@ class Connection(WorkspaceDomainObject):
 
 class PullRequest(Connection): pass
 
-class CustomField(object):  
+class CustomField:  
     """
         For non-Rally originated entities
 
@@ -542,7 +569,7 @@ def so_bolded_text(mo):
     #else: return ""
     return "<bold>%s</bold>" % mo.group('word') if mo else ""
 
-class SearchObject(object): 
+class SearchObject: 
     """
         An instance of SearchObject is created for each artifact that
         matches a search criteria.  A SearchObject is not a full-fledged
@@ -581,7 +608,6 @@ class SearchObject(object):
 # ultimately, the classFor dict is what is intended to be exposed as a means to limit
 # instantiation to concrete classes, although because of dyna-types that is no longer
 # very strictly enforced
-# 
 
 classFor = { 'Persistable'             : Persistable,
              'DomainObject'            : DomainObject,
@@ -589,6 +615,7 @@ classFor = { 'Persistable'             : Persistable,
              'Subscription'            : Subscription,
              'User'                    : User,
              'UserProfile'             : UserProfile,
+             'ProfileImage'            : ProfileImage,
              'UserPermission'          : UserPermission,
              'Workspace'               : Workspace,
              'WorkspaceConfiguration'  : WorkspaceConfiguration,
@@ -608,11 +635,11 @@ classFor = { 'Persistable'             : Persistable,
              'UserStory'               : UserStory,
              'Story'                   : Story,
              'Task'                    : Task,
+             'Risk'                    : Risk,
              'Tag'                     : Tag,
              'Preference'              : Preference,
              'SCMRepository'           : SCMRepository,
              'RevisionHistory'         : RevisionHistory,
-             'ProfileImage'            : ProfileImage,
              'Revision'                : Revision,
              'Attachment'              : Attachment,
              'AttachmentContent'       : AttachmentContent,
@@ -639,10 +666,21 @@ classFor = { 'Persistable'             : Persistable,
              'PortfolioItem_Theme'     : PortfolioItem_Theme,
              'PortfolioItem_Feature'   : PortfolioItem_Feature,
              'State'                   : State,
+             'ScheduleState'           : ScheduleState,
+             'Objective_StrategicObjective' : Objective_StrategicObjective,
+             'Objective_BusinessObjective'  : Objective_BusinessObjective,
+             'Objective_ExecutionObjective' : Objective_ExecutionObjective,
+             'Objective_GroupObjective'     : Objective_GroupObjective,
+             'Objective_TeamObjective'      : Objective_TeamObjective,
+             'KeyResult'               : KeyResult,
+             'KeyResultInterimTarget'  : KeyResultInterimTarget,
+             'KeyResultActualValue'    : KeyResultActualValue,
              'PreliminaryEstimate'     : PreliminaryEstimate,
              'WebLinkDefinition'       : WebLinkDefinition,
              'Milestone'               : Milestone,
+             'Investment'              : Investment,
              'ConversationPost'        : ConversationPost,
+             'OjbectiveConversationPost' : ObjectiveConversationPost,
              'Blocker'                 : Blocker,
              'AllowedAttributeValue'   : AllowedAttributeValue,
              'AllowedQueryOperator'    : AllowedQueryOperator,
@@ -654,7 +692,12 @@ classFor = { 'Persistable'             : Persistable,
              'RecycleBinEntry'         : RecycleBinEntry,
              'SearchObject'            : SearchObject,
              'Connection'              : Connection,
+             'ExternalContribution'    : ExternalContribution,
              'PullRequest'             : PullRequest,
+             'CapacityPlanItem'        : CapacityPlanItem,
+             'CapacityPlanProject'     : CapacityPlanProject,
+             'WorkingCapacityPlan'     : WorkingCapacityPlan,
+             'PublishedCapacityPlan'   : PublishedCapacityPlan,
            }
 
 for entity_name, entity_class in list(classFor.items()):
@@ -676,7 +719,7 @@ for cls_name, cls in classes:
 
 ##################################################################################################
 
-class SchemaItem(object):
+class SchemaItem:
     def __init__(self, raw_info):
         self._type = 'TypeDefinition'
         # ElementName, DisplayName, Name
@@ -796,7 +839,7 @@ class SchemaItem(object):
 
         return general + "\n" + "\n".join(attrs) 
 
-class SchemaItemAttribute(object):
+class SchemaItemAttribute:
     def __init__(self, attr_info):
         self._type    = "AttributeDefinition"
         self.ref      = "/".join(attr_info['_ref'][-2:])

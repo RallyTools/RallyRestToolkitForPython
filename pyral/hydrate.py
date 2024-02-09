@@ -9,17 +9,16 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import sys
-import six
 
 from .entity import classFor, getSchemaItem, addEntity, PortfolioItem, \
                     VERSION_ATTRIBUTES, MINIMAL_ATTRIBUTES, PORTFOLIO_ITEM_SUB_TYPES
 
 ##################################################################################################
 
-class EntityHydrator(object):
+class EntityHydrator:
     """
         An instance of this class is used to instantiate an instance of a class directly
         related to a Rally entity.  An instance is given the information from a JSON object

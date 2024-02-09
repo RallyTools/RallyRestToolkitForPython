@@ -154,7 +154,11 @@
     Excised all mentions of AgileCentral in the docs, replaced by 'Rally'.
 
 1.5.2 - Jul 2021
-    Fixed query builder so that multi-condition queries thet include subset or range conditions 
+    Fixed query builder so that multi-condition queries that include subset or range conditions 
     are constructed correctly.
     Dropped all code related to ping functionality.
+
+1.6.0 - Feb 2024
+    Updated supported Python versions to 3.9, 3.10, 3.11 and 3.12. No longer requires six package.
+    Fixed defect in the getAllUsers method that prevented Users beyond the first page from being retrieved.
 

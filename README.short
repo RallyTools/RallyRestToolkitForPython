@@ -17,11 +17,9 @@ that may be references or collections via the familiar dot '.' notation.
 Requirements
 ------------
 
-The pyral package requires the use of Kenneth Reitz's requests package using version 2.12.0 or better.
-As of requests version 2.0.0, there is support for HTTPS over HTTP proxy via the CONNECT request.
+The pyral package requires the use of Kenneth Reitz's requests package using version 2.28.0 or better.
 The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.5.2) has been tested with requests 2.22.0.
-The six module is also required.
+The most recent release of pyral (1.6.0) has been tested with requests 2.31.0.
 
 
 Installation
@@ -34,9 +32,8 @@ pip, the Python package installation utility.::
     pip install pyral
 
 Alternatively if you've got the tar.gz or zip distribution on hand, as long as you've
-satisfied the dependency requirements on the six and requests packages, you can use
-the setup mechanism.
-Once requests and six has been installed, run the setup.py program supplied with
+satisfied the dependency requirement of the requests packages, you can use the setup mechanism.
+Once the requests package has been installed, run the setup.py program supplied with
 this distribution as::
 
     python setup.py install

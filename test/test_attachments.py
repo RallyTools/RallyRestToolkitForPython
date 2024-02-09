@@ -38,6 +38,72 @@ def retrieveAttachment(rally, artifact, attachmentFileName):
 
 ##################################################################################################
 
+def test_add_attachment():
+    """
+    """
+    # find a Project with some US artifacts, pick one with no attachments
+    target_workspace = 'Yeti Rally Workspace'
+    target_project = 'Anti-Cyclone'
+    target_story = 'US6099'
+    image_name = 'alpine-snow-glen-plake-quote.png'
+    target_attachment_file = f'test/{image_name}'
+    path_end = os.getcwd().split('/')[-1]
+    if path_end == 'test':
+        target_attachment_file = image_name
+    attachment_name = os.path.basename(target_attachment_file)
+    attachment_type = 'image/png'
+    rally = Rally(server=RALLY, user=YETI_USER, password=YETI_PSWD, workspace=target_workspace, project=target_project)
+    # create an attachment file (or choose a smallish file with a commonly used suffix)
+    # create the attachment in Rally and link it to the US artifact
+    wksp = rally.getWorkspace()
+    assert wksp.Name == target_workspace
+
+    response = rally.get('Project', fetch=False, limit=10)
+    assert response != None
+    assert response.status_code == 200
+
+    proj = rally.getProject()  # proj.Name == target_project
+    assert proj.Name == target_project
+
+    # response = rally.get("UserStory", fetch="FormattedID,Name,Attachments")
+    # for story in response:
+    #    print "%s %-48.48s %d" % (story.FormattedID, story.Name, len(story.Attachments))
+
+    criteria = f'FormattedID = "{target_story}"'
+    response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", query=criteria)
+    ##print(response.resultCount)
+    story = response.next()
+    if len(story.Attachments):
+        for att in story.Attachments:
+            rally.deleteAttachment(story, att.Name)
+        response = rally.get("UserStory", fetch="FormattedID,Name,Attachments",
+                             query='FormattedID = "%s"' % target_story)
+        story = response.next()
+    ##print(response.resultCount)
+    assert len(story.Attachments) == 0
+
+    # attachment_name = "Addendum.txt"
+    #
+    # att_ok = conjureUpAttachmentFile(attachment_name)
+    # assert att_ok == True
+    # att = rally.addAttachment(story, attachment_name)
+
+    att = rally.addAttachment(story, target_attachment_file, mime_type=attachment_type)
+    assert att.Name == attachment_name
+
+    criteria = f'FormattedID = "{target_story}"'
+    response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", query=criteria)
+    story = response.next()
+    assert len(story.Attachments) == 1
+    attachment = story.Attachments[0]
+    assert attachment.Name == attachment_name
+
+    # result = rally.deleteAttachment(story, attachment_name)
+    # assert result != False
+    # assert len(result.Attachments) == 0
+
+##################################################################################################
+
 def test_get_image_binary_attachment():
     # Use prior testing outcome for the story and attachment target
     target_workspace = 'Yeti Rally Workspace'
@@ -59,8 +125,11 @@ def test_get_image_binary_attachment():
     assert attachment_from_collection.Name == attachment_specific.Name
     assert attachment_from_collection.Content == attachment_specific.Content
     assert len(attachment_specific.Content) > 950000
-    
-    clone_file = 'test/plakism.png'
+
+    path_end = os.getcwd().split('/')[-1]
+    subdir = 'test' if path_end != 'test' else ''
+    target = 'plakism.png'
+    clone_file =  f'{subdir}/{target}' if subdir == 'test' else target
     with open(clone_file, 'wb') as imf:
         imf.write(attachment_specific.Content)
     assert os.path.exists(clone_file)
@@ -79,67 +148,6 @@ def test_get_image_binary_attachment():
     os.remove(clone_file)
 
 ##################################################################################################
-
-def test_add_attachment():
-    """
-    """
-    # find a Project with some US artifacts, pick one with no attachments
-    target_workspace = 'Yeti Rally Workspace'
-    target_project   = 'Anti-Cyclone'
-    target_story     = 'US6099'
-    target_attachment_file = 'test/alpine-snow-glen-plake-quote.png'
-    attachment_name = os.path.basename(target_attachment_file)
-    attachment_type = 'image/png'
-    rally = Rally(server=RALLY, user=YETI_USER, password=YETI_PSWD, workspace=target_workspace, project=target_project)
-    # create an attachment file (or choose a smallish file with a commonly used suffix)
-    # create the attachment in Rally and link it to the US artifact
-    wksp = rally.getWorkspace()
-    assert wksp.Name == target_workspace
-
-    response = rally.get('Project', fetch=False, limit=10)
-    assert response != None
-    assert response.status_code == 200
-
-    proj = rally.getProject()  # proj.Name == target_project
-    assert proj.Name == target_project
-
-    #response = rally.get("UserStory", fetch="FormattedID,Name,Attachments")
-    #for story in response:
-    #    print "%s %-48.48s %d" % (story.FormattedID, story.Name, len(story.Attachments))
-
-    criteria = f'FormattedID = "{target_story}"'
-    response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", query=criteria)
-  ##print(response.resultCount)
-    story = response.next()
-    if len(story.Attachments):
-        for att in story.Attachments:
-            rally.deleteAttachment(story, att.Name)
-        response = rally.get("UserStory", fetch="FormattedID,Name,Attachments",
-                             query='FormattedID = "%s"' % target_story)
-        story = response.next()
-    ##print(response.resultCount)
-    assert len(story.Attachments) == 0
-
-    #attachment_name = "Addendum.txt"
-    #
-    #att_ok = conjureUpAttachmentFile(attachment_name)
-    #assert att_ok == True
-    #att = rally.addAttachment(story, attachment_name)
-
-    att = rally.addAttachment(story, target_attachment_file, mime_type=attachment_type)
-    assert att.Name == attachment_name
-
-    criteria = f'FormattedID = "{target_story}"'
-    response = rally.get("UserStory", fetch="FormattedID,Name,Attachments", query=criteria)
-    story = response.next()
-    assert len(story.Attachments) == 1
-    attachment = story.Attachments[0]
-    assert attachment.Name == attachment_name
-    
-    #result = rally.deleteAttachment(story, attachment_name)
-    #assert result != False
-    #assert len(result.Attachments) == 0
-
 
 def test_get_attachment():
     """

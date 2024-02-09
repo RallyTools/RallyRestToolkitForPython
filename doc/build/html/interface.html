@@ -1,95 +1,49 @@
-
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Primary pyral classes and functions &mdash; pyral 1.5.2 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
+  <title>Primary pyral classes and functions &mdash; pyral 1.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+        <script src="_static/documentation_options.js?v=72d88caf"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Python toolkit for the Rally REST API" href="overview.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="index.html" class="icon icon-home"> pyral
           
-
-          
+          <a href="index.html" class="icon icon-home">
+            pyral
           </a>
-
-          
-            
-            
               <div class="version">
-                1.5.2
+                1.6.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Python toolkit for the Rally REST API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="overview.html#simple-use">Simple Use</a></li>
@@ -105,82 +59,90 @@
 <li class="toctree-l1"><a class="reference internal" href="#rallyworkset">rallyWorkset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#rallysettings">rallySettings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#rally">Rally</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#core-rest-methods-and-crud-aliases">Core REST methods and CRUD aliases</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pyral-rally-instance-convenience-methods">pyral.Rally instance convenience methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pyral-rally-experimental-convenience-methods">pyral.Rally experimental convenience methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Rally"><code class="docutils literal notranslate"><span class="pre">Rally</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#core-rest-methods-and-crud-aliases">Core REST methods and CRUD aliases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#put"><code class="docutils literal notranslate"><span class="pre">put()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create"><code class="docutils literal notranslate"><span class="pre">create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get"><code class="docutils literal notranslate"><span class="pre">get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#find"><code class="docutils literal notranslate"><span class="pre">find()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#post"><code class="docutils literal notranslate"><span class="pre">post()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#update"><code class="docutils literal notranslate"><span class="pre">update()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delete"><code class="docutils literal notranslate"><span class="pre">delete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#rallyrestresponse">RallyRESTResponse</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#item-attributes">Item Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyral-rally-instance-convenience-methods">pyral.Rally instance convenience methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#enableLogging"><code class="docutils literal notranslate"><span class="pre">enableLogging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disableLogging"><code class="docutils literal notranslate"><span class="pre">disableLogging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subscriptionName"><code class="docutils literal notranslate"><span class="pre">subscriptionName()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setWorkspace"><code class="docutils literal notranslate"><span class="pre">setWorkspace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getWorkspace"><code class="docutils literal notranslate"><span class="pre">getWorkspace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getWorkspaces"><code class="docutils literal notranslate"><span class="pre">getWorkspaces()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setProject"><code class="docutils literal notranslate"><span class="pre">setProject()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getProject"><code class="docutils literal notranslate"><span class="pre">getProject()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getProjects"><code class="docutils literal notranslate"><span class="pre">getProjects()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getUserInfo"><code class="docutils literal notranslate"><span class="pre">getUserInfo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getAllUsers"><code class="docutils literal notranslate"><span class="pre">getAllUsers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#typedef"><code class="docutils literal notranslate"><span class="pre">typedef()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getCollection"><code class="docutils literal notranslate"><span class="pre">getCollection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getState"><code class="docutils literal notranslate"><span class="pre">getState()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getStates"><code class="docutils literal notranslate"><span class="pre">getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getAllowedValues"><code class="docutils literal notranslate"><span class="pre">getAllowedValues()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#addAttachment"><code class="docutils literal notranslate"><span class="pre">addAttachment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#addAttachments"><code class="docutils literal notranslate"><span class="pre">addAttachments()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getAttachment"><code class="docutils literal notranslate"><span class="pre">getAttachment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getAttachmentNames"><code class="docutils literal notranslate"><span class="pre">getAttachmentNames()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getAttachments"><code class="docutils literal notranslate"><span class="pre">getAttachments()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rankAbove"><code class="docutils literal notranslate"><span class="pre">rankAbove()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rankBelow"><code class="docutils literal notranslate"><span class="pre">rankBelow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rankTop"><code class="docutils literal notranslate"><span class="pre">rankTop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rankBottom"><code class="docutils literal notranslate"><span class="pre">rankBottom()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#pyral-rally-experimental-convenience-methods">pyral.Rally experimental convenience methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#addCollectionItems"><code class="docutils literal notranslate"><span class="pre">addCollectionItems()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dropCollectionItems"><code class="docutils literal notranslate"><span class="pre">dropCollectionItems()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#rallyrestresponse">RallyRESTResponse</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#RallyRESTResponse"><code class="docutils literal notranslate"><span class="pre">RallyRESTResponse</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next"><code class="docutils literal notranslate"><span class="pre">next()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#item-attributes">Item Attributes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#details"><code class="docutils literal notranslate"><span class="pre">details()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">pyral</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li>Primary <em>pyral</em> classes and functions</li>
-    
-    
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Primary <em>pyral</em> classes and functions</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="_sources/interface.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="primary-pyral-classes-and-functions">
-<h1>Primary <em>pyral</em> classes and functions<a class="headerlink" href="#primary-pyral-classes-and-functions" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="primary-pyral-classes-and-functions">
+<h1>Primary <em>pyral</em> classes and functions<a class="headerlink" href="#primary-pyral-classes-and-functions" title="Link to this heading">¶</a></h1>
 <p>For the most part, you’ll only be utilizing two main entry points to the <strong>pyral</strong> package.</p>
 <p>The first is the <strong>rallySettings</strong> convenience function that you’ll use to obtain target
 and credential values. If you are using 1.1.x or beyond, you may want to alternatively use the
@@ -194,9 +156,9 @@ projects, users and Rally type/value metadata.</p>
 of the <strong>RallyRESTResponse</strong> class.  Instances of this class allow easy dot (‘.’) notation
 access to attributes of the representation of the Rally entity, whether the attribute is a
 simple value or a reference to another Rally entity.</p>
-</div>
-<div class="section" id="rallyworkset">
-<h1>rallyWorkset<a class="headerlink" href="#rallyworkset" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="rallyworkset">
+<h1>rallyWorkset<a class="headerlink" href="#rallyworkset" title="Link to this heading">¶</a></h1>
 <p>New in 1.1.0.</p>
 <p>This function takes into account your environment and arguments provided to this function
 to arrive at and return information necessary to establish a useful <em>connection</em> to the
@@ -319,9 +281,9 @@ Consult the Rally help documentation for further information.</p>
 <p>Note that for convenience purposes a configuration file name may be fully specified
 or you may elect to not specify the ‘.cfg’ suffix.</p>
 <p>Returns a tuple of (server, username, password, apikey, workspace, project)</p>
-</div>
-<div class="section" id="rallysettings">
-<h1>rallySettings<a class="headerlink" href="#rallysettings" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="rallysettings">
+<h1>rallySettings<a class="headerlink" href="#rallysettings" title="Link to this heading">¶</a></h1>
 <p>This is deprecated as of v1.2.0. The preferred function is <strong>rallyWorkset</strong> which will have
 ongoing support.  The <strong>rallySettings</strong> function will be removed in v2.0.0.</p>
 <p>This function takes into account your environment and arguments provided to this function
@@ -443,9 +405,9 @@ Consult the Rally help documentation for further information.</p>
 <p>Note that for convenience purposes a configuration file name may be fully specified
 or you may elect to not specify the ‘.cfg’ suffix.</p>
 <p>Returns a tuple of (server, username, password, apikey, workspace, project)</p>
-</div>
-<div class="section" id="rally">
-<h1>Rally<a class="headerlink" href="#rally" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="rally">
+<h1>Rally<a class="headerlink" href="#rally" title="Link to this heading">¶</a></h1>
 <blockquote>
 <div><p>The Rally class is the central focus of the <strong>pyral</strong> package.  Instantiation of this class
 with appropriate and valid target/credential information then provides a means of
@@ -517,7 +479,7 @@ You only have to use this syntax to specify a particular Project if you have mul
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="Rally">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Rally</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apikey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Rally" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Rally</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apikey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Rally" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Examples:</p>
@@ -534,11 +496,11 @@ You only have to use this syntax to specify a particular Project if you have mul
 <span class="n">rally</span> <span class="o">=</span> <span class="n">Rally</span><span class="p">(</span><span class="s1">&#39;rally1.rallydev.com&#39;</span><span class="p">,</span> <span class="s1">&#39;chester@corral.com&#39;</span><span class="p">,</span> <span class="s1">&#39;bAbYF@cerZ&#39;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Fungibles Goods Burn Up/Down&#39;</span><span class="p">,</span> <span class="s1">&#39;vendor&#39;</span><span class="p">:</span> <span class="s1">&#39;Archimedes&#39;</span><span class="p">,</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.2.3&#39;</span><span class="p">})</span>
 </pre></div>
 </div>
-<div class="section" id="core-rest-methods-and-crud-aliases">
-<h2>Core REST methods and CRUD aliases<a class="headerlink" href="#core-rest-methods-and-crud-aliases" title="Permalink to this headline">¶</a></h2>
+<section id="core-rest-methods-and-crud-aliases">
+<h2>Core REST methods and CRUD aliases<a class="headerlink" href="#core-rest-methods-and-crud-aliases" title="Link to this heading">¶</a></h2>
 <dl class="py method">
 <dt class="sig sig-object py" id="put">
-<span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itemData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#put" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itemData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#put" title="Link to this definition">¶</a></dt>
 <dd><p>This method allows for the creation of a single Rally entity for the given entityName.
 The data is supplied in a dict and must include settings for all required fields.
 An attempt to create an entity record for which the operational credentials do not
@@ -549,13 +511,13 @@ being generated.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="create">
-<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#create" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#create" title="Link to this definition">¶</a></dt>
 <dd><p>alias for put</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">entityName</span></em>, <em class="sig-param"><span class="pre">fetch=False</span> <span class="pre">|</span> <span class="pre">True</span> <span class="pre">|</span> <span class="pre">comma_separated_list_of_fields</span></em>, <em class="sig-param"><span class="pre">query=None</span></em>, <em class="sig-param"><span class="pre">order=None</span></em>, <em class="sig-param"><span class="pre">\*\*kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#get" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch=False</span> <span class="pre">|</span> <span class="pre">True</span> <span class="pre">|</span> <span class="pre">comma_separated_list_of_fields</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">\*\*kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get" title="Link to this definition">¶</a></dt>
 <dd><p>This method allows for the retrieval of records for the given entityName.
 A fetch value of False results in a “shell” record returned with only basic
 ref attributes having values.  If the fetch value is True, a fully hydrated
@@ -621,13 +583,13 @@ get the first result with no means to obtain any further qualifying items.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="find">
-<span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#find" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#find" title="Link to this definition">¶</a></dt>
 <dd><p>alias for get</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="post">
-<span class="sig-name descname"><span class="pre">post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itemData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#post" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itemData</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#post" title="Link to this definition">¶</a></dt>
 <dd><p>This method allows for updating a single Rally entity record with the data
 contained in the itemData dict.  The itemData dict <em>must</em> include a
 key-value pair for either the ObjectID or when applicable, the FormattedID,
@@ -642,13 +604,13 @@ will result in a RallyRESTException being generated.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="update">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#update" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#update" title="Link to this definition">¶</a></dt>
 <dd><p>alias for post</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="delete">
-<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itemIdent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#delete" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itemIdent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#delete" title="Link to this definition">¶</a></dt>
 <dd><p>This method allows for deleting a single Rally entity record whose ObjectID
 (or FormattedID) must be present in the itemIdent parameter.
 An attempt to delete an entity record for which the operational credentials
@@ -659,7 +621,7 @@ of a RallyRESTException.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="search">
-<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">keywords</span></em>, <em class="sig-param"><span class="pre">\*\*kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#search" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keywords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">\*\*kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#search" title="Link to this definition">¶</a></dt>
 <dd><p>Given a list of keywords or a string with space separated words, issue
 the relevant Rally WSAPI search request to find artifacts within the search
 scope that have any of the keywords in any of the artifact’s text fields.</p>
@@ -676,12 +638,12 @@ scope that have any of the keywords in any of the artifact’s text fields.</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="pyral-rally-instance-convenience-methods">
-<h2>pyral.Rally instance convenience methods<a class="headerlink" href="#pyral-rally-instance-convenience-methods" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="pyral-rally-instance-convenience-methods">
+<h2>pyral.Rally instance convenience methods<a class="headerlink" href="#pyral-rally-instance-convenience-methods" title="Link to this heading">¶</a></h2>
 <dl class="py method">
 <dt class="sig sig-object py" id="enableLogging">
-<span class="sig-name descname"><span class="pre">enableLogging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">sys.stdout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#enableLogging" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">enableLogging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">sys.stdout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#enableLogging" title="Link to this definition">¶</a></dt>
 <dd><p>Use this to enable logging. <em>dest</em> can set to the name of a file or an open file/stream (writable).
 If <em>attrget</em> is set to True, all Rally REST requests that are executed to obtain attribute
 information will also be logged. Be careful with that as the volume can get quite large.
@@ -690,48 +652,48 @@ The <em>append</em> parameter controls whether any existing file will be appende
 
 <dl class="py method">
 <dt class="sig sig-object py" id="disableLogging">
-<span class="sig-name descname"><span class="pre">disableLogging</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#disableLogging" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">disableLogging</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#disableLogging" title="Link to this definition">¶</a></dt>
 <dd><p>Disables logging to whatever destination has been previously set up.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="subscriptionName">
-<span class="sig-name descname"><span class="pre">subscriptionName</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#subscriptionName" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">subscriptionName</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#subscriptionName" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the name of the subscription for the credentials used to establish
 the connection with Rally.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="setWorkspace">
-<span class="sig-name descname"><span class="pre">setWorkspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspaceName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setWorkspace" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">setWorkspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspaceName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setWorkspace" title="Link to this definition">¶</a></dt>
 <dd><p>Given a workspaceName, set that as the current workspace and use the ref for that
 workspace in subsequent interactions with Rally.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getWorkspace">
-<span class="sig-name descname"><span class="pre">getWorkspace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#getWorkspace" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getWorkspace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#getWorkspace" title="Link to this definition">¶</a></dt>
 <dd><p>Returns an instance of a Workspace entity with information about the workspace
 in the currently active context.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getWorkspaces">
-<span class="sig-name descname"><span class="pre">getWorkspaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#getWorkspaces" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getWorkspaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#getWorkspaces" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of Workspace instances that are available for
 the credentials used to establish the connection with Rally.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="setProject">
-<span class="sig-name descname"><span class="pre">setProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projectName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setProject" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">setProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projectName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setProject" title="Link to this definition">¶</a></dt>
 <dd><p>Given a projectName, set that as the current project and use the ref for
 that project in subsequent interractions with Rally.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getProject">
-<span class="sig-name descname"><span class="pre">getProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getProject" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getProject" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a minimally hydrated Project entity instance with the Name and ref
 of the project in the currently active context if the name keyword arg
 is not supplied or the Name and ref of the project identified by the value of
@@ -743,7 +705,7 @@ in the currently selected workspace.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getProjects">
-<span class="sig-name descname"><span class="pre">getProjects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getProjects" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getProjects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getProjects" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of Project instances that are available for the workspace context
 identified by the workspace keyword argument. If no workspace keyword argument
 is supplied (or is supplied as None), then the workspace context is that
@@ -752,7 +714,7 @@ of the currently selected workspace.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getUserInfo">
-<span class="sig-name descname"><span class="pre">getUserInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">oid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getUserInfo" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getUserInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">oid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getUserInfo" title="Link to this definition">¶</a></dt>
 <dd><p>A convenience method to collect the information associated with a specific user.</p>
 <p>Caller must provide at least one keyword arg and non-None / non-empty value
 to identify the user target on which to obtain information.
@@ -770,7 +732,7 @@ the keyword argument used to identify the user target.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getAllUsers">
-<span class="sig-name descname"><span class="pre">getAllUsers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getAllUsers" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getAllUsers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getAllUsers" title="Link to this definition">¶</a></dt>
 <dd><p>This method offers a convenient one-stop means of obtaining usable information
 about all users in the named workspace.
 If no workspace is specified, then the current context’s workspace is used.
@@ -783,7 +745,7 @@ whose ref and collection attributes will be lazy eval’ed upon access.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="typedef">
-<span class="sig-name descname"><span class="pre">typedef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#typedef" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">typedef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#typedef" title="Link to this definition">¶</a></dt>
 <dd><p>This method returns a TypeDefinition instance for the given entityName.
 The is handy for occasions where you need identify a specific entity
 for something like ‘Feature’ or ‘Theme’ when creating or updating a
@@ -793,7 +755,7 @@ For example, within an info dict, “PortfolioItemType” : rally.typedef(‘Fea
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getCollection">
-<span class="sig-name descname"><span class="pre">getCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection_url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getCollection" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection_url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getCollection" title="Link to this definition">¶</a></dt>
 <dd><p>Given a collection_url of the form:</p>
 <blockquote>
 <div><p>http(s)://&lt;server&gt;(:&lt;port&gt;)/slm/webservice/v2.0/&lt;entity&gt;/OID/&lt;attribute&gt;</p>
@@ -804,7 +766,7 @@ for each item in the collection.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getState">
-<span class="sig-name descname"><span class="pre">getState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stateName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getState" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stateName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getState" title="Link to this definition">¶</a></dt>
 <dd><p>As of Rally WSAPI 1.37 (Sep 2012), the State attribute is no longer a String value for
 many entities, it is itself an entity (aka Rally Type). To be able to create (or update)
 an Artifact’s State attribute, you must provide a reference (_ref or ref) in the information
@@ -822,14 +784,14 @@ you want.  Typically the usage would be along the lines of this example:</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="getStates">
-<span class="sig-name descname"><span class="pre">getStates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getStates" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getStates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getStates" title="Link to this definition">¶</a></dt>
 <dd><p>Given an entityName, returns a list of State instances populated with information
 about each state value permitted for the entityName.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getAllowedValues">
-<span class="sig-name descname"><span class="pre">getAllowedValues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">entityName</span></em>, <em class="sig-param"><span class="pre">attributeName</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">workspace=None</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#getAllowedValues" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getAllowedValues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entityName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributeName</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">workspace=None</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#getAllowedValues" title="Link to this definition">¶</a></dt>
 <dd><p>Given an entityName and and attributeName (which must be valid for the entityName)
 issue a request to obtain a list of allowed values for the attribute.
 For standard attributes in the set of (‘Artifacts’, ‘Attachments’, ‘Changesets’,
@@ -851,7 +813,7 @@ per specific instance of the entity type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="addAttachment">
-<span class="sig-name descname"><span class="pre">addAttachment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text/plain'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#addAttachment" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">addAttachment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text/plain'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#addAttachment" title="Link to this definition">¶</a></dt>
 <dd><p>Given an artifact (actual or FormattedID for an artifact), validate that
 it exists and then attempt to add an Attachment with the name and
 contents of filename into Rally and associate that Attachment with the
@@ -861,7 +823,7 @@ Returns the Attachment item.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="addAttachments">
-<span class="sig-name descname"><span class="pre">addAttachments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attachments</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#addAttachments" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">addAttachments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attachments</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#addAttachments" title="Link to this definition">¶</a></dt>
 <dd><p>Given an artifact (either actual or FormattedID) and a list of dicts with
 each dict having keys and values for name (or Name), mime_type (or MimeType) and
 content_type (or ContentType), add an Attachment corresponding to each dict in
@@ -870,7 +832,7 @@ the attachments list and associate it with the referenced Artifact.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getAttachment">
-<span class="sig-name descname"><span class="pre">getAttachment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getAttachment" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getAttachment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getAttachment" title="Link to this definition">¶</a></dt>
 <dd><p>Given a real artifact instance or the FormattedID of an existing artifact,
 obtain the attachment named by filename.  If there is such an attachment,
 return an Attachment instance with hydration for  Name, Size, ContentType, Content,
@@ -880,14 +842,14 @@ If no such attachment is present, return None</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getAttachmentNames">
-<span class="sig-name descname"><span class="pre">getAttachmentNames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getAttachmentNames" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getAttachmentNames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getAttachmentNames" title="Link to this definition">¶</a></dt>
 <dd><p>Given a real artifact instance that is hydrated for at least the Attachments attribute,
 return the names (filenames) of the Attachments associated with the artifact.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="getAttachments">
-<span class="sig-name descname"><span class="pre">getAttachments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getAttachments" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getAttachments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getAttachments" title="Link to this definition">¶</a></dt>
 <dd><p>Given a real artifact instance, return a list of Attachment records.
 Each Attachment record will look like a Rally WSAPI Attachment with
 the additional Content attribute that will contain the decoded AttachmentContent.</p>
@@ -895,36 +857,36 @@ the additional Content attribute that will contain the decoded AttachmentContent
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rankAbove">
-<span class="sig-name descname"><span class="pre">rankAbove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rankAbove" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">rankAbove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rankAbove" title="Link to this definition">¶</a></dt>
 <dd><p>Rank the target_artifact above the reference_artifact.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rankBelow">
-<span class="sig-name descname"><span class="pre">rankBelow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rankBelow" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">rankBelow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_artifact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rankBelow" title="Link to this definition">¶</a></dt>
 <dd><p>Rank the target_artifact below the reference_artifact.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rankTop">
-<span class="sig-name descname"><span class="pre">rankTop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rankTop" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">rankTop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rankTop" title="Link to this definition">¶</a></dt>
 <dd><p>Rank the target_artifact at the top of the list of ranked Artifacts
 that the target_artifact exists in.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rankBottom">
-<span class="sig-name descname"><span class="pre">rankBottom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rankBottom" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">rankBottom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rankBottom" title="Link to this definition">¶</a></dt>
 <dd><p>Rank the target_artifact at the bottom of the list of ranked Artifacts
 that the target_artifact exists in.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="pyral-rally-experimental-convenience-methods">
-<h2>pyral.Rally experimental convenience methods<a class="headerlink" href="#pyral-rally-experimental-convenience-methods" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="pyral-rally-experimental-convenience-methods">
+<h2>pyral.Rally experimental convenience methods<a class="headerlink" href="#pyral-rally-experimental-convenience-methods" title="Link to this heading">¶</a></h2>
 <dl class="py method">
 <dt class="sig sig-object py" id="addCollectionItems">
-<span class="sig-name descname"><span class="pre">addCollectionItems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#addCollectionItems" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">addCollectionItems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#addCollectionItems" title="Link to this definition">¶</a></dt>
 <dd><p>Given a target_item and a homogenous list of items whose type appears as a One to Many relationship
 in the target item, add the collection_items to the corresponding attribute in the target_item.</p>
 </dd></dl>
@@ -947,7 +909,7 @@ At this time, the Rally WSAPI schema endpoint does not include information about
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="dropCollectionItems">
-<span class="sig-name descname"><span class="pre">dropCollectionItems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dropCollectionItems" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">dropCollectionItems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dropCollectionItems" title="Link to this definition">¶</a></dt>
 <dd><p>Given a target_item and a homogenous list of items whose type appears as a One to Many relationship
 in the target item, delete the collection_items to the corresponding attribute in the target_item
 from the current collection contents for the target_item.</p>
@@ -958,10 +920,10 @@ from the current collection contents for the target_item.</p>
 <p>See note above for the ‘addCollectionItems’ method.  The restrictions there are also applicable
 to this method.</p>
 </div>
-</div>
-</div>
-<div class="section" id="rallyrestresponse">
-<h1>RallyRESTResponse<a class="headerlink" href="#rallyrestresponse" title="Permalink to this headline">¶</a></h1>
+</section>
+</section>
+<section id="rallyrestresponse">
+<h1>RallyRESTResponse<a class="headerlink" href="#rallyrestresponse" title="Link to this heading">¶</a></h1>
 <p>A RallyRESTResponse instance is returned from a call to <code class="docutils literal notranslate"><span class="pre">get</span></code> (find) and several of the
 convenience methods.  A instance has the following useful state attributes:</p>
 <blockquote>
@@ -1001,12 +963,12 @@ or use the <em>next</em> method to obtain the next item in the qualifying result
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="RallyRESTResponse">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">RallyRESTResponse</span></span><a class="headerlink" href="#RallyRESTResponse" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RallyRESTResponse</span></span><a class="headerlink" href="#RallyRESTResponse" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="next">
-<span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#next" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#next" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the next item from the set of qualifying items.
 This method handles any further requests to the server if the next qualifying item
 is not in the current page of results returned from Rally.
@@ -1014,9 +976,9 @@ If all qualifying items have been returned via this method, this method
 generates a StopIteration exception.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="item-attributes">
-<h1>Item Attributes<a class="headerlink" href="#item-attributes" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="item-attributes">
+<h1>Item Attributes<a class="headerlink" href="#item-attributes" title="Link to this heading">¶</a></h1>
 <blockquote>
 <div><p>Item instances returned from iterating on a RallyRESTResponse object are
 representations of Rally items.  The attributes of each item are accessible via
@@ -1050,7 +1012,7 @@ To access these tasks, you’d iterate over them as in:</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="details">
-<span class="sig-name descname"><span class="pre">details</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#details" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">details</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#details" title="Link to this definition">¶</a></dt>
 <dd><p>This convenience method is available on all <em>WorkspaceDomain</em>
 subclass instances and provides an organized and easy to read multiline string
 with the content of the instance.</p>
@@ -1097,53 +1059,36 @@ with the content of the instance.</p>
     <span class="o">...</span>
 </pre></div>
 </div>
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="overview.html" class="btn btn-neutral float-left" title="Python toolkit for the Rally REST API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright Broadcom 2018-2021, CA Technologies 2015-2017, Rally Software Development 2010-2015.
-
-    </p>
+    <p>&#169; Copyright Broadcom 2018-2024, CA Technologies 2015-2017, Rally Software Development 2010-2015.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

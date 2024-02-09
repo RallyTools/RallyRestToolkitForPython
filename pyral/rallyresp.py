@@ -9,12 +9,10 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import sys
 import re
-import json
-import copy
 import time
 from pprint import pprint
 
@@ -31,7 +29,7 @@ errout = sys.stderr.write
 
 class RallyResponseError(Exception): pass
 
-class ErrorResponse(object):
+class ErrorResponse:
 
     SECURITY_ERROR = 'An Authentication object was not found in the SecurityContext'
     INVALID_CREDENTIALS = "Error 401 The username or password you entered is incorrect."
@@ -54,7 +52,7 @@ class ErrorResponse(object):
 
 ##################################################################################################
 
-class RallyRESTResponse(object):
+class RallyRESTResponse:
     """
         An instance of this class is used to wrap the response from the Rally REST endpoint.
         Part of the wrapping includes an iterator based interface to the collection of records
@@ -478,6 +476,7 @@ class RallyRESTResponse(object):
         chapter = []
         for chunk in payload:
             chapter.extend(chunk.json()['QueryResult']['Results'])
+        ##print(f"in __retrievePages, chapter size: {len(chapter)}")
 
         self.startIndex += len(chapter)
         return chapter

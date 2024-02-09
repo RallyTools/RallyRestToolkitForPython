@@ -304,7 +304,8 @@ def test_five_condition_query_in_list():
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     qualifiers = ["State = Submitted",
                   "FormattedID < DE22",
-                  "FormattedID != DE17",
+                  #"FormattedID != DE17",  # can't have multiple conds for this...
+                  'Resolution != Architecture',
                   'Priority = "High Attention"',
                   "Severity != Cosmetic"
                  ]

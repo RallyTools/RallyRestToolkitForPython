@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.5
+#!/usr/local/bin/python3.11
 
 ###################################################################################################
 #
@@ -6,7 +6,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 5, 2)
+__version__ = (1, 6, 0)
 
 import datetime
 import os
@@ -18,21 +18,23 @@ import glob
 
 PROTOCOL       = "https"
 SERVER         = "rally1.rallydev.com"
-WEB_SERVICE    = "slm/webservice/%s"
-SCHEMA_SERVICE = "slm/schema/%s"
+WEB_SERVICE    = "slm/webservice"
+SCHEMA_SERVICE = "slm/schema"
 AUTH_ENDPOINT  = "security/authorize"
 WS_API_VERSION = "v2.0"
 
 USER_NAME = "wiley@acme.com"
 PASSWORD  = "G3ronim0!"
 
-START_INDEX  =   1
-MAX_PAGESIZE = 500
+START_INDEX  = 1
+KILO_PAGESIZE= 1000
+MAX_PAGESIZE = 2000
 MAX_ITEMS    = 1000000  # a million seems an eminently reasonable limit ...
+DEFAULT_SESSION_TIMEOUT = 10   # in seconds
 
 RALLY_REST_HEADERS = \
     {
-      #'X-RallyIntegrationName'     : 'Python toolkit for Rally REST API', # although syntactically this is the more correct
+      #'X-RallyIntegrationName'    : 'Python toolkit for Rally REST API', # although syntactically this is the more correct
       'X-RallyIntegrationName'     : 'Rally REST API toolkit for Python',  # this matches the format of the other language toolkits
       'X-RallyIntegrationVendor'   : 'Broadcom / Rally',
       'X-RallyIntegrationVersion'  :       '%s.%s.%s' % __version__,
