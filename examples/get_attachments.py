@@ -2,7 +2,7 @@
 
 #################################################################################################
 #
-# get_attachments.py -- Get the the contents of all of attachments associated with a 
+# get_attachments.py -- Get the contents of all the attachments associated with a
 #                       specific instance of a Rally type identified either by an OID 
 #                       or a FormattedID value
 #

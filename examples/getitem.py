@@ -27,6 +27,7 @@ ARTIFACT_TYPE = { 'DE' : 'Defect',
                   'TC' : 'TestCase',
                   'US' : 'HierarchicalRequirement',
                   'S'  : 'HierarchicalRequirement',
+                  'F'  : 'Feature',
                 }
 
 OID_PATT          = re.compile(r'^\d+$')
@@ -56,7 +57,9 @@ def main(args):
 
     mo = OID_PATT.match(ident)
     if mo:
-        ident_query = 'ObjectID = %s' % ident
+        ident_query = f'ObjectID = {ident}'
+        if entity_name == 'TestCaseResult':
+            ident_query = f'Build = {ident}'
     else:
         mo = FORMATTED_ID_PATT.match(ident)
         if mo:
