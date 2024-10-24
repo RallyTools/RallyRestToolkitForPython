@@ -43,7 +43,7 @@ def main(args):
         rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
     else:
         rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
-    rally.enableLogging('rally.hist.getattachs') # name of file you want logging to go to
+    #rally.enableLogging('rally.hist.getattachs') # name of file you want logging to go to
 
     if len(args) != 2:
         errout(USAGE)
