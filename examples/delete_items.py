@@ -2,11 +2,11 @@
 
 #################################################################################################
 #
-# getitem.py -- Get info for a specific instance of a Rally type
-#               identified either by an OID or a FormattedID value
+# delete_items.py -- Delete artifacts of the specified type that meet
+#                    some expressable criteria
 #
 USAGE = """
-Usage: getitem.py <entity_name> <OID | FormattedID>    
+Usage: delete_items.py <entity_name> <criteria>
 """
 #################################################################################################
 
@@ -27,7 +27,6 @@ ARTIFACT_TYPE = { 'DE' : 'Defect',
                   'TC' : 'TestCase',
                   'US' : 'HierarchicalRequirement',
                   'S'  : 'HierarchicalRequirement',
-                  'F'  : 'Feature',
                 }
 
 OID_PATT          = re.compile(r'^\d+$')
@@ -46,53 +45,28 @@ def main(args):
     else:
         rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
 
-    rally.enableLogging('rally.hist.item') # name of file you want logging to go to
-
     if len(args) != 2:
         errout(USAGE)
         sys.exit(2)
-    entity_name, ident = args
+    entity_name, criteria = args
     if entity_name in STORY_ALIASES:
         entity_name = 'HierarchicalRequirement'
 
-    mo = OID_PATT.match(ident)
-    if mo:
-        ident_query = f'ObjectID = {ident}'
-        if entity_name == 'TestCaseResult':
-            ident_query = f'Build = {ident}'
-    else:
-        mo = FORMATTED_ID_PATT.match(ident)
-        if mo:
-            ident_query = 'FormattedID = "%s"' % ident
-        else:
-            errout('ERROR: Unable to determine ident scheme for %s\n' % ident)
-            sys.exit(3)
+    response = rally.get(entity_name, fetch="ObjectID,FormattedID,Name,CreatedDate,LastUpdateDate", query=criteria,
+                         workspace=workspace, project=project,
+                         order="ObjectID DESC", limit=200)
 
-    response = rally.get(entity_name, fetch=True, query=ident_query,
-                         workspace=workspace, project=project)
-
-    if response.errors:
-        errout("Request could not be successfully serviced, error code: %d\n" % response.status_code)
-        errout("\n".join(response.errors))
-        sys.exit(1)
-
-    tcrs = [tcr for tcr in response]
-    hits = [tcr for tcr in tcrs if tcr.TestCase.FormattedID == "TC9954"]
-    print(hits)
-    tcr = hits[0]
-    atts = rally.getAttachments(tcr)
-    print(atts)
-
-
-    if response.resultCount == 0:
-        errout('No item found for %s %s\n' % (entity_name, ident))
-        sys.exit(4)
-    elif response.resultCount > 1:
-        errout('WARNING: more than 1 item returned matching your criteria\n')
-        sys.exit(5)
-
-    for item in response:
-        print(item.details())
+    print(f'query resultCount: {response.resultCount}')
+    all_items = [item for item in response]
+    youngest_item = all_items[0]
+    oldest_item   = all_items[-1]
+    print(f"youngest item meeting criteria: {youngest_item.FormattedID}")
+    print(f"oldest   item meeting criteria: {oldest_item.FormattedID}")
+    for ix, item in enumerate(all_items):
+        result = rally.delete('UserStory', item.oid)
+        assert result == True
+        if (ix +1) % 50 == 0:
+            print(f'{ix+1} items deleted...')
 
 #################################################################################################
 #################################################################################################
