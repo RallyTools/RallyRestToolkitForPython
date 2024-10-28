@@ -510,6 +510,16 @@ class Objective_TeamObjective       (Objective): pass
 class KeyResultActualValue          (KeyResultData): pass
 class KeyResultInterimTarget        (KeyResultData): pass
 
+class VSMProduct       (WorkspaceDomainObject): pass
+class VSMComponent     (WorkspaceDomainObject): pass
+class VSMInvestmentCategorytoInventmentIntent(WorkspaceDomainObject): pass
+class VSMChange        (WorkspaceDomainObject): pass
+class VSMDeploy        (WorkspaceDomainObject): pass
+class VSMIncident      (WorkspaceDomainObject): pass
+class VSMProductAnalyticsMetric(WorkspaceDomainObject): pass
+class VSMTarget        (WorkspaceDomainObject): pass
+class VSMMeasure       (WorkspaceDomainObject): pass
+
 
 class Connection(WorkspaceDomainObject):
 
@@ -698,6 +708,15 @@ classFor = { 'Persistable'             : Persistable,
              'CapacityPlanProject'     : CapacityPlanProject,
              'WorkingCapacityPlan'     : WorkingCapacityPlan,
              'PublishedCapacityPlan'   : PublishedCapacityPlan,
+             'VSMProduct'              : VSMProduct,
+             'VSMComponent'            : VSMComponent,
+             'VSMChange'               : VSMChange,
+             'VSMDeploy'               : VSMDeploy,
+             'VSMIncident'             : VSMIncident,
+             'VSMInvestmentCategorytoInventmentIntent' : VSMInvestmentCategorytoInvesmentIntent,
+             'VSMProductAnalyticsMetric' : VSMProductAnalyticsMetric,
+             'VSMTarget'                 : VSMTarget,
+             'VSMMeasure'                : VSMMeasure,
            }
 
 for entity_name, entity_class in list(classFor.items()):
