@@ -14,7 +14,7 @@ import shutil
 import re
 
 PACKAGE_NAME = "pyral"
-VERSION      = "1.6.0"
+VERSION      = "1.7.0"
 
 AUX_FILES  = ['MANIFEST.in', 
               'PKG-INFO', 
@@ -90,7 +90,7 @@ TEST_FILES = ['test/rally_targets.py',
               'test/test_query.py',
               'test/test_ranking.py'
               'test/test_recyclebin.py'
-              'test/test_search.py',
+              'test/dead_test_search.py',
               'test/test_wksprj_setting.py',
               'test/test_workspaces.py'
              ]

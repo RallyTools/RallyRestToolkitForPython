@@ -455,21 +455,6 @@ Core REST methods and CRUD aliases
 
         Returns a boolean indication of the disposition of the attempt to delete the item.
 
-.. method:: search(keywords, \*\*kwargs)
-
-     Given a list of keywords or a string with space separated words, issue
-     the relevant Rally WSAPI search request to find artifacts within the search
-     scope that have any of the keywords in any of the artifact's text fields.
-
-     NOTE: The search functionality must be turned on for your subscription to use this method.
-
-     keyword arguments:
-         - projectScopeUp = true/false (defaults to false)
-         - projectScopeDown = true/false (defaults to false)
-         - pagesize = n  (defaults to 500)
-         - start = n  (defaults to 1)
-         - limit = n  (defaults to no limit)
-
 pyral.Rally instance convenience methods
 ----------------------------------------
 
@@ -681,29 +666,31 @@ pyral.Rally instance convenience methods
 pyral.Rally experimental convenience methods
 --------------------------------------------
 
-.. method:: addCollectionItems(target_item, collection_items)
+.. method:: addCollectionItems(target_item, collection_name, collection_items)
     
-    Given a target_item and a homogenous list of items whose type appears as a One to Many relationship
+    Given a target_item, the name of the Collections attribute and a homogenous list of items whose type appears as a One to Many relationship
     in the target item, add the collection_items to the corresponding attribute in the target_item.
+
+    Returns the updated target_item.
 
 ::
 
        ...
        milestones = [milestone_1, milestone_2, milestone_3]
        story = rally.get('story', 'US123') 
-       rally.addCollectionItems(story, milestones)
+       rally.addCollectionItems(story, 'Milestones', milestones)
 
 .. warning:: 
 
         This method only works when the collection attribute on the target_item is Modifiable.
         Consult the Rally WSAPI documentation for the target_item attributes to see whether
         the attribute of interest has a notation of 'Collection Modifiable  yes'.  If there is no 
-        'Colletion Modifiable' notation or the value for that is 'no', then use of this method 
+        'Collection Modifiable' notation or the value for that is 'no', then use of this method
         should not be attempted.
         At this time, the Rally WSAPI schema endpoint does not include information about 
         'Collection Modifiable' for any of the attributes, you'll have to consult the documentation.
 
-.. method:: dropCollectionItems(target_item, collection_items)
+.. method:: dropCollectionItems(target_item, collection_name, collection_items)
 
     Given a target_item and a homogenous list of items whose type appears as a One to Many relationship
     in the target item, delete the collection_items to the corresponding attribute in the target_item 

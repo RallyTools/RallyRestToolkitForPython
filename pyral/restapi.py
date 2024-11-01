@@ -7,7 +7,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 6, 0)
+__version__ = (1, 7, 0)
 
 import sys, os
 import re
@@ -1180,11 +1180,11 @@ class Rally:
         return rally_rest_response
 
 
-    def addCollectionItems(self, target, items):
+    def addCollectionItems(self, target, collection_name, items):
         """
             Given a target which is a hydrated RallyEntity instance having a valid _type
-            and a list of hydrated Rally Entity instances (items) that are
-            all of the same _type, construct a valid Rally WSAPI collection url and
+            and a list of hydrated Rally Entity instances (items) that are all
+            the same _type, construct a valid Rally WSAPI collection url and
             issue a POST request to that URL supplying the item refs in an appropriate
             JSON structure as the payload.
         """
@@ -1197,30 +1197,33 @@ class Rally:
         if outliers:
             raise RallyRESTAPIError("addCollectionItems: all items must be of the same type")
 
-        resource = f'{target_type}/{target.oid}/{first_item_type}s/add'
+        resource = f'{target_type}/{target.oid}/{collection_name}/add'
         collection_url = f'{self.service_url}/{resource}?fetch=Name&key={auth_token}'
-        payload = {"CollectionItems": [{'_ref' : f'{str(item._type)}/{str(item.oid)}'}
-                                        for item in items]}
+        payload = {collection_name: [{'_ref' : f'{str(item._type)}/{str(item.oid)}'}
+                                     for item in items]}
         response = self.session.post(collection_url, data=json.dumps(payload))
         context = self.contextHelper.currentContext()
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
-        added_items = [str(item[u'Name']) for item in response.data[u'Results']]
-        return added_items
+        added_items = [item['Name'] for item in response.data['Results']]
+        #return added_items
+        upd_target = self.get(target_type, fetch=f"ObjectID,Name,FormattedID,{collection_name}",
+                                           query=f'ObjectID = {target.oid}',
+                                           instance=True)
+        return upd_target
 
 
-    def dropCollectionItems(self, target, items):
+    def dropCollectionItems(self, target, collection_name, items):
         """
             Given a target which is a hydrated RallyEntity instance having a valid _type
             and items which is a list of hydrated Rally Entity instances that are
-            all of the same _type, construct a valid Rally WSAPI collection url and
+            all the same _type, construct a valid Rally WSAPI collection url and
             issue a POST request to that URL supplying the item refs in an appropriate
             JSON structure as the payload.
         """
         if not items: return None
         auth_token = self.obtainSecurityToken()
         target_type = target._type
-        item_type = items[0]._type
-        resource = f'{target_type}/{target.oid}/{item_type}s/remove'
+        resource = f'{target_type}/{target.oid}/{collection_name}/remove'
         collection_url = f"{self.service_url}/{resource}?key={auth_token}"
         payload = {"CollectionItems" : [{'_ref' : f'{str(item._type)}/{str(item.oid)}'}
                                          for item in items]}
@@ -1228,134 +1231,6 @@ class Rally:
         context = self.contextHelper.currentContext()
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         return response
-
-
-    def search(self, keywords, **kwargs):
-        """
-            NB: November 2023  -  this is moot as WSAPI doesn't seem to support the search
-                                  endpoint anymore...
-
-            Given a list of keywords or a string with space separated words, issue
-            the relevant Rally WSAPI search request to find artifacts within the search
-            scope that have any of the keywords in any of the artifact's text fields.
-
-            https://rally1.rallydev.com/slm/webservice/v2.x/search?
-                _slug=%2Fsearch
-                &project=%2Fproject%2F3839949386
-                &projectScopeUp=false
-                &projectScopeDown=true
-                &searchScopeOid=3839949386   # in this case it is the Project ObjectID
-                &searchScopeUp=false
-                &searchScopeDown=true
-                &searchScopeType=project
-                &keywords=wsapi%20documentation
-                &fetch=true
-                &recycledItems=true
-                &includePermissions=true
-                &compact=true
-                &start=1
-                &pagesize=25
-
-             defaults:
-                 projectScopeUp=false
-                 projectScopeDown=false
-                 includePermissions=true
-                 recycledItems=false
-                 compact=true
-
-             A successful search returns SearchObject instances, which have the useful attributes of:
-                ObjectID
-                FormattedID
-                Name
-                Project
-                MatchingText
-                LastUpdateDate
-        """
-        context = self.contextHelper.currentContext()
-        kwargs['_slug'] = "/search"
-        kwargs['pagesize'] = 200
-        kwargs['searchScope'] = 'project'
-        if 'projectScopeUp' not in kwargs:
-            kwargs['projectScopeUp'] = False
-        if 'projectScopeDown' not in kwargs:
-            kwargs['projectScopeDown'] = False
-
-        # unfortunately, the WSAPI seems to not recognize/operate on projectScopeX, searchScopeX parameters...
-        #kwargs['searchScopeUp'] = 'false'
-        #kwargs['searchScopeDown'] = 'false'
-        #if getattr(kwargs, 'projectScopeUp', False):
-        #    kwargs['searchScopeUp'] = 'true'
-        #if getattr(kwargs, 'projectScopeDown', False):
-        #    kwargs['searchScopeDown'] = 'true'
-
-        fields = "ObjectID,FormattedID,Name,Project,MatchingText,LastUpdatedDate"
-        context, resource, resource_url, limit = self._buildRequest('search', fields, None, None, kwargs)
-
-        # so don't bother with including the searchScopeX in the resource_url query_string
-        #left, right = resource_url.split('&pagesize=')
-        #left += "&searchScope=project"
-        #ssu = 'true' if getattr(kwargs, 'searchScopeUp', False) else 'false'
-        #ssd = 'true' if getattr(kwargs, 'searchScopeDown', False) else 'false'
-        #left += "&searchScopeUp=%s&searchScopeDown=%s" % (ssu, ssd)
-        #resource_url = "%s&pagesize=%s" % (left, right)
-
-        url, query_string = resource_url.split('?', 1)
-        try:
-            resource_url = f'{url}?keywords={quote(keywords)}&{query_string}'
-        except Exception as exc:
-            raise
-
-        response = self._getRequestResponse(context, resource_url, limit)
-        if response.errors:
-            error_text = response.errors[0].decode(encoding='UTF-8')
-            raise RallyRESTAPIError(error_text)
-
-        # since the WSAPI apparently doesn't pay attention to scoping (projectScopeUp, projectScopeDown, searchScopeUp, searchScopeDown)
-        # let's take care of the intended scoping here and provide back to the caller the
-        # resultCount as well as the iterable with the SearchObject instances.
-
-        # if the projectScopeUp and projectScopeDown are False
-        #     only capture the SearchObject instances whose Project attribute matches our current context Project Name
-        # if the projectScopeUp is True and the projectScopeDown is False
-        #    only capture the SearchObject instances whose Project attribute is the current context's Project Name OR is NOT in the list of sub-projects
-        # if the projectScopeUp is False and the projectScopeDown is True
-        #    only capture the SearchObject instances whose Project attribute is the current context's Project Name OR is IN the list of sub-projects
-        # if the projectScopeUp is True and projectScopeDown is True
-        #     everything in the result is eligible so pass it on...
-
-        if kwargs['projectScopeUp'] == True and kwargs['projectScopeDown'] == True:
-            # this behavior is an intitial _gross_ approximation of recognizing the scopeUp and scopeDown settings
-            # in no way should this be construed as being comprehensively accurate...
-            return response
-
-        all_search_hits = [item for item in response]
-        #all_projects    = [project for project in self.getProjects()] # when this is used the projeny function is waaayyy slow...
-        #                  and this is because getProjects returns _shell instances that don't have the Parent attribute.
-        fields = 'ObjectID,Name,Owner,Description,Iterations,Releases,State,Parent' 
-        response = self.get('Project', fetch=fields, order="Name")
-        all_projects = [project for project in response]  # when this is used, projeny zips along, as each instance has Parent attribute
-        current_project = self.getProject()
-
-        project_matches = [so for so in all_search_hits if so.Project == current_project.Name]
-        filtered = project_matches
-
-        if kwargs['projectScopeUp']:
-            ancestors = projectAncestors(current_project, all_projects, [])
-            scope_up_matches   = [so for so in all_search_hits if so.Project in ancestors]
-            filtered += scope_up_matches
-        else:  # projectScopeUp is False 
-            pass
-
-        if kwargs['projectScopeDown']:
-            descendents = projectDescendants(current_project, all_projects)
-            scope_down_matches = [so for so in all_search_hits if so.Project in descendents and so.Project != current_project.Name]
-            filtered += scope_down_matches
-        else: # projectScopeDown is False
-            pass
-
-        # TODO: uniquify the filtered, just in case we have duplicate Project Names for Projects in the target Workspace
-        return MockRallyRESTResponse(filtered)
-
 
     def getSchemaInfo(self, workspace, project=None):
         """

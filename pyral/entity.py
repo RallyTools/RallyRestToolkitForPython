@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 6, 0)
+__version__ = (1, 7, 0)
 
 import sys
 import re
@@ -512,7 +512,7 @@ class KeyResultInterimTarget        (KeyResultData): pass
 
 class VSMProduct       (WorkspaceDomainObject): pass
 class VSMComponent     (WorkspaceDomainObject): pass
-class VSMInvestmentCategorytoInventmentIntent(WorkspaceDomainObject): pass
+class VSMInvestmentCategorytoInvestmentIntent(WorkspaceDomainObject): pass
 class VSMChange        (WorkspaceDomainObject): pass
 class VSMDeploy        (WorkspaceDomainObject): pass
 class VSMIncident      (WorkspaceDomainObject): pass
@@ -713,7 +713,7 @@ classFor = { 'Persistable'             : Persistable,
              'VSMChange'               : VSMChange,
              'VSMDeploy'               : VSMDeploy,
              'VSMIncident'             : VSMIncident,
-             'VSMInvestmentCategorytoInventmentIntent' : VSMInvestmentCategorytoInvesmentIntent,
+             'VSMInvestmentCategorytoInvestmentIntent' : VSMInvestmentCategorytoInvestmentIntent,
              'VSMProductAnalyticsMetric' : VSMProductAnalyticsMetric,
              'VSMTarget'                 : VSMTarget,
              'VSMMeasure'                : VSMMeasure,

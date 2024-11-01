@@ -40,7 +40,7 @@ satisfied the dependency requirement on the requests package, you can use the se
 Obtain the requests_ package and install it according to that package's directions.
 Use of requests-2.28.x or better is recommended for use with pyral.
 The requests_ package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.6.0) has been tested using requests 2.31.0.
+The most recent release of pyral (1.7.0) has been tested using requests 2.31.0.
 
 Unpack the ``pyral`` distribution file (zip or tar.gz) and then install the pyral_ package.
 
@@ -65,7 +65,7 @@ relevant packages.
    >> import requests
    >> import pyral
    >> pyral.__version__
-   (1, 6, 0)
+   (1, 7, 0)
 
 
 30 second highlight
@@ -241,13 +241,19 @@ The item names in config files **are** case sensitive.
 Prerequisites
 -------------
 
- * Python 3.9, 3,10, 3.11 or 3.12 (this package not tested with earlier versions of Python 3.x)
+ * Python any of (3.10, 3.11, 3.12 and 3.13) (this package not tested with earlier versions of Python 3.x)
  * The requests_ package, 2.28.1 or better, requests 2.31.0 or beyond is recommended.
 
 .. _requests: http://github.com/kennethreitz/requests
 
 Versions
 --------
+   **1.7.0**
+       Explicitly state support for Python 3.10, 3.11, 3.12 and 3.13
+       Fixed bug with pryal.restapi.Rally.addCollectionItems method, a collection_name must be provided.
+       Added support for VSM* related entities (VSMProduct, VSMComponent, VSMIncident, VSMChange, VSMDeploy,
+          VSMInvestmentCategorytoInvestmentIntentMap, VSMProductAnalyticsMetric, VSMTarget, VSMMeasure).
+
    **1.6.0**
        Eliminated use of six package.
        Added support for Risk, Objective, KeyResult and CapacityPlan* entities.
