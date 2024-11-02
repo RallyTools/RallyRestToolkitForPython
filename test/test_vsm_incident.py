@@ -9,13 +9,9 @@ import pyral
 RallyAttributeNameError   = pyral.restapi.RallyAttributeNameError
 InvalidRallyTypeNameError = pyral.entity.InvalidRallyTypeNameError
 
-vsm_inc_oid = None
+vsm_inc_oid = None   #  a global so we can delete our tracks after the real tests have completed...
 
 ##################################################################################################
-
-#from internal_rally_targets import APIKEY, WORKSPACE, PROJECT
-#from rally_targets import APIKEY, DEFAULT_WORKSPACE, DEFAULT_PROJECT
-#from rally_targets import PROD_USER, PROD_PSWD
 
 CONF      = 'yeti.cfg'
 WORKSPACE = 'Yeti Rally Workspace'

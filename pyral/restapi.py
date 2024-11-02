@@ -28,7 +28,7 @@ from .config  import DEFAULT_SESSION_TIMEOUT
 from .config  import USER_NAME, PASSWORD 
 from .config  import START_INDEX, KILO_PAGESIZE, MAX_PAGESIZE, MAX_ITEMS
 from .config  import timestamp
-from .search_utils  import projectAncestors, projectDescendants, projeny, flatten, MockRallyRESTResponse
+from .proj_utils  import projectAncestors, projectDescendants, projeny, flatten
 
 ###################################################################################################
 

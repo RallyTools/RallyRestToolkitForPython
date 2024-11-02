@@ -13,10 +13,6 @@ vsm_pam_oid = None
 
 ##################################################################################################
 
-#from internal_rally_targets import APIKEY, WORKSPACE, PROJECT
-#from rally_targets import APIKEY, DEFAULT_WORKSPACE, DEFAULT_PROJECT
-#from rally_targets import PROD_USER, PROD_PSWD
-
 CONF      = 'yeti.cfg'
 WORKSPACE = 'Yeti Rally Workspace'
 PROJECT   = 'Little Claus'
