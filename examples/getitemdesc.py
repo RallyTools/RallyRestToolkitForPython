@@ -2,8 +2,8 @@
 
 #################################################################################################
 #
-# getitem.py -- Get info for a specific instance of a Rally type
-#               identified either by an OID or a FormattedID value
+# getitemdesc.py -- Get info for a specific instance of a Rally type
+#                   identified either by an OID or a FormattedID value
 #
 USAGE = """
 Usage: getitem.py <entity_name> <OID | FormattedID>    
@@ -27,6 +27,7 @@ ARTIFACT_TYPE = { 'DE' : 'Defect',
                   'TC' : 'TestCase',
                   'US' : 'HierarchicalRequirement',
                   'S'  : 'HierarchicalRequirement',
+                  'F'  : 'Feature',
                 }
 
 OID_PATT          = re.compile(r'^\d+$')
