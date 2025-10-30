@@ -162,3 +162,8 @@
     Updated supported Python versions to 3.9, 3.10, 3.11 and 3.12. No longer requires six package.
     Fixed defect in the getAllUsers method that prevented Users beyond the first page from being retrieved.
 
+1.7.0 - Nov 2025
+    Updated supported Python versions to 3.12, 3.13 and 3.14.
+    Updated pytest to 8.3.x.
+    Added support for VSM related Rally entities.
+    Added support for creation/update of the multiple items via restapi.createMultiple and restapi.updateMultiple methods.

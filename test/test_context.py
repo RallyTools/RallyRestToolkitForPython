@@ -2,7 +2,7 @@
 
 import sys, os
 import types
-import py
+import pytest
 
 from pyral import Rally, RallyUrlBuilder
 
@@ -356,7 +356,7 @@ def test_default_wksprj_set_non_default_wksprj_specify_workspace_and_project_equ
     assert workspace.Name == ALTERNATE_WORKSPACE
 
     #problem_text = 'Specified project not valid for your current workspace or credentials'
-    #with py.test.raises(Exception) as excinfo:
+    #with pytest.raises(Exception) as excinfo:
     #    rally.setProject(ALTERNATE_PROJECT)
     #actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     #assert excinfo.value.__class__.__name__ == 'Exception'

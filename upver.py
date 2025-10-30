@@ -21,26 +21,25 @@ ELEMENTS_WITH_VERSION_IDENTITIERS = """
 
 in README.rst:
       $ python
-      Python 3.8.9 [other Python interpreter info elided ...]
+      Python 3.13.7 [other Python interpreter info elided ...]
       >> import requests
       >> import pyral
       >> pyral.__version__
-      (1, 5, 2)
+      (1, 7, 0)
 
 in build_dist.py:
-VERSION      = "1.5.2"
-
+VERSION      = "1.7.0"
 
 in setup.py:
-VERSION       = '1.5.2'
+VERSION       = '1.7.0'
 
 modifies version identifier in all pyral/*.py files
 
 in doc/source/conf.py:
 # The short X.Y version.
-version = '1.5.2'
+version = '1.7.0'
 # The full version, including alpha/beta/rc tags.
-release = '1.5.2'
+release = '1.7.0'
 
        assumes invocation is done in the base directory of the pyral dev tree
 """
@@ -69,7 +68,7 @@ FILE_VERSION_LOC = [
 def main(args):
     cleanup = False
     if not args:
-        print("ERROR: no version indentifier provided")
+        print("ERROR: no version identifier provided")
         print(USAGE)
         sys.exit(1)
     options = [opt for opt in args if opt.startswith('-')]
@@ -227,4 +226,3 @@ def dumpit(mo):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-

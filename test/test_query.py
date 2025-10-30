@@ -3,7 +3,7 @@
 import sys, os
 import types
 import urllib
-import py
+import pytest
 
 try:
     from urllib import quote, unquote
@@ -81,7 +81,7 @@ def test_bogus_query():
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     bogus_entity = "Payjammas"
     expectedErrMsg = "not a valid Rally entity: %s" % bogus_entity
-    with py.test.raises(InvalidRallyTypeNameError) as excinfo:
+    with pytest.raises(InvalidRallyTypeNameError) as excinfo:
         response = rally.get('Payjammas', fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]  # becuz Python2.6 deprecates message :-(
     assert excinfo.value.__class__.__name__ == 'InvalidRallyTypeNameError'
@@ -135,7 +135,7 @@ def test_multiple_entities_query():
     """
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     multiple_entities = "Project,Workspace"
-    with py.test.raises(InvalidRallyTypeNameError) as excinfo:
+    with pytest.raises(InvalidRallyTypeNameError) as excinfo:
         response = rally.get(multiple_entities, fetch=False, limit=10)
     actualErrVerbiage = excinfo.value.args[0]
     assert excinfo.value.__class__.__name__ == 'InvalidRallyTypeNameError'
@@ -750,28 +750,31 @@ def test_query_range_with_other_conds():
     #    print(f'{story.FormattedID:<5} {story.CreationDate} {story.Project.Name} {story.Iteration}  {plan_est:>4} {story.Name}')
 
 
-def test_query_target_value_with_ampersand():
+def disabled_test_query_target_value_with_ampersand():
     """
-        Query for a Project.Name = 'R&D'
+        This test was once using a project named 'R&D' but at some point in time 
+        subsequent to 2023, that project had been renamed.
+        !!! SO, THIS TEST IS NOW DISABLED !!!
+        Query for a Project.Name = 'Code & Sprinkles'
 
         Note: This test must be last as there is some weird interplay going on when this is higher up
               in the file.  3 Tests fail having nothing to do with ampersands in the query criteria
               when this test appears before them.
     """
-    criteria = ['Project.Name = R&D']
+    criteria = ['Project.Name = "Code & Sprinkles"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    #assert unquote(result) == 'Project.Name = R&D'.replace('&', '%26')
-    assert unquote(result) == 'Project.Name = R&D'
+    #assert unquote(result) == 'Project.Name = "Code & Sprinkles"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = "Code & Sprinkles"'
 
-    criteria = ['Project.Name = "R&D"']
+    criteria = ['Project.Name = "Code & Sprinkles"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    #assert unquote(result) == 'Project.Name = "R&D"'.replace('&', '%26')
-    assert unquote(result) == 'Project.Name = "R&D"'
+    #assert unquote(result) == 'Project.Name = "Code & Sprinkles"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = "Code & Sprinkles"'
 
-    criteria = ['Project.Name contains "R&D"']
+    criteria = ['Project.Name = "Code & Sprinkles"']
     result = RallyQueryFormatter.parenGroups(criteria)
-    #assert unquote(result) == 'Project.Name contains "R&D"'.replace('&', '%26')
-    assert unquote(result) == 'Project.Name contains "R&D"'
+    #assert unquote(result) == 'Project.Name = "Code & Sprinkles"'.replace('&', '%26')
+    assert unquote(result) == 'Project.Name = "Code & Sprinkles"'
 
     criteria = 'Railhead.Company.Name != "Atchison Topeka & Santa Fe & Cunard Lines"'
     result = RallyQueryFormatter.parenGroups(criteria)
@@ -781,12 +784,14 @@ def test_query_target_value_with_ampersand():
     APIKEY = "_useYourRallyKey"
     RALLY_100_APIKEY = "_lsMzURZTRyBoD3bwnpn5kUZvDQkRIoEeGkq7QNkg"
     target_workspace = 'Rally'
-    target_project   = 'R&D'
+    #target_project   = 'R&D'
+    target_project   = 'Code & Sprinkles'
     rally = Rally(server='rally1.rallydev.com', apikey=RALLY_100_APIKEY, workspace=target_workspace, project=target_project)
     pifs = rally.get('Feature', fetch='Name,FormattedID')
+    print(f'pifs.resultCount: {pifs.resultCount}')
     assert pifs.resultCount == 26  # as of 02/05/2021 this was correct, total of 26 Features for R&D
     # The following does not work...
-    pifs = rally.get('Feature', fetch='Name,FormattedID', query=['Project.Name = "R&D"', 'Name contains "On-Prem"'])
+    pifs = rally.get('Feature', fetch='Name,FormattedID', query=['Project.Name = "Code & Sprinkles"', 'Name contains "On-Prem"'])
     assert pifs.resultCount == 7   # as of 02/05/2021 this was correct, 7 Features had "On-Prem" in the Name
 
 #test_basic_query()

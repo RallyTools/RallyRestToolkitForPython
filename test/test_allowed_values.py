@@ -2,7 +2,6 @@
 
 import sys, os
 import types
-import py
 
 import pyral
 from pyral import Rally

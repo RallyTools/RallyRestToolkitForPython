@@ -9,6 +9,8 @@
 
 USAGE = """
 Usage: python wkspcounts.py {workspace | all} [-byproject] [art_type]
+
+       if art_type not specified all common artifact types are included
 """
 ###################################################################################################
 
@@ -21,26 +23,38 @@ from pyral import Rally, rallyWorkset
 
 errout = sys.stderr.write
 
-COUNTABLE_ARTIFACT_TYPES = ['UserStory', 'Task', 'Defect', 
+COUNTABLE_ARTIFACT_TYPES = ['Feature','UserStory', 'Task', 'Defect', 
                             'TestCase', 'TestCaseResult',
                             'TestSet', 'TestFolder']
 
 ###################################################################################################
 
 def main(args):
+    original_args = args[:]
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
+    wksp_arg = args.pop(0)
+    
     server, username, password, apikey, workspace, project = rallyWorkset(options)
-    if apikey:
-        rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+    if wksp_arg == 'all':
+        if apikey:
+            rally = Rally(server, apikey=apikey, workspace=workspace, project=project)
+        else:
+            rally = Rally(server, user=username, password=password, 
+                          workspace=workspace, project=project)
     else:
-        rally = Rally(server, user=username, password=password, workspace=workspace, project=project)
-    
-    target_workspace, byproject, art_types = processCommandLineArguments(args)
-    rally.enableLogging('rally.hist.articount')  # name of file you want logging to go to
-    
+        if apikey:
+            rally = Rally(server, apikey=apikey, workspace=wksp_arg, project=project, 
+                          isolated_workspace=True)
+        else:
+            rally = Rally(server, user=username, password=password, 
+                          workspace=wksp_arg, project=project, isolated_workspace=True)
+
+    byproject, art_types = processCommandLineArguments(args)
+
+    wksp = rally.getWorkspace()
     workspaces = rally.getWorkspaces()
-    if target_workspace != 'all':
+    if wksp_arg != 'all':
         hits = [wksp for wksp in workspaces if wksp.Name == target_workspace]
         if not hits:
             problem = "The specified target workspace: '%s' either does not exist or is not accessible"
@@ -49,52 +63,32 @@ def main(args):
         workspaces = hits
 
     for wksp in workspaces:
+        rally.setWorkspace(workspace.Name)
         print(wksp.Name)
         print("=" * len(wksp.Name))
-        rally.setWorkspace(wksp.Name)
-        projects = [None]
-        if byproject:
-            projects = rally.getProjects(workspace=wksp.Name)
-        for project in projects:
-            if project:
-                print("")
-                print("    %s" % project.Name)
-                print("    %s" % ('-' * len(project.Name)))
-            for artifact_type in art_types:
-                count = getArtifactCount(rally, artifact_type, project=project)
-                print("       %-16.16s : %4d items" % (artifact_type, count))
-        print("")
+
+        showArtifactCounts(rally, wksp, byproject)
 
 ###################################################################################################
 
-def processCommandLineArguments(args):
-    workspaces = 'all'
-    byproject  = False
-    art_types  = COUNTABLE_ARTIFACT_TYPES
+def showArtifactCounts(rally, workspace, byproject):
+    if byproject:
+        projects = rally.getProjects(workspace=wksp.Name)
+        for project in projects:
+            if project:
+                 print("")
+                 print(f"    {project.Name}" % project.Name)
+                 dashes = '-' * len(project.Name)
+                 print(f"    {dashes}")
+            for artifact_type in art_types:
+                count = getArtifactCount(rally, artifact_type, project=project)
+                print("       {artifact_type:>16} : {count:4d} items")
+    else:
+        for artifact_type in art_types:
+            count = getArtifactCount(rally, artifact_type, project=None)
+            print("       {artifact_type:>16} : {count:4d} items")
 
-    prog_opts = [opt for opt in args if opt.startswith('-')]
-    byproject = False
-    if '-byproject' in prog_opts:
-        byproject = True
-        del args[args.index('-byproject')]
-
-    if not args:
-        errout(USAGE)
-        sys.exit(1)
-
-    workspaces = args.pop(0)  # valid is 'all' or the name of an Open workspace in the Subscription 
-
-    if args:
-        art_type = args[0]
-        if art_type not in COUNTABLE_ARTIFACT_TYPES:
-            errout("ERROR: The art_type given: '%s', is not in the list of valid artifact types below:\n")
-            errout(", ".join(COUNTABLE_ARTIFACT_TYPES) + "\n")
-            errout("\n")
-            errout(USAGE)
-            sys.exit(1)
-        art_types = [art_type]
-
-    return workspaces, byproject, art_types
+    print("")
 
 ###################################################################################################
 
@@ -116,6 +110,34 @@ def getArtifactCount(rally, artifact_type, project=None):
         return 0
 
     return response.resultCount
+
+###################################################################################################
+
+def processCommandLineArguments(args):
+    byproject  = False
+    art_types  = COUNTABLE_ARTIFACT_TYPES
+
+    prog_opts = [opt for opt in args if opt.startswith('-')]
+    byproject = False
+    if '-byproject' in prog_opts:
+        byproject = True
+        del args[args.index('-byproject')]
+
+    if not args:
+        errout(USAGE)
+        sys.exit(1)
+
+    art_type = args.pop()
+    if art_type not in COUNTABLE_ARTIFACT_TYPES:
+        problem = f'The art_type given: '{art_type}', is not in the list of valid artifact types below:'
+        errout(f"ERROR: {problem}\n")
+        errout(", ".join(COUNTABLE_ARTIFACT_TYPES) + "\n")
+        errout("\n")
+        errout(USAGE)
+        sys.exit(1)
+    art_types = [art_type]
+
+    return byproject, art_types
 
 ###################################################################################################
 ###################################################################################################

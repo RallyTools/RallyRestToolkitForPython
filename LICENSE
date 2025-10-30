@@ -1,4 +1,4 @@
-Copyright © Broadcom, Inc. - 2018-2024; CA Technologies - 2015-2018;  Rally Software Development Corp. - 2010-2015
+Copyright © Broadcom, Inc. - 2018-2025; CA Technologies - 2015-2018;  Rally Software Development Corp. - 2010-2015
 All rights reserved.
 
 License for pyral (a Python toolkit for the Rally REST API)
@@ -31,5 +31,4 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
-Rally Software Development® is a registered trademark of Rally Software Development Corp.
 

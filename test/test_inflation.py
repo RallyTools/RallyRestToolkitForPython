@@ -3,7 +3,7 @@
 import sys, os
 import time
 import types
-import py
+import pytest
 
 from pyral import Rally, RallyRESTAPIError
 
@@ -70,7 +70,7 @@ def test_default_workspace_non_valid_project():
     project = 'Halfling Leaf Pipe'
     problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
     expectedErrMsg = problem % (DEFAULT_WORKSPACE, project)
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                       project=project)
     actualErrVerbiage = excinfo.value.args[0] 
@@ -132,7 +132,7 @@ def test_named_default_workspace_named_invalid_project():
     project = 'Sailor Sami'
     problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
     expectedErrMsg = problem % (DEFAULT_WORKSPACE, project)
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                       workspace=DEFAULT_WORKSPACE, project=project)
     actualErrVerbiage = excinfo.value.args[0] 
@@ -196,7 +196,7 @@ def test_named_non_default_workspace_named_invalid_project():
     project   = 'Barney Rubble'
     problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
     expectedErrMsg = problem % (ALTERNATE_WORKSPACE, project)
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                   workspace=workspace, project=project, timeout=10)
         response = rally.get('Project', fetch=False, limit=5)
