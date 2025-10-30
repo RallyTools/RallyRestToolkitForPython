@@ -1,7 +1,7 @@
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 20  support Python 3.11, 3.12, 2.13 and 3.14
+#          round 20  support Python 3.12, 2.13 and 3.14
 #          notable dependency:
 #               requests v2.32.x or better
 #
@@ -1205,6 +1205,8 @@ class Rally:
             the same _type, construct a valid Rally WSAPI collection url and
             issue a POST request to that URL supplying the item refs in an appropriate
             JSON structure as the payload.
+            Returns a newly retrieved target item which will have a reference to the 
+            collection with the added item.
         """
         if not items: return None
         auth_token = self.obtainSecurityToken()
@@ -1223,7 +1225,7 @@ class Rally:
         context = self.contextHelper.currentContext()
         response = RallyRESTResponse(self.session, context, resource, response, "shell", 0)
         added_items = [item['Name'] for item in response.data['Results']]
-        #return added_items
+
         upd_target = self.get(target_type, fetch=f"ObjectID,Name,FormattedID,{collection_name}",
                                            query=f'ObjectID = {target.oid}',
                                            instance=True)
