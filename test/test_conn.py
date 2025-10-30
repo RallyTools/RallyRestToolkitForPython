@@ -2,7 +2,6 @@
 
 import sys, os
 import types
-import py
 import pytest
 import time
 import re
@@ -131,7 +130,7 @@ def test_nonexistent_server():
         Using a known invalid server specification, obtain a Rally instance.
         An exception should be generated with verbiage about the hostname
         being non-existent or unreachable.
-        Use the py.test context manager idiom to catch the generated exception
+        Use the pytest context manager idiom to catch the generated exception
         and do the relevant assertions.
     """
     bogus_server = "bogus.notreally.bug"

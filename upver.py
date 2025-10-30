@@ -21,26 +21,25 @@ ELEMENTS_WITH_VERSION_IDENTITIERS = """
 
 in README.rst:
       $ python
-      Python 3.11.4 [other Python interpreter info elided ...]
+      Python 3.13.7 [other Python interpreter info elided ...]
       >> import requests
       >> import pyral
       >> pyral.__version__
-      (1, 6, 0)
+      (1, 7, 0)
 
 in build_dist.py:
-VERSION      = "1.6.0"
-
+VERSION      = "1.7.0"
 
 in setup.py:
-VERSION       = '1.6.0'
+VERSION       = '1.7.0'
 
 modifies version identifier in all pyral/*.py files
 
 in doc/source/conf.py:
 # The short X.Y version.
-version = '1.6.0'
+version = '1.7.0'
 # The full version, including alpha/beta/rc tags.
-release = '1.6.0'
+release = '1.7.0'
 
        assumes invocation is done in the base directory of the pyral dev tree
 """

@@ -3,7 +3,7 @@
 import sys, os
 import types
 import urllib
-import py
+import pytest
 
 try:
     from urllib import unquote
@@ -58,7 +58,7 @@ def test_update_defect_in_other_project():
     upd_info = {"FormattedID" : target_defect,
                 'State'       : 'Fixed'
                }
-    with py.test.raises(RallyRESTAPIError) as excinfo:
+    with pytest.raises(RallyRESTAPIError) as excinfo:
         rally.update('Defect', upd_info, project='Aurora Borealis')
     actualErrVerbiage = excinfo.value.args[0]
     assert 'Aurora Borealis' in actualErrVerbiage
@@ -68,7 +68,7 @@ def test_update_defect_in_other_project():
     upd_info = {"FormattedID" : target_defect,
                 'State'       : 'Fixed'
                }
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally.update('Defect', upd_info, project='Bristol Bay Barons')
     actualErrVerbiage = excinfo.value.args[0]
     assert 'Unable to update the Defect' in actualErrVerbiage

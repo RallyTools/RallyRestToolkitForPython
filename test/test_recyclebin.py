@@ -3,7 +3,6 @@
 import sys, os
 import types
 import urllib
-import py
 
 from pyral import Rally
 import pyral

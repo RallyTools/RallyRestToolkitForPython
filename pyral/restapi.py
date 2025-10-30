@@ -1,9 +1,9 @@
 ###################################################################################################
 #
 #  pyral.restapi - Python Rally REST API module
-#          round 19  support Python 3.9, 3.10, 3.11, fix of getAllUsers
+#          round 20  support Python 3.11, 3.12, 2.13 and 3.14
 #          notable dependency:
-#               requests v2.28.1 or better
+#               requests v2.32.x or better
 #
 ###################################################################################################
 
@@ -29,6 +29,8 @@ from .config  import USER_NAME, PASSWORD
 from .config  import START_INDEX, KILO_PAGESIZE, MAX_PAGESIZE, MAX_ITEMS
 from .config  import timestamp
 from .proj_utils  import projectAncestors, projectDescendants, projeny, flatten
+from .multiop import createMultiple as multiop_createMultiple
+from .multiop import updateMultiple as multiop_updateMultiple
 
 ###################################################################################################
 
@@ -130,7 +132,7 @@ def getCollection(context, collection_url, **kwargs):
 
 
 #  these imports have to take place after the prior class and function defs 
-from .rallyresp import RallyRESTResponse, ErrorResponse
+from .rallyresp import RallyRESTResponse, RallyResponseError, ErrorResponse
 from .hydrate   import EntityHydrator
 from .context   import RallyContext, RallyContextHelper
 from .entity    import validRallyType, DomainObject
@@ -655,8 +657,6 @@ class Rally:
     def _officialRallyEntityName(self, supplied_name):
         if supplied_name in ['Story', 'UserStory', 'User Story']:
             supplied_name = 'HierarchicalRequirement'
-        if supplied_name == 'search':
-            return supplied_name
 
         # here's where we'd make an inquiry into entity to see if the supplied_name
         # is a Rally entity on which CRUD ops are permissible.
@@ -959,7 +959,7 @@ class Rally:
             return response.next()
         return response
 
-    find = get # offer interface approximately matching Ruby Rally REST API, App SDK Javascript RallyDataSource
+    find = get   # some folks are happier with this alias...
 
 
     def put(self, entityName, itemData, workspace='current', project='current', **kwargs):
@@ -1026,6 +1026,15 @@ class Rally:
         
     create = put  # a more intuitive alias for the operation
 
+    def createMultiple(self, entityName, items, fields=None, workspace='current', project='current', **kwargs):
+        """
+            The implementation of createMultiple is mostly in the multiop module
+        """
+        entity = self._officialRallyEntityName(entityName)
+        if not entity:
+            raise RallyRESTAPIError(f'{entityName} is not a valid Rally entity name')
+        return multiop_createMultiple(self, entity, items, fields=fields, workspace=workspace, project=project, **kwargs)
+
 
     def post(self, entityName, itemData, workspace='current', project='current', **kwargs):
         """
@@ -1084,6 +1093,15 @@ class Rally:
         return item
 
     update = post  # a more intuitive alias for the operation
+
+    def updateMultiple(self, entityName, items, fields=None, workspace='current', project='current', **kwargs):
+        """
+            The implementation of updateMultiple is mostly in the multiop module
+        """
+        entity = self._officialRallyEntityName(entityName)
+        if not entity:
+            raise RallyRESTAPIError(f'{entityName} is not a valid Rally entity name')
+        return multiop_updateMultiple(self, entity, items, fields=fields, workspace=workspace, project=project, **kwargs)
 
 
     def delete(self, entityName, itemIdent, workspace='current', project='current', **kwargs):
@@ -1238,6 +1256,8 @@ class Rally:
             based on the content[u'QueryResult'][u'Results'] chunk.
             Intended to be called out of context.py which hands this off to entity.py
             to store this off in SchemaItem instances.
+
+            schema endpoint: https://{server}/slm/schema/v2.0/workspace/<wksp_oid>
         """
         # punt for now on the workspace, project parms
         # grab the OID for the currentContext workspace instead

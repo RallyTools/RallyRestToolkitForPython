@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pyral'
-copyright = 'Broadcom 2018-2024, CA Technologies 2015-2017, Rally Software Development 2010-2015'
+copyright = 'Broadcom 2018-2025, CA Technologies 2015-2017, Rally Software Development 2010-2015'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

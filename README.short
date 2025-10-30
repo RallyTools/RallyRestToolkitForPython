@@ -17,9 +17,9 @@ that may be references or collections via the familiar dot '.' notation.
 Requirements
 ------------
 
-The pyral package requires the use of Kenneth Reitz's requests package using version 2.28.1 or better.
+The pyral package requires the use of Kenneth Reitz's requests package using version 2.31.x or better.
 The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.7.0) has been tested with requests 2.31.0.
+The most recent release of pyral (1.7.0) has been tested with requests 2.32.5.
 
 
 Installation

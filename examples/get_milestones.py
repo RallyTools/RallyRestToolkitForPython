@@ -24,16 +24,19 @@ def main(args):
     options = [opt for opt in args if opt.startswith('--')]
     args    = [arg for arg in args if arg not in options]
     server, user, password, apikey, workspace, project = rallyWorkset(options)
-    rally = Rally(server, user, password, apikey=apikey, workspace=workspace, project=project)
+
+    project = 'Rally Engineering'
+    rally = Rally(server, user, password, apikey=apikey, workspace=workspace, project=project, isolated_workspace=True)
 
     entity_name = 'Milestone'
-    fields      = 'FormattedID,Name,TargetProject,TargetDate,TotalArtifactCount'
-    #response = rally.get(entity_name, fetch=fields, order="TargetDate,FormattedID", 
+    fields      = 'FormattedID,Name,TargetProject,TargetDate,TotalArtifactCount,Projects,Artifacts'
+    #response = rally.get(entity_name, fetch=fields, order="TargetDate,FormattedID",
     #                     project=project, projectScopeDown=True)
     #criteria = "[Apple Crisp, Lemon Wedge]"
-    criteria = 'Name in "Apple Crisp,Lemon Wedge"'
-    response = rally.get(entity_name, fetch=fields, query=criteria, order="TargetDate,FormattedID", 
-                         project=project, projectScopeDown=True)
+    #criteria = 'Name in "Apple Crisp,Lemon Wedge"'
+    #response = rally.get(entity_name, fetch=fields, query=criteria, order="TargetDate,FormattedID",
+    response = rally.get(entity_name, fetch=fields, order="TargetDate,FormattedID",
+                         project=project, projectScopeDown=True, start=2499, limit=500, pagesize=1000)
 
     if response.errors:
         errout("Request could not be successfully serviced, error code: %d\n" % response.status_code)
@@ -45,6 +48,18 @@ def main(args):
         sys.exit(2)
 
     milestones = [item for item in response]
+    for milestone in milestones:
+        #if not milestone.TargetProject:
+        #    continue
+        if milestone.Projects:
+            print(milestone.details())
+            for proj in milestone.Projects:
+                print(f"{proj.Name:<40}    {proj.ref}")
+            print('-' * 80)
+            print("")
+
+    print("DONE")
+    """
     sans_project = [mi for mi in milestones if not mi.TargetProject]
     with_project = [mi for mi in milestones if     mi.TargetProject]
     with_project.sort(key=lambda mi: mi.TargetProject.Name)
@@ -54,6 +69,7 @@ def main(args):
         print(" %15.15s  %-6.6s  %-36.36s  %3d  %-10.10s  %s " % \
                  (item.oid, item.FormattedID, item.Name, 
                   item.TotalArtifactCount, item.TargetDate, proj_name))
+    """
 
 #################################################################################################
 #################################################################################################

@@ -71,10 +71,11 @@ PYRAL_DEEPER="allowed_values folder_misc update attachments"
 PYRAL_QUERYING="query big_query"
 PYRAL_MORE_ENTITIES="portfolio_items"
 PYRAL_MISC="pull_request_copied ranking recyclebin"
-PYRAL_MOOT="search"
 
 COVERAGE_OPTIONS="--cov=pyral --cov-report=html:cov_html --cov-append ${target_test}"
-PYTEST_OPTIONS="--tb=short --no-header --disable-warnings "
+#PYTEST_OPTIONS="--tb=short --no-header --disable-warnings "    # these work with pytest 7.x, below is for pytest 8.3.x or better
+PYTEST_OPTIONS="--tb=short -q -p no:warnings "
+
 #RUN_TEST="$PYTEST $COVERAGE_OPTIONS --tb=short --no-header --no-summary --disable-warnings "
 RUN_TEST="$PYTEST $PYTEST_OPTIONS"
 echo "RUN_TEST value follows:"
@@ -124,8 +125,6 @@ run_test_bank "PYRAL_DEEPER"
 run_test_bank "PYRAL_QUERYING"
 run_test_bank "PYRAL_MORE_ENTITIES"
 run_test_bank "PYRAL_MISC"
-
-##run_test_bank "PYRAL_MOOT"
 
 if [ $TOTAL -eq 0 ]
 then

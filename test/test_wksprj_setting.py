@@ -3,7 +3,7 @@
 import sys, os
 import types
 
-import py
+import pytest
 
 from pyral import Rally, RallyUrlBuilder
 
@@ -58,7 +58,7 @@ def test_warn_on_setting_invalid_workspace():
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     workspace = rally.getWorkspace()
     assert workspace.Name == DEFAULT_WORKSPACE
-    with py.test.raises(Exception) as exc:
+    with pytest.raises(Exception) as exc:
         rally.setWorkspace('Constant Misbehavior')
     assert 'Specified workspace not valid for your credentials or is in a Closed state' in str(exc)
     workspace = rally.getWorkspace()
@@ -75,7 +75,7 @@ def test_warn_on_setting_invalid_project():
     rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     project = rally.getProject()
     assert project.Name == DEFAULT_PROJECT
-    with py.test.raises(Exception) as exc:
+    with pytest.raises(Exception) as exc:
         rally.setProject('Thorny Buxcuit Weevilz')
     assert 'Specified project not valid for your current workspace or credentials' in str(exc)
     project = rally.getProject()
@@ -88,7 +88,7 @@ def test_disallow_project_value_invalid_for_workspace():
         in that workspace, issue an Exception that prevents further processing.
     """
     problem_text = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'" % (DEFAULT_WORKSPACE, ALTERNATE_PROJECT)
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD,
                       workspace=DEFAULT_WORKSPACE, project=ALTERNATE_PROJECT)
     actualErrVerbiage = excinfo.value.args[0]
@@ -134,7 +134,7 @@ def test_no_defaults_good_workspace_none_project():
     problem = (f"The current Workspace '{nd_workspace}' does not contain a "
                f"Project with the name of '{none_project}'")
 
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally = Rally(RALLY, no_defaults_user, apikey=no_defaults_apikey,
                       workspace=nd_workspace, project=none_project)
     actualErrVerbiage = excinfo.value.args[0]
@@ -150,7 +150,7 @@ def test_no_defaults_good_workspace_bad_project():
                f"accessible Project with the name of '{bad_project}'")
     print(f'Expected problem verbiage: [{problem}]')
 
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally = Rally(RALLY, no_defaults_user, apikey=no_defaults_apikey,
                       workspace=nd_workspace, project=bad_project)
     actualErrVerbiage = excinfo.value.args[0]
@@ -174,7 +174,7 @@ def test_ignore_defaults_use_good_workspace_none_project():
 
     problem = "The current Workspace '%s' does not contain a Project with the name of '%s'"
     problem_text = problem % (good_workspace, none_project)
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
        rally = Rally(server=RALLY, apikey=APIKEY,
                      workspace=good_workspace,
                      project=none_project)
@@ -191,7 +191,7 @@ def test_ignore_defaults_use_good_workspace_bad_project():
 
     problem = "The current Workspace '%s' does not contain an accessible Project with the name of '%s'"
     problem_text = problem % (good_workspace, bad_project)
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
        rally = Rally(server=RALLY, apikey=APIKEY,
                      workspace=good_workspace,
                      project=bad_project)

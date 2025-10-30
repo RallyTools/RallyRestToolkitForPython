@@ -5,9 +5,17 @@
 #  rallyfire - Exemplar script to test the basic connectivity to a Rally server
 #              and obtain basic workspace and project information
 #
+#              Look at the blocks of text in the main function to see how you can
+#              obtain a Rally instance using auth of user/password or apikey
+#              along with workspace / project values and whether or not you want to
+#              get an instance that covers only a single workspace.
+#              Experiment with those instantiations to find one that works well for
+#              your situation.
+#
 #################################################################################################
 
 import sys
+print("\n".join(sys.path))
 
 from pyral import Rally, rallyWorkset
 
@@ -24,7 +32,7 @@ def main(args):
     #print(f" |{server}| |{user}| |{password}| |{apikey[:8]}| |{workspace}| |{project}|")
 
     # If you want to use BasicAuth, use the following form
-    rally = Rally(server, user, password, workspace=workspace, project=project) 
+    #rally = Rally(server, user, password, workspace=workspace, project=project)
 
     # If you want to use API Key, you can use the following form
     #rally = Rally(server, apikey=apikey, workspace=workspace, project=project,
@@ -37,10 +45,10 @@ def main(args):
     #apikey = "some valid apikey value"
     #rally = Rally(server, apikey=apikey)
 
-    #rally = Rally(server, user, password, apikey=apikey,
-    #              workspace=workspace, project=project,
-    #              debug=True, isolated_workspace=True)
-    #specified_workspace = workspace
+    rally = Rally(server, user, password, apikey=apikey,
+                  workspace=workspace, project=project,
+                  debug=True, isolated_workspace=True)
+    specified_workspace = workspace
 
     workspace = rally.getWorkspace()
     print(f"Workspace: {workspace.Name}   id: {workspace.oid} ")
@@ -54,33 +62,40 @@ def main(args):
     #
     # issue a call to rally.getProjects() to see where you might be able to
     # monkey with the current context's workspace (Name and oid) to be able
-    # to alter it to identify this workspace 'Kip's Alt Sandbox'
-    #  https://rally1.rallydev.com/#/9015093773d/detail/workspace/9096107919
+    # to alter it to identify this workspace 'General Tsao's Alt Sandbox'
+    #  https://rally1.rallydev.com/#/9095683773d/detail/workspace/9096107191
     #
-    # alt_workspace = "Kip's Alt Sandbox"
+    # alt_workspace = "General Tsao's Alt Sandbox"
     #print(f"Obtaining Projects for alternate Workspace: {alt_workspace}")
-    #projects = rally.getProjects(workspace=al_workspace)
+    #projects = rally.getProjects(workspace=alt_workspace)
     #for proj in projects:
     #    print(f'Project Name: {proj.Name}   ObjectID: {proj.oid}')
 
-    # uncomment this to see all of your accessible workspaces and projects
-#    workspaces = rally.getWorkspaces()
-#    for workspace in workspaces:
-#        print(" ", workspace.Name)
-#        projects = rally.getProjects(workspace=workspace.Name)
-#        if projects:
-#            print("")
-#            print("    Projects:")
-#            for project in projects:
-#                print("     ", project.Name)
-#        else:
-#            print("  No projects")
-#        print("")
+    # Uncomment the following function call to see all of your accessible workspaces and projects.
+    # Be aware that if you are in a subscription with a lot of workspaces and projects
+    # this could take a lot longer than you want it to. 
+    #    (consider using isolated_workspace=True in rally = Rally(...., isolated_workspace=True) )
+    #showWorkspacesAndProjects(rally)
 
-    sys.exit(0)
+#################################################################################################
+
+def showWorkspacesAndProjects(rally):
+    workspaces = rally.getWorkspaces()
+    for workspace in workspaces:
+        print(" ", workspace.Name)
+        projects = rally.getProjects(workspace=workspace.Name)
+        if projects:
+            print("")
+            print("    Projects:")
+            for project in projects:
+                print("     ", project.Name)
+        else:
+            print("  No projects")
+        print("")
 
 #################################################################################################
 #################################################################################################
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+    sys.exit(0)

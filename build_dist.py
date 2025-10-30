@@ -16,7 +16,7 @@ import re
 PACKAGE_NAME = "pyral"
 VERSION      = "1.7.0"
 
-AUX_FILES  = ['MANIFEST.in', 
+AUX_FILES  = ['MANIFEST', 
               'PKG-INFO', 
               'LICENSE', 
               'README.short', 
@@ -27,6 +27,7 @@ AUX_FILES  = ['MANIFEST.in',
              ]
 EXAMPLES   = ['periscope.py', 
               'getitem.py', 
+              'getitemdesc.py',
               'showdefects.py', 
               'crtask.py', 
               'uptask.py',
@@ -58,7 +59,7 @@ DOC_FILES  = ['doc/Makefile',
               'doc/build/html/index.html',
               'doc/build/html/overview.html',
               'doc/build/html/interface.html',
-              'doc/build/html/search.html',
+             #'doc/build/html/search.html',
               'doc/build/html/searchindex.js',
               'doc/build/html/objects.inv',
               'doc/build/html/_sources',
@@ -155,7 +156,7 @@ def package_meta(filename):
         raise Exception('No such file: %s' % filename)
     with open(filename, 'r') as pcf:
         content = pcf.read()
-    chunk, setup = re.split('setup\(', content, maxsplit=1, flags=re.M)
+    chunk, setup = re.split(r'setup\(', content, maxsplit=1, flags=re.M)
     consties = [line for line in chunk.split("\n") 
                       if (len(line) > 0 and line[0] == " ") or re.search(r'^[A-Z]', line)]
     assignments = "\n".join(consties)

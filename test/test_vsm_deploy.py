@@ -123,7 +123,7 @@ def test_update_deploy():
     deploy = result.next()
     assert deploy.oid == vsm_deploy_oid
     assert deploy.IsSuccessful in [None, False]
-    
+
     upd_data = {'ObjectID' : deploy.oid, 'IsSuccessful' : True}
     upd_deploy = rally.update(VSM_ENTITY, upd_data)
     assert upd_deploy.IsSuccessful == True

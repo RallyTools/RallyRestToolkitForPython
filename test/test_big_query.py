@@ -3,7 +3,6 @@
 import sys, os
 import types
 import urllib
-import py
 
 try:
     from urllib import unquote

@@ -666,10 +666,36 @@ pyral.Rally instance convenience methods
 pyral.Rally experimental convenience methods
 --------------------------------------------
 
+.. method:: createMultiple(entity_name, items, fields=None, workspace='current', project='current', **kwargs)
+
+    Given an entityName (for a valid Rally entity type) and a sequence of items (described below) and
+    potential a list of Rally entity attribute names, use the Rally WSAPI /batch endpoint
+    to effect the creation of items corresponding to the elements in list.
+    The elements in the list MUST have information about ALL of the required fields of the Rally entity.
+    The elements CAN have information about non-required fields.
+    An item in the list of items CANNOT have any attributes that are of the Rally COLLECTION type.
+
+    items must be all dict instances OR items must be all pyral entity instances (or instances of "data" class).
+
+.. method:: updateMultiple(entityName, items, fields=None, workspace='current', project='current', **kwargs)
+
+    Given an entityName (for a valid Rally entity type) and a sequence of items (described below)
+    and a list of Rally entity attribute names that are to be updated (fields),
+    use the Rally WSAPI /batch endpoint to effect the update of items corresponding
+    to the elements in list of items.
+    Each item MUST contain an identifying attribute name and value (usually ObjectID is used).
+    The other elements in the list CAN only be attributes that are editable AND
+    an item in the list of elements CANNOT have any attributes that are of the Rally COLLECTION type.
+    If the items have attributes present with non-null values and the attribute name is NOT
+    in the fields list, then those attributes will not be updated via this mechanism.
+    
+    items can be all dict instances OR items can be all pyral entity instances (or instances of "data" class).
+
 .. method:: addCollectionItems(target_item, collection_name, collection_items)
     
-    Given a target_item, the name of the Collections attribute and a homogenous list of items whose type appears as a One to Many relationship
-    in the target item, add the collection_items to the corresponding attribute in the target_item.
+    Given a target_item, the name of the Collections attribute and a homogenous list of items whose type 
+    appears as a One to Many relationship in the target item, add the collection_items to the corresponding 
+    attribute in the target_item.
 
     Returns the updated target_item.
 
