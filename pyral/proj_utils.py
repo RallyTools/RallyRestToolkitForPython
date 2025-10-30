@@ -16,11 +16,11 @@ def projeny(target_project, project_pool, lineage, level):
     """
     lineage[target_project] = {}
     child_projects = [proj for proj in project_pool
-                      if proj.Parent
-                      and proj.Parent.ref == target_project.ref
-                      ]
+                            if proj.Parent
+                           and proj.Parent.ref == target_project.ref
+                     ]
     for child in child_projects:
-        projeny(child, project_pool, lineage[target_project], level + 1)
+        projeny(child, project_pool, lineage[target_project], level+1)
 
 def flatten(target_dict, sort_attr, list_o_things):
     """
@@ -36,7 +36,6 @@ def flatten(target_dict, sort_attr, list_o_things):
     return list_o_things
 
 def projectDescendants(target_project, project_pool):
-    # descendents = {target_project : {}}
     descendents = {}
     projeny(target_project, project_pool, descendents, 1)
     return flatten(descendents, 'Name', [])
