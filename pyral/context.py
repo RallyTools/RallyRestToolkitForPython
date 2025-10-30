@@ -192,7 +192,7 @@ class RallyContextHelper(object):
 
     def _getUserInfo(self):
         # note the use of the _disableAugments keyword arg in the call
-        user_name_query = 'UserName = "%s"' % self.user
+        user_name_query = '((UserName = "%s") OR (OnpremLdapUsername = "%s"))' % (self.user, self.user)
 ##
 ##        print("user_name_query: |%s|" % user_name_query)
 ##
