@@ -59,7 +59,6 @@ DOC_FILES  = ['doc/Makefile',
               'doc/build/html/index.html',
               'doc/build/html/overview.html',
               'doc/build/html/interface.html',
-             #'doc/build/html/search.html',
               'doc/build/html/searchindex.js',
               'doc/build/html/objects.inv',
               'doc/build/html/_sources',
@@ -91,7 +90,6 @@ TEST_FILES = ['test/rally_targets.py',
               'test/test_query.py',
               'test/test_ranking.py'
               'test/test_recyclebin.py'
-              'test/dead_test_search.py',
               'test/test_wksprj_setting.py',
               'test/test_workspaces.py'
              ]
