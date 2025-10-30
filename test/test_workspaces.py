@@ -2,7 +2,7 @@
 
 import sys, os
 import types
-import py
+import pytest
 
 from pyral import Rally, RallyUrlBuilder
 
@@ -98,7 +98,7 @@ def test_default_isolated_workspace():
     assert expected_workspace_clause in url
 
     problem_text = 'No reset of of the Workspace is permitted when the isolated_workspace option is specified'
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally.setWorkspace(ALTERNATE_WORKSPACE)
     actualErrVerbiage = excinfo.value.args[0] 
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -135,7 +135,7 @@ def test_explictly_set_workspace_as_isolated_workspace():
     expected_project_clause = 'project=project/%s' % str(project.oid)
 
     problem_text = 'No reset of of the Workspace is permitted when the isolated_workspace option is specified'
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally.setWorkspace(ALTERNATE_WORKSPACE)
     actualErrVerbiage = excinfo.value.args[0] 
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'
@@ -203,7 +203,7 @@ def test_initial_non_default_workspace_as_isolated():
     assert expected_project_clause   in url
 
     problem_text = 'No reset of of the Workspace is permitted when the isolated_workspace option is specified'
-    with py.test.raises(Exception) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         rally.setWorkspace(DEFAULT_WORKSPACE)
     actualErrVerbiage = excinfo.value.args[0] 
     assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'

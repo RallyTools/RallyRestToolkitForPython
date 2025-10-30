@@ -17,9 +17,9 @@ that may be references or collections via the familiar dot '.' notation.
 Requirements
 ------------
 
-The pyral package requires the use of Kenneth Reitz's requests package using version 2.28.0 or better.
+The pyral package requires the use of Kenneth Reitz's requests package using version 2.31.x or better.
 The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-The most recent release of pyral (1.6.0) has been tested with requests 2.31.0.
+The most recent release of pyral (1.7.0) has been tested with requests 2.32.5.
 
 
 Installation
@@ -30,6 +30,8 @@ If you want to pull down the latest release from standard Python package reposit
 pip, the Python package installation utility.::
 
     pip install pyral
+
+This approach can probably also use pipex or poetry (although I have not confirmed that).
 
 Alternatively if you've got the tar.gz or zip distribution on hand, as long as you've
 satisfied the dependency requirement of the requests packages, you can use the setup mechanism.
@@ -56,6 +58,5 @@ Documentation
 Obtain the zip file containing the HTML and CSS files comprising the document set for pyral.
 Unzip in a suitable location and point your web browser to the doc/build/html/index.html file.
 
-The rendered documentation is also available at http://pyral.readthedocs.io/en/latest/
-and http://pythonhosted.org/pyral
+The rendered documentation is also available at http://pyral.readthedocs.io/en/latest/ .
 

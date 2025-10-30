@@ -2,8 +2,8 @@
 
 #################################################################################################
 #
-# getitem.py -- Get info for a specific instance of a Rally type
-#               identified either by an OID or a FormattedID value
+# getitemdesc.py -- Get info for a specific instance of a Rally type
+#                   identified either by an OID or a FormattedID value
 #
 USAGE = """
 Usage: getitem.py <entity_name> <OID | FormattedID>    
@@ -57,9 +57,7 @@ def main(args):
 
     mo = OID_PATT.match(ident)
     if mo:
-        ident_query = f'ObjectID = {ident}'
-        if entity_name == 'TestCaseResult':
-            ident_query = f'Build = {ident}'
+        ident_query = 'ObjectID = %s' % ident
     else:
         mo = FORMATTED_ID_PATT.match(ident)
         if mo:
@@ -68,21 +66,13 @@ def main(args):
             errout('ERROR: Unable to determine ident scheme for %s\n' % ident)
             sys.exit(3)
 
-    response = rally.get(entity_name, fetch=True, query=ident_query,
+    response = rally.get(entity_name, fetch=True, query=ident_query, 
                          workspace=workspace, project=project)
 
     if response.errors:
         errout("Request could not be successfully serviced, error code: %d\n" % response.status_code)
         errout("\n".join(response.errors))
         sys.exit(1)
-
-    tcrs = [tcr for tcr in response]
-    hits = [tcr for tcr in tcrs if tcr.TestCase.FormattedID == "TC9954"]
-    print(hits)
-    tcr = hits[0]
-    atts = rally.getAttachments(tcr)
-    print(atts)
-
 
     if response.resultCount == 0:
         errout('No item found for %s %s\n' % (entity_name, ident))
@@ -93,6 +83,11 @@ def main(args):
 
     for item in response:
         print(item.details())
+        print('---------------')
+        print('Description')
+        print('---------------')
+        print(item.Description)
+        print('---------------')
 
 #################################################################################################
 #################################################################################################

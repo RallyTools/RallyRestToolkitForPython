@@ -2,7 +2,7 @@
 
 import sys, os
 import types
-import py
+import pytest
 
 import pyral
 from pyral import Rally
@@ -286,7 +286,7 @@ def x_test_replace_attachments():
     """
 
     #expectedErrMsg = "hostname '%s' non-existent or unreachable" % bogus_server
-    #with py.test.raises(RallyRESTAPIError) as excinfo:
+    #with pytest.raises(RallyRESTAPIError) as excinfo:
     #    rally = Rally(server=bogus_server, apikey=APIKEY)
     #actualErrVerbiage = excinfo.value.args[0]
     #assert excinfo.value.__class__.__name__ == 'RallyRESTAPIError'

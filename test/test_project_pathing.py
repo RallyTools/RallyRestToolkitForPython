@@ -3,7 +3,6 @@
 import sys, os
 import types
 
-import py
 
 from pyral import Rally, RallyUrlBuilder
 

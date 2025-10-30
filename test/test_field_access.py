@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys, os
-import py
 
 from pyral import Rally
 import pyral

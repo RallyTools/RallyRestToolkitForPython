@@ -1,11 +1,11 @@
 Metadata-Version: 1.1
 Name: pyral
-Version: 1.6.0
+Version: 1.7.0
 Summary: Python toolkit for Rally REST API
 Home-page: https://github.com/RallyTools/RallyRestToolkitForPython
 Author: Kip Lehman (Broadcom, Agile Operations Division)
 License: BSD
-Download-URL: https://github.com/RallyTools/RallyRestToolkitForPython/raw/master/dists/pyral-1.6.0.zip
+Download-URL: https://github.com/RallyTools/RallyRestToolkitForPython/raw/master/dists/pyral-1.7.0.zip
 Description: This is the README file for pyral, a package implementing a 
         Pythonic interface to the Rally REST API
         
@@ -25,9 +25,9 @@ Description: This is the README file for pyral, a package implementing a
         Requirements
         ------------
         
-        The pyral package requires the use of Kenneth Reitz's requests package using version 2.28.0 or better.
+        The pyral package requires the use of Kenneth Reitz's requests package using version 2.31.x or better.
         The requests package can be found via the Python Package Index site (http://pypi/python.org/index).
-        The most recent release of pyral (1.6.0) has been tested with requests 2.31.0.
+        The most recent release of pyral (1.7.0) has been tested with requests 2.32.5.
         
         
         Installation
@@ -38,6 +38,8 @@ Description: This is the README file for pyral, a package implementing a
         pip, the Python package installation utility.::
         
             pip install pyral
+        
+        This approach can probably also use pipex or poetry (although I have not confirmed that).
         
         Alternatively if you've got the tar.gz or zip distribution on hand, as long as you've
         satisfied the dependency requirement of the requests packages, you can use the setup mechanism.
@@ -64,12 +66,11 @@ Description: This is the README file for pyral, a package implementing a
         Obtain the zip file containing the HTML and CSS files comprising the document set for pyral.
         Unzip in a suitable location and point your web browser to the doc/build/html/index.html file.
         
-        The rendered documentation is also available at http://pyral.readthedocs.io/en/latest/
-        and http://pythonhosted.org/pyral
+        The rendered documentation is also available at http://pyral.readthedocs.io/en/latest/ .
         
         
 Keywords: rally,api
-Requires: requests>=2.28.1
+Requires: requests>=2.31.2
 Platform: any
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: Web Environment
@@ -77,9 +78,8 @@ Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: BSD License
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python
-Classifier: Programming Language :: Python :: 3.9
-Classifier: Programming Language :: Python :: 3.10
-Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: 3.14
 Classifier: Topic :: Internet :: WWW/HTTP
 Classifier: Topic :: Software Development :: Libraries

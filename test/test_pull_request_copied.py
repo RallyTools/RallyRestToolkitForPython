@@ -2,7 +2,7 @@
 
 import sys, os
 import types
-import py
+import pytest
 
 from pyral import Rally, RallyUrlBuilder, RallyRESTAPIError
 from pyral.entity   import classFor
@@ -66,7 +66,7 @@ def test_post_pull_request():
     #rally = Rally(server=TESTN, user=TESTN_USER, password=TESTN_PSWD)
     #rally = Rally(server=RALLY, user=RALLY_USER, password=RALLY_PSWD)
     rally = Rally(server=RALLY, apikey=RALLY_SUB_100_API_KEY)
-    #with py.test.raises(RallyRESTAPIError) as excinfo:
+    #with pytest.raises(RallyRESTAPIError) as excinfo:
     pr = rally.create('PullRequest', dummy_data, project=None)
     assert pr is not None
     assert pr.oid

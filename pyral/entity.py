@@ -8,7 +8,7 @@
 #
 ###################################################################################################
 
-__version__ = (1, 6, 0)
+__version__ = (1, 7, 0)
 
 import sys
 import re
@@ -510,6 +510,19 @@ class Objective_TeamObjective       (Objective): pass
 class KeyResultActualValue          (KeyResultData): pass
 class KeyResultInterimTarget        (KeyResultData): pass
 
+class VSMProduct       (WorkspaceDomainObject): pass
+class VSMComponent     (WorkspaceDomainObject): pass
+class VSMInvestmentCategorytoInvestmentIntentMap(WorkspaceDomainObject): pass
+class VSMChange        (WorkspaceDomainObject): pass
+class VSMDeploy        (WorkspaceDomainObject): pass
+class VSMIncident      (WorkspaceDomainObject): pass
+class VSMMetric        (WorkspaceDomainObject): pass
+class VSMProductAnalyticsMetric(WorkspaceDomainObject): pass
+class VSMOutcomeMetric (WorkspaceDomainObject): pass
+class VSMTarget        (WorkspaceDomainObject): pass
+class VSMMeasure       (WorkspaceDomainObject): pass
+class VSMOutcome       (WorkspaceDomainObject): pass
+
 
 class Connection(WorkspaceDomainObject):
 
@@ -568,40 +581,6 @@ def so_bolded_text(mo):
     #if mo: return "<bold>%s</bold>" % mo.group('word')
     #else: return ""
     return "<bold>%s</bold>" % mo.group('word') if mo else ""
-
-class SearchObject: 
-    """
-        An instance of SearchObject is created for each artifact that
-        matches a search criteria.  A SearchObject is not a full-fledged
-        artifact however, it only has minimal identifying attributes and
-        snippets from each string field that contained text that matched
-        a part of the search criteria.
-    """
-
-    tagged_field_name_pattern = re.compile(r'<span class=\'alm-search-page matching-text-field-name\'>(?P<field_name>.*?): </span>')
-                                         #   <span class='alm-search-page matching-text-field-name'>Discussion: </span>
-    bolding_pattern = re.compile(r'<span id="keepMeBolded" class="alm-search-page matching-text-highlight">(?P<word>.*?)</span>')
-                               #   <span id="keepMeBolded" class="alm-search-page matching-text-highlight">bogus</span>
-
-    def __init__(self, oid, name, resource_url, context):
-        """
-            All sub-classes have an oid (normally an Object ID), but what we get for an oid here is actually a uuid,
-            attribute the ObjectID storage here (into which the uuid will be placed).
-        """
-        self.oid       = self.ObjectID = oid
-        self.Name      = name
-        self._ref      = resource_url
-        self._hydrated = True
-        self._context  = context
-
-    def __setattr__(self, item, value):
-        self.__dict__[item] = value
-        if item == 'MatchingText' and value is not None:
-            # scrub out the alm specific html tags 
-            scrubbed = re.sub(self.tagged_field_name_pattern, so_element_text, value)
-            scrubbed = re.sub(self.bolding_pattern, so_bolded_text, scrubbed)
-            self.__dict__[item] = scrubbed
-        return self.__dict__[item]
 
 #################################################################################################
 
@@ -690,7 +669,6 @@ classFor = { 'Persistable'             : Persistable,
              'ReleaseCumulativeFlowData'   : ReleaseCumulativeFlowData,
              'IterationCumulativeFlowData' : IterationCumulativeFlowData,
              'RecycleBinEntry'         : RecycleBinEntry,
-             'SearchObject'            : SearchObject,
              'Connection'              : Connection,
              'ExternalContribution'    : ExternalContribution,
              'PullRequest'             : PullRequest,
@@ -698,7 +676,19 @@ classFor = { 'Persistable'             : Persistable,
              'CapacityPlanProject'     : CapacityPlanProject,
              'WorkingCapacityPlan'     : WorkingCapacityPlan,
              'PublishedCapacityPlan'   : PublishedCapacityPlan,
-           }
+             'VSMProduct'                : VSMProduct,
+             'VSMComponent'              : VSMComponent,
+             'VSMChange'                 : VSMChange,
+             'VSMDeploy'                 : VSMDeploy,
+             'VSMIncident'               : VSMIncident,
+             'VSMMetric'                 : VSMMetric,
+             'VSMProductAnalyticsMetric' : VSMProductAnalyticsMetric,
+             'VSMOutcomeMetric'          : VSMOutcomeMetric,
+             'VSMTarget'                 : VSMTarget,
+             'VSMMeasure'                : VSMMeasure,
+             'VSMOutcome'                : VSMOutcome,
+             'VSMInvestmentCategorytoInvestmentIntentMap' : VSMInvestmentCategorytoInvestmentIntentMap,
+             }
 
 for entity_name, entity_class in list(classFor.items()):
     _rally_entity_cache[entity_name] = entity_name
