@@ -803,6 +803,8 @@ class Rally:
                 usi = int(kwargs['start'])  # usi - user supplied start index
                 if 0 < usi < MAX_ITEMS:     # start index must be greater than 0 and less than max
                     startIndex = usi
+                else:
+                    raise ValueError('Provided start index is greater than pyral MAX_ITEMS configured value.')
             except ValueError as ex: 
                 pass
 
