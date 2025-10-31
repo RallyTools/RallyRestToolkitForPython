@@ -21,7 +21,8 @@ AUX_FILES  = ['MANIFEST',
               'LICENSE', 
               'README.short', 
               'README.rst', 
-              'setup.py', 
+              'setup.py',
+              'setup.cfg',
               'template.cfg', 
               'rallyfire.py'
              ]
@@ -167,24 +168,15 @@ def package_meta(filename):
 
 ################################################################################
 
-def indentified_text(source_body):
-    """
-        The source_body should be a single string with embedded newline chars.
-        This function splits the string on the newline chars, yielding a list
-        of strings.  The indentation should only be performed lines after the first
-        line.  The first line shall have no indentation performed.
-        Return the result as a single string.
-    """
-    lines = source_body.split("\n")
-    indented = ['        %s' % line for ix, line in enumerate(lines) if ix > 0]
-    indented.insert(0, lines[0])    
-    return "\n".join(indented)
-
-
 def pkg_info_content(pkgcfg):
-    with open(pkgcfg.SHORT_DESCRIPTION, 'r') as sdf: 
-        short_desc = indentified_text(sdf.read())
-    meta_ver    =   'Metadata-Version: 1.1'
+    """
+        Use the full README.rst for long_description instead of README.short
+        Effective as of 1.6.0
+    """
+    with open(pkgcfg.FULL_DESCRIPTION, 'r', encoding='utf-8') as ldf: 
+        long_desc = ldf.read()
+    
+    meta_ver    =   'Metadata-Version: 2.1'
     name        =   'Name: %s'       % pkgcfg.PACKAGE
     version     =   'Version: %s'    % pkgcfg.VERSION 
     summary     =   'Summary: %s'    % pkgcfg.OFFICIAL_NAME
@@ -192,23 +184,25 @@ def pkg_info_content(pkgcfg):
     author      =   'Author: %s'     % pkgcfg.AUTHOR
     license     =   'License: %s'    % pkgcfg.LICENSE
     download    =   'Download-URL: %s' % pkgcfg.DOWNLOADABLE_ZIP
-    desc        =   'Description: %s'  % short_desc
     keywords    =   'Keywords: %s'   % ",".join(pkgcfg.KEYWORDS)
     requires    =  ['Requires: %s'   % reqmt for reqmt in pkgcfg.REQUIRES]
     platform    =   'Platform: %s'   % pkgcfg.PLATFORM
     classifiers =  ['Classifier: %s' % item for item in pkgcfg.CLASSIFIERS]
+    content_type =  'Description-Content-Type: text/x-rst'
 
     pki_items = [meta_ver, name, version, summary, homepage, author, license,
-                 download, desc, keywords, 
-                 "\n".join(requires), platform, "\n".join(classifiers)
+                 download, keywords, 
+                 "\n".join(requires), platform, "\n".join(classifiers),
+                 content_type, '', long_desc  # blank line before description body
                 ]
     pkg_info = "\n".join(pki_items)
     return pkg_info
     
+################################################################################
 
 def save_pkg_info(directory, filename, pkg_info):
     full_path = os.path.join(directory, filename)
-    with open(full_path, 'w') as pif:
+    with open(full_path, 'w', encoding='utf-8') as pif:
         pif.write(pkg_info)
         pif.write("\n")
     return full_path

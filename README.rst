@@ -252,9 +252,9 @@ Versions
        Explicitly state support for Python 3.12, 3.13 and 3.14
        Fixed bug with pryal.restapi.Rally.addCollectionItems method, a collection_name must be provided.
        Added support for VSM* related entities (VSMProduct, VSMComponent, VSMIncident, VSMChange, VSMDeploy,
-          VSMInvestmentCategorytoInvestmentIntentMap, VSMProductAnalyticsMetric, VSMTarget, VSMMeasure).
+       VSMInvestmentCategorytoInvestmentIntentMap, VSMProductAnalyticsMetric, VSMTarget, VSMMeasure).
        Added support for creating and updating multiple items of the same entity type in one call via
-          the restapi.createMultiple and restapi.updateMultiple methods.
+       the restapi.createMultiple and restapi.updateMultiple methods.
        Drop any mention of support for versions 3.11 and earlier.
 
    **1.6.0**

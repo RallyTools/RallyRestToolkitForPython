@@ -9,7 +9,7 @@ OFFICIAL_NAME = 'Python toolkit for Rally REST API'
 PKG_URL_NAME  = 'python-toolkit-rally-rest-api'
 AUTHOR        = 'Kip Lehman (Broadcom, Agile Operations Division)'
 AUTHOR_EMAIL  = 'kip.lehman@broadcom.com'
-LICENSE       = 'BSD'
+LICENSE       = 'BSD-3-Clause'
 KEYWORDS      = ['rally', 'api']
 GITHUB_SITE   = 'https://github.com/RallyTools/RallyRestToolkitForPython'
 GITHUB_DISTS  = '%s/raw/master/dists' % GITHUB_SITE
@@ -28,7 +28,6 @@ PLATFORM      = 'any'
 CLASSIFIERS   =  [ 'Development Status :: 5 - Production/Stable',
                    'Environment :: Web Environment',
                    'Intended Audience :: Developers',
-                   'License :: OSI Approved :: BSD License',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
                    'Programming Language :: Python :: 3.12',
@@ -48,7 +47,6 @@ setup(name=PACKAGE,
       url=GITHUB_SITE,
       download_url=DOWNLOADABLE_ZIP,
       long_description=long_description,
-      long_description_content_type='text/x-rst',
       license=LICENSE,
       keywords=KEYWORDS,
       install_requires=REQUIRES,

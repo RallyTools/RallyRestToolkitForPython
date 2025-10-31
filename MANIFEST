@@ -2,6 +2,7 @@ LICENSE
 README.short
 README.rst
 setup.py
+setup.cfg
 template.cfg
 rallyfire.py
 pyral/__init__.py
