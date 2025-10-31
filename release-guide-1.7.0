@@ -1,0 +1,205 @@
+Building the release locally
+----------------------------
+
+Use the upver.py script to update the version number to 1.7.0 in the relevant files.
+Run a grep -R 1.6.0 . to see if there are any remnants of the previous version in any file.
+Reconcile the result against the desired outcome.
+  The files affected by upver.py include (this is an incomplete list):
+     LICENSE, PKG-INFO, README.rst, README.short, the pyral/*.py files, doc/source/conf.py, build_dist.py, setup.py
+
+Before generating the documentation, you have to get an environment setup that will support that.
+The doc files are in RestructuredText  format (.rst) and Sphinx is used to generate the HMTL 
+renderings.
+   The make html uses Sphinx (newly updated to 7.2.6) to generate the html docs.
+
+   Installing that specific version of Sphinx (which is current to 2025)
+     had the following elements:
+        alabaster-0.7.16
+        Babel-2.14.0
+        Pygments-2.17.2
+        imagesize-1.4.1
+        snowballstemmer-2.2.0
+        pytz-2024.1
+
+        Sphinx                        7.2.6
+
+        sphinxcontrib-applehelp       1.0.8
+        sphinxcontrib-devhelp         1.0.6
+        sphinxcontrib-htmlhelp        2.0.6
+        sphinxcontrib-jsmath          1.0.1
+        sphinxcontrib-qthelp          1.0.7
+        sphinxcontrib-serializinghtml 1.1.10
+
+        sphinx-rtd-theme              2.0.0  (added separately)
+
+   I also had to specifically install sphinx-rtd-theme (Sphinx for Read The Docs presentation/styling)
+      via pip3 install sphinx-rtd-theme==2.0.0
+      (at the time I just did pip3 install sphinx-rtd-theme which resulted in 2.0.0 in Feb 2024)
+  
+cd into the doc subdirectory and run:
+   make clean
+   make html
+
+   You can use any of Python vers installed 3.12, 3.13, 3.14 as long as Sphinx has been
+   installed for the specific Python version:
+
+Modify the build_dist.py script to include/exclude elements as needed.
+
+Update the MANIFEST.in file (which is used to generate the MANIFEST file).
+Make sure that there aren't going to be any files containing any kind of actual Rally credentials.
+   For testing, in the test subdir are files named rally_targets*.py.  
+   At this point none of those should be committed/pushed or included in the source distribution.
+
+Then you can run
+   python3 build_dist.py
+
+This will result in the construction of the pyral-x.y.z.tar.gz and pyral-x.y.z.zip files
+in the base directory. The pyral-1.7.0.tar.gz file gets copied to both the dist and dists
+subdirs. The pyral-1.7.0.zip file gets copied to the dists subdir.
+
+build_dist.py also produces a "wheel" file named  'pyral-1.7.0-py3-any-none.whl'
+which gets moved to the dist subdir.  I changed content in the setup.cfg under the [bdist_wheel]
+section (deleting the universal = 1, and adding the python_tag = py3) so that the name of the 
+constructed wheel file only contains mention of py3 (and no py2 anymore).
+Additionally, a docs zip file (pyral-1.7.0.docs.html.zip) gets constructed and deposited
+into the dist subdir.  The zip file gets built from the doc/build/html directory.
+Those newly copied files in the dist and dists subdirs should then be committed, but *not*
+ the ones in the base directory.
+
+ You need to commit the new entries to both the dist and dists subdirs
+     git add dist/pyral-1.7.0.tar.gz
+     git add dist/pyral-1.7.0.docs.html.zip
+     git add dist/pyral-1.7.0-py3-any-none.whl
+
+     git add dists/pyral-1.7.0.zip
+     git add dists/pyral-1.7.0.tar.gz
+
+     git commit -m "include the dist and dists items for this 1.7.0 release"
+
+Take each of the generated distributions (tar.gz and zip) and copy them to another location
+outside of the pyral code root.  Unpack them and do a sanity check on the contents.
+    Confirm that the pyral subdirectory has only the elements needed.
+    Confirm that the examples subdirectory has all the examples scripts intended
+    Confirm that there is a doc subdir with a populated build/html directory
+    Confirm that there is no test subdirectory in the distribution
+
+Making the release available to others
+--------------------------------------
+
+GitHub
+......
+   push the release branch to klehman-rally/pyral
+   after merging the release branch to master on GitHub and switching to master branch locally
+   $ git checkout master
+   $ git fetch
+   $ git pull origin master
+   $ git tag x.y.z  # to tag the latest commit with your semantic release identifier
+   $ git push origin x.y.z # to get the tag back up to your primary GitHub repo
+
+   Situate in GitHub in the RallyTools/RallyRestToolkitForPython repository
+   Do a pull request in the master branch there to pull in the master branch of klehman-rally/pyral 
+   merge the branch in to RallyTools/RallyRestToolkitForPython master
+
+   Do the same dance for tag and release, ie., clone the RallyRestToolkitForPython repo into a suitable directory
+   $ cd  $PARENT_DIR/RallyRestToolkitForPython
+   $ git checkout master
+   $ git fetch
+   $ git pull origin master
+   $ git tag x.y.z  # to tag the latest commit with your semantic release identifier
+   $ git push origin x.y.z # to get the tag back up to the official GitHub repo for releasing the pyral package
+
+   ********************************************************************************
+   Make sure that the package on GitHub under dists has the correct items included
+   ********************************************************************************
+
+
+Publishing on PyPI    
+..................
+
+Using twine makes this process less painful than it it used to be prior to 2018 or so.
+The reason the following instructions exist is that the "standard" technique
+results in uploading a pyral-x.y.z.tar.gz that does NOT have all the
+elements in it that I want. So, the instructions below insure that the tar.gz package
+has all the things I want (and only those things) included in the tar ball.
+
+[*!! there is no such thing as test.pypi.org anymore, so there's no "practice" upload !!!*]
+
+Using Python 3.13 (via pyenv circa fall 2025) in which there is a reasonably current
+version of setuptools and twine, enables registering the pyral package and uploading
+the goods with an opportunity to confirm the "checkpoints" along the way.
+   **** Don't use py setup.py sdist upload ****
+Using twine will let me use my build_dist.py to build the distributable package and
+put it in the dist subdirectory and then `twine upload` will get it to the PyPI.org location.
+
+Put a copy of the pyral-1.7.0.tar.gz into the dist subdir, this is where twine expects it to be.
+Also, in there is the wheel file which is a zip file with the pyral package and some package 
+metainfo in a pyral-1.7.0.dist-info subdir in the zip package.  The naming convention for
+the file indicates that it is both Python 2 and Python 3 compatible, that there are no compiled
+extensions or elements and that it can run on any platform (ie, it is a pure Python package)
+
+Locally, run: py setup.py check and py setup.py check --restructuredtext
+  so that you can see if there are any problems with the README.rst file.
+Look at the return code being 0 to denote "goodness"  # echo $?
+
+**** NOTE: circa Feb 2024 the README.rst still doesn't get used in the PyPI page for your package !! ****
+
+Uploading your package to PyPI
+------------------------------
+
+  PyPI no longer supports simple BasicAuth (username, password) access.
+  You have to use 2FA and an APIKey.
+  First, to set up the 2FA you have to generate some recovery keys that are shown in the web app only once.
+  You get about 8 of them and you have to save them. I sent them to myself at kipster-t@comcast.net in a
+  message with the subject of 'PyPI happenings and changes'.
+  For the 2FA method/technique I selected the one that uses an Authenticator app (on Android).
+  The app on my phone that I used is the Google Authenticator. When you attempt to login to PyPI
+  you'll be asked to provide an auth code (6 digits) that has been sent to your Authenticator app.
+  The code changes every minute or so...  Once you have accurately supplied the auth code then you
+  are in to your PyPI account and can proceed.  You have to set up an APIKey that you can use with
+  twine to be able to publish the pyral package.
+  You need your API key for your account on PyPI, you need to use it in your $HOME/.pypirc file.
+
+  I then  edit your $HOME/.pypirc file to the following:
+  1 [distutils]
+  2 index-servers =
+  3     pypi
+  4     pyral
+  5
+  6 [pypi]
+  7   username = __token__
+  8   <the usual word for gaining entry> = pypi-<<what you have to provide to establish identity>>
+  9 [pyral]
+ 10   repository = https://upload.pypi.org/legacy/
+ 11   username = __token__
+  8   <the usual word for gaining entry> = pypi-<<what you have to provide to establish identity>>
+
+ ... where the leading numbers are the line numbers (they don't actually appear in the file)
+
+  Once that setup part is all done the actual syntax of the twine command to publish the package is:
+
+     shellPrompt: pyral % twine upload --repository pyral dist/pyral-1.7.0.tar.gz dist/pyral-1.7.0-*.whl
+
+
+Making the documentation available on popular free Python related website
+-------------------------------------------------------------------------
+
+  http://readthedocs.org  is the place where the current dabblers of
+  Python Packaging activities recommend that the documents be published.
+ 
+  I have an account on readthedocs.org  (klehman) 
+  On readthedocs.org, the pyral package is registered and linked to
+  github.com/klehman-rally/pyral .
+
+  Since 2021, they've made a change on ReadTheDocs.org and your repository has to have a config file
+  .readthedocs.yaml with conf information to be able to build the documentation.  There was a line in the sample conf
+  I had to change so that the build system would look in the right place for my conf file in the repo for Sphinx.
+
+  sphinx:
+  configuration: doc/source/conf.py
+
+  However, the site is not smart enough detect when there has been a commit on the master
+  branch so you have to trigger the build manually from readthedocs.org package admin page.
+
+  Stick around until the readthedocs "build" process completes and then inspect the result
+  by clicking the green "View Doc" button.
+
