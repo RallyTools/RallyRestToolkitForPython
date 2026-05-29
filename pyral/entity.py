@@ -993,23 +993,23 @@ def processSchemaInfo(workspace, schema_info):
     global _rally_schema
     global _rally_entity_cache
 
-    _rally_schema[wksp_ref] = {}
+    schema = {}
 
     for ix, raw_item_info in enumerate(schema_info):
         item = SchemaItem(raw_item_info)
-        _rally_schema[wksp_ref][item.ElementName] = item
+        schema[item.ElementName] = item
         if item.Abstract:
             continue
         if  item.ElementName not in _rally_entity_cache:
             _rally_entity_cache[item.ElementName] = item.ElementName
         if item.TypePath != item.ElementName:
-            _rally_schema[wksp_ref][item.TypePath] = item
+            schema[item.TypePath] = item
             if item.TypePath not in _rally_entity_cache:
                 _rally_entity_cache[item.TypePath] = item.TypePath
-    _rally_schema[wksp_ref]['Story']     = _rally_schema[wksp_ref]['HierarchicalRequirement']
-    _rally_schema[wksp_ref]['UserStory'] = _rally_schema[wksp_ref]['HierarchicalRequirement']
+    schema['Story']     = schema['HierarchicalRequirement']
+    schema['UserStory'] = schema['HierarchicalRequirement']
 
-    unaccounted_for_entities = [entity_name for entity_name in list(_rally_schema[wksp_ref].keys())
+    unaccounted_for_entities = [entity_name for entity_name in list(schema.keys())
                                              if  entity_name not in classFor
                                              and not entity_name.startswith('ObjectAttr')
                                ]
@@ -1017,7 +1017,7 @@ def processSchemaInfo(workspace, schema_info):
         if entity_name in ['ScopedAttributeDefinition']:
             continue
                            
-        entity = _rally_schema[wksp_ref][entity_name]
+        entity = schema[entity_name]
         typePath = entity.TypePath
         pyralized_class_name = str(typePath.replace('/', '_'))
         if pyralized_class_name not in classFor:
@@ -1029,7 +1029,7 @@ def processSchemaInfo(workspace, schema_info):
                     pass
             rally_entity_class = _createClass(pyralized_class_name, parentClass)
             classFor[typePath] = rally_entity_class
-
+    _rally_schema[wksp_ref] = schema
     augmentSchemaWithPullRequestInfo(workspace)
 
 
